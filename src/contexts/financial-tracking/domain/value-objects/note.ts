@@ -1,4 +1,5 @@
 // contexts/financial-tracking/domain/value-objects/note.ts
+import { InvalidNoteError } from "../errors/invalid-note.error.js";
 const MAX_NOTE_LENGTH = 500;
 
 class Note {

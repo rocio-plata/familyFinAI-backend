@@ -1,4 +1,5 @@
 // contexts/financial-tracking/domain/value-objects/title.ts
+import { InvalidTitleError } from "../errors/invalid-title.error.js";
 const MAX_TITLE_LENGTH = 100;
 
 class Title {

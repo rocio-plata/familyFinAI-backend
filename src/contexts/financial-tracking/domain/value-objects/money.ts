@@ -1,5 +1,6 @@
 // contexts/financial-tracking/domain/value-objects/money.ts
 import type { Currency } from '../../../../shared-kernel/domain/currency.js';
+import { InvalidMoneyError } from '../errors/invalid-money.error.js';
 
 class Money {
   private constructor(
@@ -12,8 +13,15 @@ class Money {
     return new Money(amount, currency);
   }
 
-  add(other: Money): Money { /* valida misma currency */ }
-  isGreaterThan(other: Money): boolean { }
+  add(other: Money): Money {
+    if (this.currency !== other.currency) throw new InvalidMoneyError();
+    return new Money(this.amount + other.amount, this.currency);
+  }
+
+  isGreaterThan(other: Money): boolean {
+    if (this.currency !== other.currency) throw new InvalidMoneyError();
+    return this.amount > other.amount;
+  }
 }
 
 export { Money };
