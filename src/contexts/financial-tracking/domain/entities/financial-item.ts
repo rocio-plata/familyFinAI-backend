@@ -24,7 +24,7 @@ interface CreateFinancialItemProps {
 
 class FinancialItem {
   private constructor(
-    private readonly id: FinancialItemId,
+    private readonly _id: FinancialItemId,
     private readonly familyId: FamilyId,        // referencia al contexto Family & Access (solo el ID, no el objeto)
     private readonly recordedBy: UserId,          // idem
     private type: FinancialItemType,               // Expense | Income
@@ -63,6 +63,14 @@ class FinancialItem {
     );
     */
     return item;
+  }
+
+  get id(): FinancialItemId {
+    return this._id;
+  }
+
+  get categoryAssignment(): CategoryAssignment {
+    return this.category;
   }
 
   reclassify(newCategory: CategoryAssignment): void {
