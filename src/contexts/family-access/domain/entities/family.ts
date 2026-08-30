@@ -28,6 +28,7 @@ class Family {
   inviteMember(email: EmailAddress, role: Role): Invitation {
     // invariante: no invitar a alguien que ya es miembro
     // dispara MemberInvited
+    throw new Error('Not implemented');
   }
 
   removeMember(memberId: UserId, removedBy: UserId): void {

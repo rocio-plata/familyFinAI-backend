@@ -4,8 +4,8 @@ import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 class InvalidFamilyNameError extends DomainError {
   readonly code = "FAMILY_ACCESS.INVALID_FAMILY_NAME";
 
-  constructor() {
-    super("El nombre de la familia debe tener entre 1 y 60 caracteres");
+  constructor(value: string) {
+    super(`El nombre de la familia "${value}" debe tener entre 1 y 60 caracteres`);
   }
 }
 

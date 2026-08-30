@@ -11,8 +11,20 @@ class Tag {
     private status: TagStatus,   // Active | Deprecated — misma lógica que Category
   ) {}
 
-  rename(newName: TagName): void { }
-  deprecate(): void { this.status = TagStatus.Deprecated; }
+  static create(name: TagName, displayOrder: number): Tag {
+    const id = TagId.generate();
+    return new Tag(id, name, displayOrder, TagStatus.Active);
+  }
+
+  rename(newName: TagName): void {
+    this.name = newName;
+  }
+
+  deprecate(): void {
+    this.status = TagStatus.Deprecated;
+  }
+
+  
 }
 
 export { Tag };

@@ -1,3 +1,7 @@
+// src/contexts/financial-tracking/domain/services/tag-deletion.service.ts
+import { Tag } from '../entities/tag.js';
+import { TagHasAssociatedItemsError } from '../errors/tag-has-associated-items.error.js';
+
 class TagDeletionService {
   constructor(
     private readonly financialItemRepository: FinancialItemRepository,

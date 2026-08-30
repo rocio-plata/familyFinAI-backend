@@ -1,6 +1,7 @@
 // src/contexts/family-access/domain/value-objects/family-id.ts
 import { randomUUID } from "node:crypto";
 import { isValidUUID } from "../../../../shared-kernel/domain/uuid.js";
+import { InvalidFamilyIdError } from "../errors/invalid-family-id.error.js";
 
 class FamilyId {
   private constructor(private readonly value: string) {}
