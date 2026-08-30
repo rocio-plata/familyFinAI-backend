@@ -11,12 +11,25 @@ import { Tag } from './tag.js';
 
 class Category {
   private constructor(
-    private readonly id: CategoryId,
+    private readonly _id: CategoryId,
     private readonly familyId: FamilyId,
     private name: CategoryName,
     private status: CategoryStatus,
-    private readonly tags: Tag[], // orden = displayOrder
+    private tags: Tag[],
   ) {}
+
+  get id(): CategoryId {
+    return this._id;
+  }
+
+  addTag(name: TagName): void {
+    const nextOrder = this.tags.length;
+    this.tags.push(Tag.create(name, nextOrder));
+  }
+
+  rename(newName: CategoryName): void {
+    this.name = newName;
+  }
 
   deprecate(): void {
     this.status = CategoryStatus.Deprecated;
@@ -26,14 +39,8 @@ class Category {
     this.status = CategoryStatus.Active;
   }
 
-   addTag(name: TagName): void {
-    const nextOrder = this.tags.length; // se añade al final por defecto
-    this.tags.push(Tag.create(name, nextOrder));
-  }
-
-  reorderTags(orderedTagIds: TagId[]): void {
-    // valida que orderedTagIds contenga exactamente los mismos IDs que this.tags
-    // y reasigna displayOrder según la posición en el array
+  markAsDeleted(): void {
+    // llamado únicamente por CategoryDeletionService tras confirmar que no tiene items asociados
   }
 }
 

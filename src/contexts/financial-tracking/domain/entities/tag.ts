@@ -5,7 +5,7 @@ import { TagName } from '../value-objects/tag-name.js';
 
 class Tag {
   private constructor(
-    private readonly id: TagId,
+    private readonly _id: TagId,
     private name: TagName,
     private displayOrder: number,
     private status: TagStatus,   // Active | Deprecated — misma lógica que Category
@@ -24,7 +24,9 @@ class Tag {
     this.status = TagStatus.Deprecated;
   }
 
-  
+  get id(): TagId {
+    return this._id;
+  }
 }
 
 export { Tag };
