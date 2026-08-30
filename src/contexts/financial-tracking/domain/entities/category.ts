@@ -12,31 +12,43 @@ import { Tag } from './tag.js';
 class Category {
   private constructor(
     private readonly _id: CategoryId,
-    private readonly familyId: FamilyId,
-    private name: CategoryName,
-    private status: CategoryStatus,
-    private tags: Tag[],
+    private readonly _familyId: FamilyId,
+    private _name: CategoryName,
+    private _status: CategoryStatus,
+    private _tags: Tag[],
   ) {}
 
-  get id(): CategoryId {
-    return this._id;
+  get id(): CategoryId { return this._id; }
+  get familyId(): FamilyId { return this._familyId; }
+  get name(): CategoryName { return this._name; }
+  get status(): CategoryStatus { return this._status; }
+  get tags(): readonly Tag[] { return this._tags; }   // readonly array — evita que muten la lista desde fuera
+
+  static create(familyId: FamilyId, name: CategoryName): Category {
+    return new Category(CategoryId.generate(), familyId, name, CategoryStatus.Active, []);
   }
+
 
   addTag(name: TagName): void {
     const nextOrder = this.tags.length;
-    this.tags.push(Tag.create(name, nextOrder));
+    this._tags.push(Tag.create(name, nextOrder));
   }
 
   rename(newName: CategoryName): void {
-    this.name = newName;
+    this._name = newName;
   }
 
   deprecate(): void {
-    this.status = CategoryStatus.Deprecated;
+    this._status = CategoryStatus.Deprecated;
   }
 
   reactivate(): void {
-    this.status = CategoryStatus.Active;
+    this._status = CategoryStatus.Active;
+  }
+
+  reorderTags(orderedTagIds: TagId[]): void {
+    // valida que orderedTagIds contenga exactamente los mismos IDs que this._tags,
+    // luego reasigna displayOrder de cada Tag según su posición en el array
   }
 
   markAsDeleted(): void {

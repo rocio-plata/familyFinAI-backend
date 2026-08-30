@@ -1,4 +1,5 @@
-// contexts/financial-tracking/domain/entities/financial-item.ts
+// src/contexts/financial-tracking/domain/entities/financial-item.ts
+import type { DomainEvent } from '../../../../shared-kernel/domain/domain-event.js';
 import { FinancialItemId } from '../value-objects/financial-item-id.js';
 import { FamilyId } from '../../../family-access/domain/value-objects/family-id.js';
 import { UserId } from '../../../family-access/domain/value-objects/user-id.js';
@@ -20,23 +21,34 @@ interface CreateFinancialItemProps {
   occurredOn: TransactionDate;
 }
 
-
-
 class FinancialItem {
+  private domainEvents: DomainEvent[] = [];
+
   private constructor(
     private readonly _id: FinancialItemId,
-    private readonly familyId: FamilyId,        // referencia al contexto Family & Access (solo el ID, no el objeto)
-    private readonly recordedBy: UserId,          // idem
-    private type: FinancialItemType,               // Expense | Income
-    private amount: Money,
-    private category: CategoryAssignment,
-    private title: Title,
-    private note: Note | null,
-    private occurredOn: TransactionDate,
-    private readonly createdAt: Date,
+    private readonly _familyId: FamilyId,
+    private readonly _recordedBy: UserId,
+    private _type: FinancialItemType,
+    private _amount: Money,
+    private _category: CategoryAssignment,
+    private _title: Title,
+    private _note: Note | null,
+    private _occurredOn: TransactionDate,
+    private readonly _createdAt: Date,
   ) {}
 
-  static create(props: CreateFinancialItemProps): FinancialItem {
+  get id(): FinancialItemId { return this._id; }
+  get familyId(): FamilyId { return this._familyId; }
+  get recordedBy(): UserId { return this._recordedBy; }
+  get type(): FinancialItemType { return this._type; }
+  get amount(): Money { return this._amount; }
+  get categoryAssignment(): CategoryAssignment { return this._category; }
+  get title(): Title { return this._title; }
+  get note(): Note | null { return this._note; }
+  get occurredOn(): TransactionDate { return this._occurredOn; }
+  get createdAt(): Date { return this._createdAt; }
+
+  static create(props: CreateFinancialItemProps): FinancialItem { 
     const item = new FinancialItem(
       FinancialItemId.generate(),
       props.familyId,
@@ -65,30 +77,19 @@ class FinancialItem {
     return item;
   }
 
-  get id(): FinancialItemId {
-    return this._id;
-  }
-
-  get categoryAssignment(): CategoryAssignment {
-    return this.category;
-  }
-
   reclassify(newCategory: CategoryAssignment): void {
-    this.category = newCategory;
+    this._category = newCategory;
   }
 
   updateAmount(newAmount: Money): void {
-    this.amount = newAmount;
+    this._amount = newAmount;
   }
 
-  /** Devuelve y limpia los eventos de dominio acumulados en este agregado 
   pullDomainEvents(): DomainEvent[] {
     const events = this.domainEvents;
     this.domainEvents = [];
     return events;
   }
-    */
-
 }
 
 export { FinancialItem };
