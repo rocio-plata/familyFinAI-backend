@@ -6,26 +6,30 @@ import { TagName } from '../value-objects/tag-name.js';
 class Tag {
   private constructor(
     private readonly _id: TagId,
-    private name: TagName,
-    private displayOrder: number,
-    private status: TagStatus,   // Active | Deprecated — misma lógica que Category
+    private _name: TagName,
+    private _displayOrder: number,
+    private _status: TagStatus,
   ) {}
 
+  get id(): TagId { return this._id; }
+  get name(): TagName { return this._name; }
+  get displayOrder(): number { return this._displayOrder; }
+  get status(): TagStatus { return this._status; }
+
   static create(name: TagName, displayOrder: number): Tag {
-    const id = TagId.generate();
-    return new Tag(id, name, displayOrder, TagStatus.Active);
+    return new Tag(TagId.generate(), name, displayOrder, TagStatus.Active);
   }
 
   rename(newName: TagName): void {
-    this.name = newName;
+    this._name = newName;
+  }
+
+  changeDisplayOrder(newOrder: number): void {
+    this._displayOrder = newOrder;
   }
 
   deprecate(): void {
-    this.status = TagStatus.Deprecated;
-  }
-
-  get id(): TagId {
-    return this._id;
+    this._status = TagStatus.Deprecated;
   }
 }
 
