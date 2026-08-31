@@ -1,10 +1,16 @@
 // tests/contexts/family-access/create-family.usecase.test.ts
 import { test, describe, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { CreateFamilyUseCase } from "../../../src/contexts/family-access/application/commands/create-family.usecase.js";
+import { CreateFamilyUseCase } from "../../../../src/contexts/family-access/application/commands/create-family.usecase.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { InvalidFamilyNameError } from "../../../src/contexts/family-access/domain/errors/invalid-family-name.error.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { InvalidFamilyNameError } from "../../../../src/contexts/family-access/domain/errors/invalid-family-name.error.js";
+import type { EventBus } from "../../../../src/shared-kernel/domain/event-bus.js";
+import type { DomainEvent } from "../../../../src/shared-kernel/domain/domain-event.js";
+
+const noopEventBus: EventBus = {
+  publish(_event: DomainEvent) { return Promise.resolve(); },
+};
 
 describe("CreateFamilyUseCase", () => {
   let repository: InMemoryFamilyRepository;
@@ -12,7 +18,7 @@ describe("CreateFamilyUseCase", () => {
 
   beforeEach(() => {
     repository = new InMemoryFamilyRepository();
-    useCase = new CreateFamilyUseCase(repository);
+    useCase = new CreateFamilyUseCase(repository, noopEventBus);
   });
 
   test("crea una familia con el usuario creador como Owner", async () => {
