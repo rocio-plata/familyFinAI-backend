@@ -102,8 +102,12 @@ class Family {
   }
 
   addMemberFromInvitation(invitation: Invitation): void {
-    this._members.push(Member.create(invitation.invitedUserId, invitation.role));
+    this.addMemberFromInvitationData(invitation.invitedUserId, invitation.role);
   }
+
+  addMemberFromInvitationData(userId: UserId, role: Role): void {
+    this._members.push(Member.create(userId, role));
+  }  
 
   pullDomainEvents(): DomainEvent[] {
     const events = this.domainEvents;
