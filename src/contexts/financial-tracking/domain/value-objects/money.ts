@@ -1,10 +1,10 @@
 // contexts/financial-tracking/domain/value-objects/money.ts
-import type { Currency } from '../../../../shared-kernel/domain/currency.js';
-import { InvalidMoneyError } from '../errors/invalid-money.error.js';
+import type { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { InvalidMoneyError } from "../errors/invalid-money.error.js";
 
 class Money {
   private constructor(
-    private readonly amount: number,   // en la unidad mínima (p. ej. centavos) para evitar errores de coma flotante
+    private readonly amount: number, // en la unidad mínima (p. ej. centavos) para evitar errores de coma flotante
     private readonly currency: Currency,
   ) {}
 

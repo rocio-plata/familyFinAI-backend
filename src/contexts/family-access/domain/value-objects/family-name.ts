@@ -1,6 +1,6 @@
 // src/contexts/family-access/domain/value-objects/family-name.ts
 
-import { InvalidFamilyNameError } from '../errors/invalid-family-name.error.js';
+import { InvalidFamilyNameError } from "../errors/invalid-family-name.error.js";
 
 class FamilyName {
   private constructor(private readonly value: string) {}
@@ -13,6 +13,5 @@ class FamilyName {
     return this.value;
   }
 }
-
 
 export { FamilyName };

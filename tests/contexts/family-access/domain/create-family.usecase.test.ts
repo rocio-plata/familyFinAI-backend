@@ -1,12 +1,13 @@
 // tests/contexts/family-access/create-family.usecase.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
 import { CreateFamilyUseCase } from "../../../../src/contexts/family-access/application/commands/create-family.usecase.js";
-import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { InvalidFamilyNameError } from "../../../../src/contexts/family-access/domain/errors/invalid-family-name.error.js";
-import { FakeEventBus } from "./doubles/fake-event-bus.js";
 import { FamilyCreated } from "../../../../src/contexts/family-access/domain/events/family-created.event.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("CreateFamilyUseCase", () => {
   let repository: InMemoryFamilyRepository;
@@ -62,8 +63,7 @@ describe("CreateFamilyUseCase", () => {
     );
   });
 
-
-   test("publica el evento FamilyCreated al crear la familia", async () => {
+  test("publica el evento FamilyCreated al crear la familia", async () => {
     const family = await useCase.execute({ name: "Familia Pérez", createdBy: UserId.generate() });
 
     assert.equal(eventBus.publishedEvents.length, 1);

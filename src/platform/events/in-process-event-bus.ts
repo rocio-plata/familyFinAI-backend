@@ -1,6 +1,7 @@
 // platform/events/in-process-event-bus.ts
-import type { EventBus } from "./event-bus.js";
+
 import type { DomainEvent } from "../../shared-kernel/domain/domain-event.js";
+import type { EventBus } from "./event-bus.js";
 
 class InProcessEventBus implements EventBus {
   private handlers = new Map<string, Array<(event: DomainEvent) => Promise<void>>>();

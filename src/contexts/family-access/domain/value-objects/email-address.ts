@@ -1,6 +1,5 @@
 // src/contexts/family-access/domain/value-objects/email-address.ts
-import { InvalidEmailError } from '../errors/invalid-email.error.js';
-
+import { InvalidEmailError } from "../errors/invalid-email.error.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

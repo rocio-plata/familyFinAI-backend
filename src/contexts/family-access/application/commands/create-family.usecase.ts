@@ -1,7 +1,8 @@
 // contexts/family-access/application/commands/create-family.usecase.ts
-import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
+
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import { Family } from "../../domain/entities/family.js";
+import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
 import { FamilyName } from "../../domain/value-objects/family-name.js";
 import type { UserId } from "../../domain/value-objects/user-id.js";
 
@@ -30,5 +31,5 @@ class CreateFamilyUseCase {
   }
 }
 
-export { CreateFamilyUseCase };
 export type { CreateFamilyCommand };
+export { CreateFamilyUseCase };

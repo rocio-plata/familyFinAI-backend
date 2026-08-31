@@ -1,6 +1,8 @@
 // src/contexts/family-access/domain/entities/member.ts
-import { UserId } from '../value-objects/user-id.js';
-import { Role } from '../value-objects/role.js';
+
+import { Role } from "../value-objects/role.js";
+import type { UserId } from "../value-objects/user-id.js";
+
 class Member {
   private constructor(
     private readonly _userId: UserId,
@@ -8,9 +10,15 @@ class Member {
     private readonly _joinedAt: Date,
   ) {}
 
-  get userId(): UserId { return this._userId; }
-  get role(): Role { return this._role; }
-  get joinedAt(): Date { return this._joinedAt; }
+  get userId(): UserId {
+    return this._userId;
+  }
+  get role(): Role {
+    return this._role;
+  }
+  get joinedAt(): Date {
+    return this._joinedAt;
+  }
 
   static createOwner(userId: UserId): Member {
     return new Member(userId, Role.owner(), new Date());
@@ -24,4 +32,5 @@ class Member {
     this._role = newRole;
   }
 }
+
 export { Member };

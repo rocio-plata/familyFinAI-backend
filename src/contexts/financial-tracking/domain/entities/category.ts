@@ -1,13 +1,12 @@
 // contexts/financial-tracking/domain/entities/category.ts
 
-import { CategoryId } from '../value-objects/category-id.js';
-import { FamilyId } from '../../../family-access/domain/value-objects/family-id.js';
-import { CategoryName } from '../value-objects/category-name.js';
-import { CategoryStatus } from '../value-objects/category-status.js';
-import { TagName } from '../value-objects/tag-name.js';
-import { TagId } from '../value-objects/tag-id.js';
-import { Tag } from './tag.js';
-
+import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { CategoryId } from "../value-objects/category-id.js";
+import type { CategoryName } from "../value-objects/category-name.js";
+import { CategoryStatus } from "../value-objects/category-status.js";
+import type { TagId } from "../value-objects/tag-id.js";
+import type { TagName } from "../value-objects/tag-name.js";
+import { Tag } from "./tag.js";
 
 class Category {
   private constructor(
@@ -18,16 +17,25 @@ class Category {
     private _tags: Tag[],
   ) {}
 
-  get id(): CategoryId { return this._id; }
-  get familyId(): FamilyId { return this._familyId; }
-  get name(): CategoryName { return this._name; }
-  get status(): CategoryStatus { return this._status; }
-  get tags(): readonly Tag[] { return this._tags; }   // readonly array — evita que muten la lista desde fuera
+  get id(): CategoryId {
+    return this._id;
+  }
+  get familyId(): FamilyId {
+    return this._familyId;
+  }
+  get name(): CategoryName {
+    return this._name;
+  }
+  get status(): CategoryStatus {
+    return this._status;
+  }
+  get tags(): readonly Tag[] {
+    return this._tags;
+  } // readonly array — evita que muten la lista desde fuera
 
   static create(familyId: FamilyId, name: CategoryName): Category {
     return new Category(CategoryId.generate(), familyId, name, CategoryStatus.Active, []);
   }
-
 
   addTag(name: TagName): void {
     const nextOrder = this.tags.length;

@@ -1,15 +1,15 @@
 // src/contexts/family-access/domain/entities/invitation.ts
 
-import { InvitationId } from '../value-objects/invitation-id.js';
-import { FamilyId } from '../value-objects/family-id.js';
-import { EmailAddress } from '../value-objects/email-address.js';
-import { Role } from '../value-objects/role.js';
-import { InvitationStatus } from '../value-objects/invitation-status.js';
-import { UserId } from '../value-objects/user-id.js';
-import type { DomainEvent } from '../../../../shared-kernel/domain/domain-event.js';
-import { InvitationNotPendingError } from '../errors/invitation-not-pending.error.js';
-import { InvitationExpiredError } from '../errors/invitation-expired.error.js';
-import { InvitationNotAcceptedError } from '../errors/invitation-not-accepted.error.js';
+import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import { InvitationExpiredError } from "../errors/invitation-expired.error.js";
+import { InvitationNotAcceptedError } from "../errors/invitation-not-accepted.error.js";
+import { InvitationNotPendingError } from "../errors/invitation-not-pending.error.js";
+import type { EmailAddress } from "../value-objects/email-address.js";
+import type { FamilyId } from "../value-objects/family-id.js";
+import { InvitationId } from "../value-objects/invitation-id.js";
+import { InvitationStatus } from "../value-objects/invitation-status.js";
+import type { Role } from "../value-objects/role.js";
+import type { UserId } from "../value-objects/user-id.js";
 
 class Invitation {
   private domainEvents: DomainEvent[] = [];
@@ -21,15 +21,27 @@ class Invitation {
     private readonly _role: Role,
     private _status: InvitationStatus,
     private readonly _expiresAt: Date,
-    private _invitedUserId: UserId | null,   // se completa recién al aceptar
+    private _invitedUserId: UserId | null, // se completa recién al aceptar
   ) {}
 
-  get id(): InvitationId { return this._id; }
-  get familyId(): FamilyId { return this._familyId; }
-  get invitedEmail(): EmailAddress { return this._invitedEmail; }
-  get role(): Role { return this._role; }
-  get status(): InvitationStatus { return this._status; }
-  get expiresAt(): Date { return this._expiresAt; }
+  get id(): InvitationId {
+    return this._id;
+  }
+  get familyId(): FamilyId {
+    return this._familyId;
+  }
+  get invitedEmail(): EmailAddress {
+    return this._invitedEmail;
+  }
+  get role(): Role {
+    return this._role;
+  }
+  get status(): InvitationStatus {
+    return this._status;
+  }
+  get expiresAt(): Date {
+    return this._expiresAt;
+  }
   get invitedUserId(): UserId {
     if (!this._invitedUserId) throw new InvitationNotAcceptedError(this._id);
     return this._invitedUserId;
@@ -37,8 +49,13 @@ class Invitation {
 
   static create(familyId: FamilyId, email: EmailAddress, role: Role): Invitation {
     const invitation = new Invitation(
-      InvitationId.generate(), familyId, email, role,
-      InvitationStatus.Pending, addDays(new Date(), 7), null,
+      InvitationId.generate(),
+      familyId,
+      email,
+      role,
+      InvitationStatus.Pending,
+      addDays(new Date(), 7),
+      null,
     );
     // invitation.domainEvents.push(new MemberInvited(invitation.id, familyId, email)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "MemberInvited" aquí
     return invitation;
