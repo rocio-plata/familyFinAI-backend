@@ -1,17 +1,10 @@
-import { randomUUID } from "crypto";
-
 // shared-kernel/domain/domain-event.ts
+import { randomUUID } from "node:crypto";
+
 abstract class DomainEvent {
   readonly occurredAt: Date = new Date();
-  readonly eventId: string = DomainEvent.generateId();
+  readonly eventId: string = randomUUID();
   abstract readonly eventName: string;
-
-
-
-  static generateId(): string {
-      return randomUUID();
-    }
 }
-
 
 export { DomainEvent };

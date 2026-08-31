@@ -8,6 +8,10 @@ class FamilyName {
     if (value.trim().length === 0 || value.length > 60) throw new InvalidFamilyNameError(value);
     return new FamilyName(value);
   }
+
+  toString(): string {
+    return this.value;
+  }
 }
 
 
