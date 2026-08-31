@@ -4,8 +4,10 @@
   "description": "> Smarter family finances.",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/platform/server.ts", 
-    "build": "tsc", 
+    "dev": "tsx watch src/platform/server.ts",
+    "lint": "biome check src tests",
+    "lint:fix": "biome check --write src tests",
+    "build": "tsc",
     "start": "node dist/platform/server.js",
     "test": "node --import tsx/esm --test 'tests/**/*.test.ts'"
   },
@@ -28,6 +30,7 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.11",
     "@types/node": "^26.4.0",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.18.1",

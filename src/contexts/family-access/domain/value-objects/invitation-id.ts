@@ -3,7 +3,6 @@ import { randomUUID } from "node:crypto";
 import { isValidUUID } from "../../../../shared-kernel/domain/uuid.js";
 import { InvalidInvitationIdError } from "../errors/invalid-invitation-id.error.js";
 
-
 class InvitationId {
   private constructor(private readonly value: string) {}
 

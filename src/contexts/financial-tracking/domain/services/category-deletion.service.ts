@@ -1,12 +1,10 @@
 // src/contexts/financial-tracking/domain/services/category-deletion.service.ts
-import { Category } from '../entities/category.js';
-import { CategoryHasAssociatedItemsError } from '../errors/category-has-associated-items.error.js';
-import type { FinancialItemRepository } from '../repositories/financial-item.repository.js';
+import type { Category } from "../entities/category.js";
+import { CategoryHasAssociatedItemsError } from "../errors/category-has-associated-items.error.js";
+import type { FinancialItemRepository } from "../repositories/financial-item.repository.js";
 
 class CategoryDeletionService {
-  constructor(
-    private readonly financialItemRepository: FinancialItemRepository,
-  ) {}
+  constructor(private readonly financialItemRepository: FinancialItemRepository) {}
 
   async delete(category: Category): Promise<void> {
     const itemCount = await this.financialItemRepository.countByCategory(category.id);

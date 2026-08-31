@@ -25,4 +25,4 @@ class InvalidTagIdError extends DomainError {
   }
 }
 
-export { InvalidFinancialItemIdError, InvalidCategoryIdError, InvalidTagIdError };
+export { InvalidCategoryIdError, InvalidFinancialItemIdError, InvalidTagIdError };

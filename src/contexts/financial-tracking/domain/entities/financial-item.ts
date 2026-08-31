@@ -1,14 +1,14 @@
 // src/contexts/financial-tracking/domain/entities/financial-item.ts
-import type { DomainEvent } from '../../../../shared-kernel/domain/domain-event.js';
-import { FinancialItemId } from '../value-objects/financial-item-id.js';
-import { FamilyId } from '../../../family-access/domain/value-objects/family-id.js';
-import { UserId } from '../../../family-access/domain/value-objects/user-id.js';
-import { FinancialItemType } from '../value-objects/financial-item-type.js';
-import { Money } from '../value-objects/money.js';
-import { CategoryAssignment } from '../value-objects/category-assignment.js';
-import { Title } from '../value-objects/title.js';
-import { Note } from '../value-objects/note.js';
-import { TransactionDate } from '../value-objects/transaction-date.js';
+import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
+import type { CategoryAssignment } from "../value-objects/category-assignment.js";
+import { FinancialItemId } from "../value-objects/financial-item-id.js";
+import { FinancialItemType } from "../value-objects/financial-item-type.js";
+import type { Money } from "../value-objects/money.js";
+import type { Note } from "../value-objects/note.js";
+import type { Title } from "../value-objects/title.js";
+import type { TransactionDate } from "../value-objects/transaction-date.js";
 
 interface CreateFinancialItemProps {
   familyId: FamilyId;
@@ -37,23 +37,43 @@ class FinancialItem {
     private readonly _createdAt: Date,
   ) {}
 
-  get id(): FinancialItemId { return this._id; }
-  get familyId(): FamilyId { return this._familyId; }
-  get recordedBy(): UserId { return this._recordedBy; }
-  get type(): FinancialItemType { return this._type; }
-  get amount(): Money { return this._amount; }
-  get categoryAssignment(): CategoryAssignment { return this._category; }
-  get title(): Title { return this._title; }
-  get note(): Note | null { return this._note; }
-  get occurredOn(): TransactionDate { return this._occurredOn; }
-  get createdAt(): Date { return this._createdAt; }
+  get id(): FinancialItemId {
+    return this._id;
+  }
+  get familyId(): FamilyId {
+    return this._familyId;
+  }
+  get recordedBy(): UserId {
+    return this._recordedBy;
+  }
+  get type(): FinancialItemType {
+    return this._type;
+  }
+  get amount(): Money {
+    return this._amount;
+  }
+  get categoryAssignment(): CategoryAssignment {
+    return this._category;
+  }
+  get title(): Title {
+    return this._title;
+  }
+  get note(): Note | null {
+    return this._note;
+  }
+  get occurredOn(): TransactionDate {
+    return this._occurredOn;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
 
-  static create(props: CreateFinancialItemProps): FinancialItem { 
+  static create(props: CreateFinancialItemProps): FinancialItem {
     const item = new FinancialItem(
       FinancialItemId.generate(),
       props.familyId,
       props.recordedBy,
-      props.type ?? FinancialItemType.Expense,   // valor por defecto, como definiste en la especificación
+      props.type ?? FinancialItemType.Expense, // valor por defecto, como definiste en la especificación
       props.amount,
       props.category,
       props.title,
@@ -92,5 +112,5 @@ class FinancialItem {
   }
 }
 
-export { FinancialItem };
 export type { CreateFinancialItemProps };
+export { FinancialItem };

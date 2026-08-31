@@ -4,7 +4,7 @@ enum InvitationStatus {
   Pending = "PENDING",
   Accepted = "ACCEPTED",
   Expired = "EXPIRED",
-  Revoked = "REVOKED"
+  Revoked = "REVOKED",
 }
 
 export { InvitationStatus };

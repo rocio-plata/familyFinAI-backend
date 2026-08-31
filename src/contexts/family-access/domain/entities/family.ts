@@ -1,17 +1,17 @@
 // contexts/family-access/domain/entities/family.ts
-import { Currency } from '../../../../shared-kernel/domain/currency.js';
-import { FamilyId } from '../value-objects/family-id.js';
-import { FamilyName } from '../value-objects/family-name.js';
-import { Member } from './member.js';
-import { UserId } from '../value-objects/user-id.js';
-import { EmailAddress } from '../value-objects/email-address.js';
-import { Role } from '../value-objects/role.js';
-import { Invitation } from './invitation.js';
-import type { DomainEvent } from '../../../../shared-kernel/domain/domain-event.js';
-import { FamilyCreated } from '../events/family-created.event.js';
-import { InsufficientRoleError} from '../errors/insufficient-role.error.js';
-import { CannotRemoveLastOwnerError } from '../errors/cannot-remove-last-owner.error.js';
-import { MemberNotFoundError } from '../errors/member-not-found.error.js';
+import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import { CannotRemoveLastOwnerError } from "../errors/cannot-remove-last-owner.error.js";
+import { InsufficientRoleError } from "../errors/insufficient-role.error.js";
+import { MemberNotFoundError } from "../errors/member-not-found.error.js";
+import { FamilyCreated } from "../events/family-created.event.js";
+import type { EmailAddress } from "../value-objects/email-address.js";
+import { FamilyId } from "../value-objects/family-id.js";
+import type { FamilyName } from "../value-objects/family-name.js";
+import type { Role } from "../value-objects/role.js";
+import type { UserId } from "../value-objects/user-id.js";
+import { Invitation } from "./invitation.js";
+import { Member } from "./member.js";
 
 class Family {
   private domainEvents: DomainEvent[] = [];
@@ -25,15 +25,34 @@ class Family {
     private readonly _createdAt: Date,
   ) {}
 
-  get id(): FamilyId { return this._id; }
-  get name(): FamilyName { return this._name; }
-  get members(): readonly Member[] { return this._members; }
-  get defaultCurrency(): Currency { return this._defaultCurrency; }
-  get createdBy(): UserId { return this._createdBy; }
-  get createdAt(): Date { return this._createdAt; }
+  get id(): FamilyId {
+    return this._id;
+  }
+  get name(): FamilyName {
+    return this._name;
+  }
+  get members(): readonly Member[] {
+    return this._members;
+  }
+  get defaultCurrency(): Currency {
+    return this._defaultCurrency;
+  }
+  get createdBy(): UserId {
+    return this._createdBy;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
 
   static create(name: FamilyName, creator: UserId): Family {
-    const family = new Family(FamilyId.generate(), name, [], Currency.default(), creator, new Date());
+    const family = new Family(
+      FamilyId.generate(),
+      name,
+      [],
+      Currency.default(),
+      creator,
+      new Date(),
+    );
     family._members.push(Member.createOwner(creator));
     family.domainEvents.push(new FamilyCreated(family.id)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "FamilyCreated" aquí
     return family;
@@ -44,7 +63,11 @@ class Family {
   }
 
   inviteMember(email: EmailAddress, role: Role): Invitation {
-    if (this._members.some((m) => /* comparar email requiere resolver userId → email en otro lugar */ false)) {
+    if (
+      this._members.some(
+        (m) => /* comparar email requiere resolver userId → email en otro lugar */ false,
+      )
+    ) {
       // invariante: no invitar a alguien que ya es miembro (pendiente de resolver la comparación)
     }
     return Invitation.create(this.id, email, role);
@@ -54,7 +77,9 @@ class Family {
     const remover = this.findMembership(removedBy);
     if (!remover?.role.canRemoveMembers()) throw new InsufficientRoleError();
 
-    const remainingOwners = this._members.filter((m) => m.role.isOwner() && !m.userId.equals(memberId));
+    const remainingOwners = this._members.filter(
+      (m) => m.role.isOwner() && !m.userId.equals(memberId),
+    );
     if (remainingOwners.length === 0) throw new CannotRemoveLastOwnerError();
 
     this._members = this._members.filter((m) => !m.userId.equals(memberId));
@@ -86,4 +111,5 @@ class Family {
     return events;
   }
 }
+
 export { Family };

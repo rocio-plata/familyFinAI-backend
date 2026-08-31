@@ -2,13 +2,11 @@
 import type { CategoryId } from "./category-id.js";
 import type { TagId } from "./tag-id.js";
 
-
 class CategoryAssignment {
   private constructor(
     private readonly _categoryId: CategoryId,
-    private readonly _tagId: TagId | null,     // el tag es opcional, como definiste
+    private readonly _tagId: TagId | null, // el tag es opcional, como definiste
   ) {}
-
 
   static of(categoryId: CategoryId, tagId: TagId | null = null): CategoryAssignment {
     // invariante pendiente: validar que tagId (si viene) pertenezca a categoryId

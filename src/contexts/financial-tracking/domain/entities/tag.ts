@@ -1,7 +1,8 @@
 // contexts/financial-tracking/domain/entities/tag.ts
-import  { TagStatus } from '../value-objects/tag-status.js';
-import { TagId } from '../value-objects/tag-id.js';
-import { TagName } from '../value-objects/tag-name.js';
+
+import { TagId } from "../value-objects/tag-id.js";
+import type { TagName } from "../value-objects/tag-name.js";
+import { TagStatus } from "../value-objects/tag-status.js";
 
 class Tag {
   private constructor(
@@ -11,10 +12,18 @@ class Tag {
     private _status: TagStatus,
   ) {}
 
-  get id(): TagId { return this._id; }
-  get name(): TagName { return this._name; }
-  get displayOrder(): number { return this._displayOrder; }
-  get status(): TagStatus { return this._status; }
+  get id(): TagId {
+    return this._id;
+  }
+  get name(): TagName {
+    return this._name;
+  }
+  get displayOrder(): number {
+    return this._displayOrder;
+  }
+  get status(): TagStatus {
+    return this._status;
+  }
 
   static create(name: TagName, displayOrder: number): Tag {
     return new Tag(TagId.generate(), name, displayOrder, TagStatus.Active);
