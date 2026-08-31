@@ -16,3 +16,5 @@ class CategoryDeletionService {
     category.markAsDeleted(); // el agregado solo cambia su propio estado
   }
 }
+
+export { CategoryDeletionService };

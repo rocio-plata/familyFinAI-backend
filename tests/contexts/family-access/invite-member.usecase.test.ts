@@ -1,21 +1,22 @@
 // tests/contexts/family-access/invite-member.usecase.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
 import { InviteMemberUseCase } from "../../../src/contexts/family-access/application/commands/invite-member.usecase.js";
-import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
-import { InMemoryInvitationRepository } from "../doubles/in-memory-invitation.repository.js";
-import { FakeUserDirectory } from "../doubles/fake-user-directory.js";
-import { FakeEventBus } from "./doubles/fake-event-bus.js";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { EmailAddress } from "../../../src/contexts/family-access/domain/value-objects/email-address.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { AlreadyMemberError } from "../../../src/contexts/family-access/domain/errors/already-member.error.js";
 import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
 import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
-import { AlreadyMemberError } from "../../../src/contexts/family-access/domain/errors/already-member.error.js";
 import { MemberInvited } from "../../../src/contexts/family-access/domain/events/member-invited.event.js";
+import { EmailAddress } from "../../../src/contexts/family-access/domain/value-objects/email-address.js";
+import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { FakeUserDirectory } from "./doubles/fake-user-directory.js";
+import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
+import { InMemoryInvitationRepository } from "./doubles/in-memory-invitation.repository.js";
 
 describe("InviteMemberUseCase", () => {
   let familyRepository: InMemoryFamilyRepository;
@@ -31,7 +32,12 @@ describe("InviteMemberUseCase", () => {
     invitationRepository = new InMemoryInvitationRepository();
     userDirectory = new FakeUserDirectory();
     eventBus = new FakeEventBus();
-    useCase = new InviteMemberUseCase(familyRepository, invitationRepository, userDirectory, eventBus);
+    useCase = new InviteMemberUseCase(
+      familyRepository,
+      invitationRepository,
+      userDirectory,
+      eventBus,
+    );
 
     ownerId = UserId.generate();
     family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
@@ -78,7 +84,8 @@ describe("InviteMemberUseCase", () => {
     await familyRepository.save(family);
 
     await assert.rejects(
-      () => useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId }),
+      () =>
+        useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId }),
       AlreadyMemberError,
     );
   });
@@ -88,7 +95,13 @@ describe("InviteMemberUseCase", () => {
     const nonExistentFamilyId = FamilyId.generate();
 
     await assert.rejects(
-      () => useCase.execute({ familyId: nonExistentFamilyId, email, role: Role.member(), invitedBy: ownerId }),
+      () =>
+        useCase.execute({
+          familyId: nonExistentFamilyId,
+          email,
+          role: Role.member(),
+          invitedBy: ownerId,
+        }),
       FamilyNotFoundError,
     );
   });
@@ -101,7 +114,8 @@ describe("InviteMemberUseCase", () => {
     const email = EmailAddress.of("nuevo@ejemplo.com");
 
     await assert.rejects(
-      () => useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: nonOwnerId }),
+      () =>
+        useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: nonOwnerId }),
       InsufficientRoleError,
     );
   });

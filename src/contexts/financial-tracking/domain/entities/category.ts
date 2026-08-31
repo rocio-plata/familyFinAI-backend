@@ -54,7 +54,7 @@ class Category {
     this._status = CategoryStatus.Active;
   }
 
-  reorderTags(orderedTagIds: TagId[]): void {
+  reorderTags(_orderedTagIds: TagId[]): void {
     // valida que orderedTagIds contenga exactamente los mismos IDs que this._tags,
     // luego reasigna displayOrder de cada Tag según su posición en el array
   }

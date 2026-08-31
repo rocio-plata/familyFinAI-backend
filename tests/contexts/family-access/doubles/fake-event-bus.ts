@@ -9,7 +9,10 @@ class FakeEventBus implements EventBus {
     this.publishedEvents.push(event);
   }
 
-  subscribe<T extends DomainEvent>(eventName: string, handler: (event: T) => Promise<void>): void {
+  subscribe<T extends DomainEvent>(
+    _eventName: string,
+    _handler: (event: T) => Promise<void>,
+  ): void {
     // no necesario para este test — el fake solo registra publicaciones
   }
 }

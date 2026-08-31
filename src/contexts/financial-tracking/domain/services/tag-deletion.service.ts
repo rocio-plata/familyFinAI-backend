@@ -20,3 +20,5 @@ class TagDeletionService {
     tag.deprecate(); // no necesita chequear items — deprecar siempre está permitido
   }
 }
+
+export { TagDeletionService };

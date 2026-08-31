@@ -3,10 +3,6 @@ import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidNoteError extends DomainError {
   readonly code = "FINANCIAL_TRACKING.INVALID_NOTE";
-
-  constructor(reason: string) {
-    super(reason);
-  }
 }
 
 export { InvalidNoteError };
