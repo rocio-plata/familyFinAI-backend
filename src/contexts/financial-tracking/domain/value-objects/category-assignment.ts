@@ -24,10 +24,13 @@ class CategoryAssignment {
   }
 
   equals(other: CategoryAssignment): boolean {
-    return (
-      this._categoryId.equals(other._categoryId) &&
-      ((this._tagId === null && other._tagId === null) || (this._tagId?.equals(other._tagId!) ?? false))
-    );
+    const tagsEqual =
+      this._tagId === null && other._tagId === null
+        ? true
+        : this._tagId !== null && other._tagId !== null
+          ? this._tagId.equals(other._tagId)
+          : false;
+    return this._categoryId.equals(other._categoryId) && tagsEqual;
   }
 }
 
