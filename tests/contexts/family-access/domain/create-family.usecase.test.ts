@@ -5,20 +5,18 @@ import { CreateFamilyUseCase } from "../../../../src/contexts/family-access/appl
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { InvalidFamilyNameError } from "../../../../src/contexts/family-access/domain/errors/invalid-family-name.error.js";
-import type { EventBus } from "../../../../src/shared-kernel/domain/event-bus.js";
-import type { DomainEvent } from "../../../../src/shared-kernel/domain/domain-event.js";
-
-const noopEventBus: EventBus = {
-  publish(_event: DomainEvent) { return Promise.resolve(); },
-};
+import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { FamilyCreated } from "../../../../src/contexts/family-access/domain/events/family-created.event.js";
 
 describe("CreateFamilyUseCase", () => {
   let repository: InMemoryFamilyRepository;
+  let eventBus: FakeEventBus;
   let useCase: CreateFamilyUseCase;
 
   beforeEach(() => {
     repository = new InMemoryFamilyRepository();
-    useCase = new CreateFamilyUseCase(repository, noopEventBus);
+    eventBus = new FakeEventBus();
+    useCase = new CreateFamilyUseCase(repository, eventBus);
   });
 
   test("crea una familia con el usuario creador como Owner", async () => {
@@ -62,5 +60,16 @@ describe("CreateFamilyUseCase", () => {
       () => useCase.execute({ name: tooLong, createdBy: UserId.generate() }),
       InvalidFamilyNameError,
     );
+  });
+
+
+   test("publica el evento FamilyCreated al crear la familia", async () => {
+    const family = await useCase.execute({ name: "Familia Pérez", createdBy: UserId.generate() });
+
+    assert.equal(eventBus.publishedEvents.length, 1);
+
+    const publishedEvent = eventBus.publishedEvents[0];
+    assert.ok(publishedEvent instanceof FamilyCreated);
+    assert.ok((publishedEvent as FamilyCreated).familyId.equals(family.id));
   });
 });

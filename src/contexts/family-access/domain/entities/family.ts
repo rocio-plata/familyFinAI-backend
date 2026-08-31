@@ -8,6 +8,7 @@ import { EmailAddress } from '../value-objects/email-address.js';
 import { Role } from '../value-objects/role.js';
 import { Invitation } from './invitation.js';
 import type { DomainEvent } from '../../../../shared-kernel/domain/domain-event.js';
+import { FamilyCreated } from '../events/family-created.event.js';
 import { InsufficientRoleError} from '../errors/insufficient-role.error.js';
 import { CannotRemoveLastOwnerError } from '../errors/cannot-remove-last-owner.error.js';
 import { MemberNotFoundError } from '../errors/member-not-found.error.js';
@@ -34,7 +35,7 @@ class Family {
   static create(name: FamilyName, creator: UserId): Family {
     const family = new Family(FamilyId.generate(), name, [], Currency.default(), creator, new Date());
     family._members.push(Member.createOwner(creator));
-   // family.domainEvents.push(new FamilyCreated(family.id)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "FamilyCreated" aquí
+    family.domainEvents.push(new FamilyCreated(family.id)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "FamilyCreated" aquí
     return family;
   }
 
