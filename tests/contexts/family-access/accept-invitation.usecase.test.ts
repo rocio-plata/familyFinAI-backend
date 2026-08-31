@@ -83,6 +83,9 @@ describe("AcceptInvitationUseCase", () => {
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
 
+    // limpiamos el bus de eventos antes de ejecutar el caso de uso para asegurarnos de que no haya eventos previos
+     invitation.pullDomainEvents();   // ← limpia el MemberInvited generado al crear la invitación
+
     await useCase.execute({ invitationId: invitation.id, acceptingUserId });
 
     assert.equal(eventBus.publishedEvents.length, 1);

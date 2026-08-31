@@ -6,7 +6,9 @@ class FakeEventBus implements EventBus {
   readonly publishedEvents: DomainEvent[] = [];
 
   async publish(event: DomainEvent): Promise<void> {
+    console.log("FakeEventBus.publish() llamado con:", event.eventName, "| total acumulado antes:", this.publishedEvents.length); 
     this.publishedEvents.push(event);
+    console.log("FakeEventBus.publish() total acumulado después:", this.publishedEvents.length);
   }
 
   subscribe<T extends DomainEvent>(
