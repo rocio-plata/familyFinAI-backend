@@ -2,10 +2,10 @@
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { CreateFamilyUseCase } from "../../../../src/contexts/family-access/application/commands/create-family.usecase.js";
-import { InvalidFamilyNameError } from "../../../../src/contexts/family-access/domain/errors/invalid-family-name.error.js";
-import { FamilyCreated } from "../../../../src/contexts/family-access/domain/events/family-created.event.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { CreateFamilyUseCase } from "../../../src/contexts/family-access/application/commands/create-family.usecase.js";
+import { InvalidFamilyNameError } from "../../../src/contexts/family-access/domain/errors/invalid-family-name.error.js";
+import { FamilyCreated } from "../../../src/contexts/family-access/domain/events/family-created.event.js";
+import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { FakeEventBus } from "./doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 

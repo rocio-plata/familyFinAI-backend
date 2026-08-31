@@ -65,7 +65,7 @@ class Family {
   inviteMember(email: EmailAddress, role: Role): Invitation {
     if (
       this._members.some(
-        (m) => /* comparar email requiere resolver userId → email en otro lugar */ false,
+        (_m) => /* comparar email requiere resolver userId → email en otro lugar */ false,
       )
     ) {
       // invariante: no invitar a alguien que ya es miembro (pendiente de resolver la comparación)
@@ -102,7 +102,11 @@ class Family {
   }
 
   addMemberFromInvitation(invitation: Invitation): void {
-    this._members.push(Member.create(invitation.invitedUserId, invitation.role));
+    this.addMemberFromInvitationData(invitation.invitedUserId, invitation.role);
+  }
+
+  addMemberFromInvitationData(userId: UserId, role: Role): void {
+    this._members.push(Member.create(userId, role));
   }
 
   pullDomainEvents(): DomainEvent[] {

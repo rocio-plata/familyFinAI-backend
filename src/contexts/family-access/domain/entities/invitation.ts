@@ -1,9 +1,11 @@
 // src/contexts/family-access/domain/entities/invitation.ts
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import { addDays } from "../../../../shared-kernel/domain/util/date.js";
 import { InvitationExpiredError } from "../errors/invitation-expired.error.js";
 import { InvitationNotAcceptedError } from "../errors/invitation-not-accepted.error.js";
 import { InvitationNotPendingError } from "../errors/invitation-not-pending.error.js";
+import { MemberInvited } from "../events/member-invited.event.js";
 import type { EmailAddress } from "../value-objects/email-address.js";
 import type { FamilyId } from "../value-objects/family-id.js";
 import { InvitationId } from "../value-objects/invitation-id.js";
@@ -57,7 +59,7 @@ class Invitation {
       addDays(new Date(), 7),
       null,
     );
-    // invitation.domainEvents.push(new MemberInvited(invitation.id, familyId, email)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "MemberInvited" aquí
+    invitation.domainEvents.push(new MemberInvited(familyId, email)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "MemberInvited" aquí
     return invitation;
   }
 
@@ -82,9 +84,3 @@ class Invitation {
 }
 
 export { Invitation };
-
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
-}

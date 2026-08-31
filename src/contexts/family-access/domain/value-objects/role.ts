@@ -18,6 +18,10 @@ class Role {
     return this.isOwner();
   }
 
+  canInviteMembers(): boolean {
+    return this.isOwner();
+  }
+
   equals(other: Role): boolean {
     return this.value === other.value;
   }

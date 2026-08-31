@@ -9,6 +9,14 @@ class EmailAddress {
     if (!EMAIL_REGEX.test(value)) throw new InvalidEmailError(value);
     return new EmailAddress(value.toLowerCase());
   }
+
+  toString(): string {
+    return this.value;
+  }
+
+  equals(other: EmailAddress): boolean {
+    return this.value === other.value;
+  }
 }
 
 export { EmailAddress };
