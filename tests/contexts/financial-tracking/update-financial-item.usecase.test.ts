@@ -37,10 +37,7 @@ describe("UpdateFinancialItemUseCase", () => {
       familyId,
       recordedBy: userId,
       amount: Money.of(5000, "CLP"),
-      category: CategoryAssignment.of(
-        CategoryId.generate(),
-        null,
-      ),
+      category: CategoryAssignment.of(CategoryId.generate(), null),
       title: Title.of("Compra de alimentos"),
       occurredOn: TransactionDate.of(new Date("2026-09-01")),
     });
