@@ -1,4 +1,14 @@
 // contexts/family-access/domain/value-objects/role.ts
+enum RoleType {
+  Owner = "OWNER",
+  Member = "MEMBER",
+}
+
+const ROLE_HIERARCHY: Record<RoleType, number> = {
+  [RoleType.Member]: 0,
+  [RoleType.Owner]: 1,
+};
+
 class Role {
   private constructor(private readonly value: RoleType) {}
 
@@ -22,14 +32,13 @@ class Role {
     return this.isOwner();
   }
 
+  satisfies(minRole: Role): boolean {
+    return ROLE_HIERARCHY[this.value] >= ROLE_HIERARCHY[minRole.value];
+  }
+
   equals(other: Role): boolean {
     return this.value === other.value;
   }
-}
-
-enum RoleType {
-  Owner = "OWNER",
-  Member = "MEMBER",
 }
 
 export { Role, RoleType };

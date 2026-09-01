@@ -1,10 +1,11 @@
 // platform/auth/tokens.ts
 
-import { RefreshToken } from "../../contexts/family-access/domain/entities/refresh-token.js";
-import { InvalidRefreshTokenError } from "../../contexts/family-access/domain/errors/invalid-refresh-token.error.js";
-import type { RefreshTokenRepository } from "../../contexts/family-access/domain/repositories/refresh-token.repository.js";
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
+import { InvalidRefreshTokenError } from "./errors/invalid-refresh-token.error.js";
+import { PossibleTokenTheftError } from "./errors/possible-token-theft.error.js";
 import type { JwtService } from "./jwt.js";
+import { RefreshToken } from "./refresh-token.js";
+import type { RefreshTokenRepository } from "./refresh-token.repository.js";
 
 interface TokenPair {
   accessToken: string;
@@ -20,7 +21,7 @@ class TokenService {
   async issueTokenPair(userId: UserId): Promise<TokenPair> {
     const accessToken = await this.jwtService.sign(userId, { expiresIn: "15m" });
 
-    const refreshToken = RefreshToken.generate(userId); // valor aleatorio opaco, no un JWT
+    const refreshToken = RefreshToken.generate(userId);
     await this.refreshTokenRepository.save(refreshToken);
 
     return { accessToken, refreshToken: refreshToken.value };
@@ -29,11 +30,21 @@ class TokenService {
   async refresh(rawRefreshToken: string): Promise<TokenPair> {
     const stored = await this.refreshTokenRepository.findByValue(rawRefreshToken);
 
-    if (!stored || stored.isExpired() || stored.isRevoked()) {
+    if (!stored) {
       throw new InvalidRefreshTokenError();
     }
 
-    // rotación: el refresh token usado se invalida y se emite uno nuevo
+    if (stored.isRevoked()) {
+      // el token ya había sido rotado antes — esto es un reuso, señal de robo
+      await this.refreshTokenRepository.revokeAllForUser(stored.userId);
+      throw new PossibleTokenTheftError();
+    }
+
+    if (stored.isExpired()) {
+      throw new InvalidRefreshTokenError();
+    }
+
+    // rotación normal: el token usado se invalida y se emite uno nuevo
     stored.revoke();
     await this.refreshTokenRepository.save(stored);
 
@@ -41,7 +52,9 @@ class TokenService {
   }
 
   async revokeAll(userId: UserId): Promise<void> {
-    // para "cerrar sesión en todos los dispositivos"
     await this.refreshTokenRepository.revokeAllForUser(userId);
   }
 }
+
+export type { TokenPair };
+export { TokenService };

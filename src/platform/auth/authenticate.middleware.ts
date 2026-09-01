@@ -1,25 +1,25 @@
 // platform/auth/authenticate.middleware.ts
-
-import type { FastifyReply } from "fastify/types/reply.js";
-import type { FastifyRequest } from "fastify/types/request.js";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
-import { jwtService } from "./jwt.js";
+import type { JwtService } from "./jwt.js";
 
-async function authenticate(request: FastifyRequest, reply: FastifyReply) {
-  const token = extractBearerToken(request.headers.authorization);
-  if (!token) return reply.code(401).send({ error: "Missing token" });
+function authenticate(jwtService: JwtService) {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const token = extractBearerToken(request.headers.authorization);
+    if (!token) return reply.code(401).send({ error: "Missing token" });
 
-  try {
-    const payload = await jwtService.verify(token);
-    (request as any).userId = UserId.of(payload.sub); // solo identidad, nada de familia todavía
-  } catch {
-    return reply.code(401).send({ error: "Invalid or expired token" });
-  }
+    try {
+      const payload = await jwtService.verify(token);
+      request.userId = UserId.of(payload.sub);
+    } catch {
+      return reply.code(401).send({ error: "Invalid or expired token" });
+    }
+  };
 }
 
-function extractBearerToken(authorization: string | undefined) {
-  if (!authorization) return undefined;
-  const parts = authorization.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") return undefined;
-  return parts[1];
+function extractBearerToken(header: string | undefined): string | null {
+  if (!header?.startsWith("Bearer ")) return null;
+  return header.slice("Bearer ".length);
 }
+
+export { authenticate };

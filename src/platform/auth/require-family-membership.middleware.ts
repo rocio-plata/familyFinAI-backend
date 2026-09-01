@@ -1,14 +1,15 @@
 // platform/auth/require-family-membership.middleware.ts
-
-import type { FastifyReply } from "fastify/types/reply.js";
-import type { FastifyRequest } from "fastify/types/request.js";
-
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { GetFamilyMembershipQuery } from "../../contexts/family-access/application/queries/get-family-membership.query.js";
 import { FamilyId } from "../../contexts/family-access/domain/value-objects/family-id.js";
-import type { RoleType } from "../../contexts/family-access/domain/value-objects/role.js";
+import type { Role } from "../../contexts/family-access/domain/value-objects/role.js";
 
-function requireFamilyMembership(minRole?: RoleType) {
+function requireFamilyMembership(
+  getFamilyMembershipQuery: GetFamilyMembershipQuery,
+  minRole?: Role,
+) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const familyId = FamilyId.of(request.params.familyId); // viene de la ruta, ej. /families/:familyId/items
+    const familyId = FamilyId.of((request.params as { familyId: string }).familyId);
 
     const membership = await getFamilyMembershipQuery.execute({
       userId: request.userId,
@@ -26,3 +27,5 @@ function requireFamilyMembership(minRole?: RoleType) {
     request.familyContext = { familyId, role: membership.role };
   };
 }
+
+export { requireFamilyMembership };

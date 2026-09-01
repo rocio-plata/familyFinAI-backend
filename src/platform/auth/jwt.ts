@@ -1,24 +1,26 @@
 // platform/auth/jwt.ts
-
 import { jwtVerify, SignJWT } from "jose";
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 
 interface JwtPayload {
-  sub: string; // UserId
-  email: string;
+  sub: string;
   iat: number;
   exp: number;
+}
+
+interface SignOptions {
+  expiresIn?: string;
 }
 
 class JwtService {
   constructor(private readonly secret: Uint8Array) {}
 
-  async sign(userId: UserId, email: string): Promise<string> {
-    return new SignJWT({ email })
+  async sign(userId: UserId, options?: SignOptions): Promise<string> {
+    return new SignJWT({})
       .setProtectedHeader({ alg: "HS256" })
       .setSubject(userId.toString())
       .setIssuedAt()
-      .setExpirationTime("7d")
+      .setExpirationTime(options?.expiresIn ?? "15m")
       .sign(this.secret);
   }
 
@@ -28,6 +30,5 @@ class JwtService {
   }
 }
 
-export const jwtService = new JwtService(
-  new TextEncoder().encode(process.env.JWT_SECRET || "default_secret"),
-);
+export type { JwtPayload };
+export { JwtService };
