@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
+import { CannotRemoveLastOwnerError } from "../../../../../src/contexts/family-access/domain/errors/cannot-remove-last-owner.error.js";
+import { InsufficientRoleError } from "../../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { MemberRoleChanged } from "../../../../../src/contexts/family-access/domain/events/member-role-changed.event.js";
 import { EmailAddress } from "../../../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { InvitationStatus } from "../../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
@@ -84,26 +87,54 @@ describe("Family", () => {
     });
   });
 
-  describe("changeRole()", () => {
-    it("cambia el rol de un miembro existente", () => {
-      const { family } = makeFamily();
-      const memberId = addMember(family, Role.member());
-      family.changeRole(memberId, Role.owner());
+  describe("Family.changeRole", () => {
+    it("cambia el rol de un miembro cuando quien ejecuta es Owner", () => {
+      const ownerId = UserId.generate();
+      const memberId = UserId.generate();
+      const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+      family.addMemberFromInvitationData(memberId, Role.member());
+
+      family.changeRole(memberId, Role.owner(), ownerId); // ← agregado el tercer argumento
+
       assert.ok(family.findMembership(memberId)?.role.isOwner());
     });
 
-    it("lanza CannotRemoveLastOwnerError al degradar al único owner", () => {
-      const { family, creator } = makeFamily();
-      assert.throws(() => family.changeRole(creator, Role.member()), {
-        name: "CannotRemoveLastOwnerError",
-      });
+    it("lanza InsufficientRoleError si quien cambia el rol no es Owner", () => {
+      const ownerId = UserId.generate();
+      const nonOwnerId = UserId.generate();
+      const targetId = UserId.generate();
+      const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+      family.addMemberFromInvitationData(nonOwnerId, Role.member());
+      family.addMemberFromInvitationData(targetId, Role.member());
+
+      assert.throws(
+        () => family.changeRole(targetId, Role.owner(), nonOwnerId), // ← nuevo caso, antes no existía esta validación
+        InsufficientRoleError,
+      );
     });
 
-    it("lanza MemberNotFoundError para un userId inexistente", () => {
-      const { family } = makeFamily();
-      assert.throws(() => family.changeRole(UserId.generate(), Role.member()), {
-        name: "MemberNotFoundError",
-      });
+    it("lanza CannotRemoveLastOwnerError al degradar al último Owner", () => {
+      const ownerId = UserId.generate();
+      const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+
+      assert.throws(
+        () => family.changeRole(ownerId, Role.member(), ownerId),
+        CannotRemoveLastOwnerError,
+      );
+    });
+
+    it("publica MemberRoleChanged al cambiar el rol", () => {
+      const ownerId = UserId.generate();
+      const memberId = UserId.generate();
+      const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+      family.addMemberFromInvitationData(memberId, Role.member());
+      family.pullDomainEvents();
+
+      family.changeRole(memberId, Role.owner(), ownerId);
+
+      const events = family.pullDomainEvents();
+      assert.equal(events.length, 1);
+      assert.ok(events[0] instanceof MemberRoleChanged);
     });
   });
 });
