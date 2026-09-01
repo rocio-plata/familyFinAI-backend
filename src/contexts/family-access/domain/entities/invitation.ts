@@ -76,6 +76,9 @@ class Invitation {
   }
 
   revoke(): void {
+    if (this._status !== InvitationStatus.Pending) {
+      throw new InvitationNotPendingError(this._id);
+    }
     this._status = InvitationStatus.Revoked;
   }
 
