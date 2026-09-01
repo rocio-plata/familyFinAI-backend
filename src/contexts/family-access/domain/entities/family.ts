@@ -6,6 +6,7 @@ import { InsufficientRoleError } from "../errors/insufficient-role.error.js";
 import { MemberNotFoundError } from "../errors/member-not-found.error.js";
 import { FamilyCreated } from "../events/family-created.event.js";
 import { MemberRemoved } from "../events/member-removed.event.js";
+import { MemberRoleChanged } from "../events/member-role-changed.event.js";
 import type { EmailAddress } from "../value-objects/email-address.js";
 import { FamilyId } from "../value-objects/family-id.js";
 import type { FamilyName } from "../value-objects/family-name.js";
@@ -90,7 +91,10 @@ class Family {
     this.domainEvents.push(new MemberRemoved(this.id, memberId, removedBy));
   }
 
-  changeRole(memberId: UserId, newRole: Role): void {
+  changeRole(memberId: UserId, newRole: Role, changedBy: UserId): void {
+    const changer = this.findMembership(changedBy);
+    if (!changer?.role.isOwner()) throw new InsufficientRoleError();
+
     const member = this.findMembership(memberId);
     if (!member) throw new MemberNotFoundError(memberId);
 
@@ -100,6 +104,7 @@ class Family {
     if (!wouldRemainOwner) throw new CannotRemoveLastOwnerError();
 
     member.changeRole(newRole);
+    this.domainEvents.push(new MemberRoleChanged(this.id, memberId, newRole, changedBy));
   }
 
   changeDefaultCurrency(newCurrency: Currency): void {
