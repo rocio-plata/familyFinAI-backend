@@ -2,6 +2,7 @@
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
+import { ItemRecorded } from "../events/item-recorded.event.js";
 import type { CategoryAssignment } from "../value-objects/category-assignment.js";
 import { FinancialItemId } from "../value-objects/financial-item-id.js";
 import { FinancialItemType } from "../value-objects/financial-item-type.js";
@@ -73,7 +74,7 @@ class FinancialItem {
       FinancialItemId.generate(),
       props.familyId,
       props.recordedBy,
-      props.type ?? FinancialItemType.Expense, // valor por defecto, como definiste en la especificación
+      props.type ?? FinancialItemType.Expense,
       props.amount,
       props.category,
       props.title,
@@ -82,18 +83,16 @@ class FinancialItem {
       new Date(),
     );
 
-    /** Dispara el evento ItemRecorded 
     item.domainEvents.push(
       new ItemRecorded(
         item.id,
-        item.familyId,
-        item.category.categoryId,
-        item.category.tagId,
-        item.amount,
+        item.familyId.toString(),
+        item.categoryAssignment.categoryId,
+        item.categoryAssignment.tagId,
+        item.amount.amount,
         item.type,
       ),
     );
-    */
     return item;
   }
 

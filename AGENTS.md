@@ -94,6 +94,7 @@ El proyecto sigue **Domain-Driven Design (DDD)** con **arquitectura hexagonal** 
 - ESM puro: todas las importaciones internas llevan extensión `.js` (aunque el fichero fuente sea `.ts`).
 - `"strict": true` implícito via `tsconfig.json`. No usar `any` sin justificación.
 - Preferir `type` sobre `interface` para estructuras de datos; usar `interface` solo cuando se necesite `implements`.
+- **Primer comentario obligatorio**: todo archivo `.ts` nuevo debe iniciar con `// <ruta-relativa-del-archivo>` (ejemplo: `// src/contexts/financial-tracking/domain/entities/financial-item.ts`).
 
 ### Nomenclatura
 | Elemento | Convención | Ejemplo |
@@ -201,6 +202,16 @@ export { ItemRecorded };
 - **Casos de uso**: tests unitarios con dobles (in-memory repositories + fake event bus).
 - **Infraestructura** (Drizzle repositories, rutas HTTP): tests de integración opcionales, no obligatorios para avanzar.
 
+### TDD — obligatorio para nuevas funcionalidades
+
+Toda nueva funcionalidad se implementa con **Test-Driven Development**:
+
+1. Escribir el test que falla (red).
+2. Implementar el mínimo código para que pase (green).
+3. Refactorizar manteniendo los tests en verde (refactor).
+
+No se acepta código de producción nuevo sin un test que lo respalde.
+
 ### Convenciones en los tests
 
 - Nombres de tests en **español**, descriptivos del comportamiento: `test("rechaza un nombre de familia vacío", ...)`.
@@ -254,6 +265,36 @@ npm run lint:fix     # Biome — corrige automáticamente
 npm run build        # Compila TypeScript a dist/
 npm start            # Arranca el build compilado
 ```
+
+---
+
+## Ramas de trabajo
+
+Cada nueva funcionalidad debe desarrollarse en una rama dedicada. **Antes de escribir cualquier código**, el agente debe preguntar al usuario:
+
+> ¿Cómo se llamará la rama para esta funcionalidad?
+
+Una vez confirmado el nombre, crear la rama y situarse en ella:
+
+```bash
+git checkout -b <nombre-de-rama>
+```
+
+No se debe implementar código nuevo directamente en `main` u otras ramas existentes.
+
+---
+
+## Verificaciones obligatorias tras cualquier cambio
+
+Antes de dar por terminada cualquier tarea, el agente **debe ejecutar y confirmar** que los tres comandos siguientes pasan sin errores:
+
+```bash
+npm test          # todos los tests deben estar en verde
+npm run build     # la compilación TypeScript debe completarse sin errores
+npm run lint      # Biome no debe reportar ningún problema
+```
+
+Si `npm run lint` reporta errores corregibles automáticamente, ejecutar `npm run lint:fix` y luego volver a verificar con `npm run lint`. No entregar código que falle en ninguno de estos tres pasos.
 
 ---
 
