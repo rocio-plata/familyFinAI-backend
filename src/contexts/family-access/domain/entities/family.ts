@@ -107,7 +107,10 @@ class Family {
     this.domainEvents.push(new MemberRoleChanged(this.id, memberId, newRole, changedBy));
   }
 
-  changeDefaultCurrency(newCurrency: Currency): void {
+  changeDefaultCurrency(newCurrency: Currency, changedBy: UserId): void {
+    const changer = this.findMembership(changedBy);
+    if (!changer?.role.isOwner()) throw new InsufficientRoleError();
+
     this._defaultCurrency = newCurrency;
   }
 
