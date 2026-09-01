@@ -3,6 +3,7 @@ import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { ItemAmountChanged } from "../events/item-amount-changed.event.js";
+import { ItemReclassified } from "../events/item-reclassified.event.js";
 import { ItemRecorded } from "../events/item-recorded.event.js";
 import type { CategoryAssignment } from "../value-objects/category-assignment.js";
 import { FinancialItemId } from "../value-objects/financial-item-id.js";
@@ -98,7 +99,18 @@ class FinancialItem {
   }
 
   reclassify(newCategory: CategoryAssignment): void {
+    const previousCategory = this._category;
     this._category = newCategory;
+    this.domainEvents.push(
+      new ItemReclassified(
+        this.id,
+        this.familyId.toString(),
+        previousCategory.categoryId,
+        newCategory.categoryId,
+        previousCategory.tagId,
+        newCategory.tagId,
+      ),
+    );
   }
 
   updateAmount(newAmount: Money): void {
