@@ -5,6 +5,7 @@ import { addDays } from "../../../../shared-kernel/domain/util/date.js";
 import { InvitationExpiredError } from "../errors/invitation-expired.error.js";
 import { InvitationNotAcceptedError } from "../errors/invitation-not-accepted.error.js";
 import { InvitationNotPendingError } from "../errors/invitation-not-pending.error.js";
+import { InvitationAccepted } from "../events/invitation-accepted.event.js";
 import { MemberInvited } from "../events/member-invited.event.js";
 import type { EmailAddress } from "../value-objects/email-address.js";
 import type { FamilyId } from "../value-objects/family-id.js";
@@ -69,7 +70,9 @@ class Invitation {
 
     this._status = InvitationStatus.Accepted;
     this._invitedUserId = acceptingUserId;
-    // this.domainEvents.push(new InvitationAccepted(this.id, this.familyId, acceptingUserId, this.role)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "InvitationAccepted" aquí
+    this.domainEvents.push(
+      new InvitationAccepted(this._id, this.familyId, acceptingUserId, this._role),
+    ); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "InvitationAccepted" aquí
   }
 
   revoke(): void {

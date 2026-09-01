@@ -1,0 +1,45 @@
+// contexts/family-access/application/commands/accept-invitation.usecase.ts
+
+import type { EventBus } from "../../../../platform/events/event-bus.js";
+import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
+import { InvitationNotFoundError } from "../../domain/errors/invitation-not-found.error.js";
+import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
+import type { InvitationRepository } from "../../domain/repositories/invitation.repository.js";
+import type { InvitationId } from "../../domain/value-objects/invitation-id.js";
+import type { UserId } from "../../domain/value-objects/user-id.js";
+
+interface AcceptInvitationCommand {
+  invitationId: InvitationId;
+  acceptingUserId: UserId;
+}
+
+class AcceptInvitationUseCase {
+  constructor(
+    private readonly familyRepository: FamilyRepository,
+    private readonly invitationRepository: InvitationRepository,
+    private readonly eventBus: EventBus,
+  ) {}
+
+  async execute(command: AcceptInvitationCommand): Promise<void> {
+    const invitation = await this.invitationRepository.findById(command.invitationId);
+    if (!invitation) throw new InvitationNotFoundError(command.invitationId);
+
+    invitation.accept(command.acceptingUserId);
+    await this.invitationRepository.save(invitation);
+
+    const family = await this.familyRepository.findById(invitation.familyId);
+    if (!family) throw new FamilyNotFoundError(invitation.familyId);
+
+    family.addMemberFromInvitationData(command.acceptingUserId, invitation.role);
+    // TODO: envolver ambos save() en una transacción de BD (Unit of Work) al conectar Drizzle/Postgres.
+    // Si falla este segundo save, queda inconsistencia: invitación Accepted sin miembro agregado.
+    await this.familyRepository.save(family);
+
+    for (const event of invitation.pullDomainEvents()) {
+      await this.eventBus.publish(event);
+    }
+  }
+}
+
+export type { AcceptInvitationCommand };
+export { AcceptInvitationUseCase };
