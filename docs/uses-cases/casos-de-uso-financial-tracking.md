@@ -3,7 +3,6 @@
 Documentación de los casos de uso del contexto `Financial Tracking` (core domain), previa a su implementación. Sigue la misma convención usada en `casos-de-uso-family-access.md`: **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
-Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
 ---
 
@@ -28,20 +27,20 @@ Registra un nuevo gasto o ingreso.
 
 ---
 
-### 2. UpdateFinancialItemAmount
+### 2. UpdateFinancialItem
 
-Corrige el monto de un movimiento ya registrado.
+Corrige uno o más campos editables de un movimiento ya registrado: monto, fecha, título y/o nota. Unificado en un solo caso de uso (en vez de uno por campo) para reflejar mejor un formulario de edición típico.
 
 - **Actor**: el `Member` que registró el item, o cualquier `Member` con permisos suficientes (a definir — ver pendientes).
 - **Precondiciones**: el `FinancialItem` existe y pertenece a la familia del solicitante.
-- **Entrada**: `familyId`, `itemId`, `newAmount`.
+- **Entrada**: `familyId`, `itemId`, y de forma opcional (solo se aplican los campos presentes): `amount`, `occurredOn`, `title`, `note`.
 - **Flujo principal**:
   1. Se busca el `FinancialItem`, validando que pertenezca a la familia.
-  2. Se valida `newAmount` como `Money`.
-  3. Se invoca `item.updateAmount(newAmount)`.
-  4. Se persiste.
-- **Errores posibles**: `FinancialItemNotFoundError`, `InvalidMoneyError`.
-- **Eventos disparados**: `ItemAmountChanged`.
+  2. Por cada campo presente en la entrada, se valida como su Value Object correspondiente (`Money`, `TransactionDate`, `Title`, `Note`) y se aplica con el método de la entidad que corresponda (`updateAmount`, `updateOccurredOn`, `updateTitle`, `updateNote`).
+  3. Se persiste.
+- **Errores posibles**: `FinancialItemNotFoundError`, `InvalidMoneyError`, `FutureTransactionDateError`, `InvalidTitleError`, `InvalidNoteError`.
+- **Eventos disparados**: `ItemAmountChanged` (solo si `amount` fue parte de la entrada). Los cambios de fecha/título/nota no disparan evento propio hoy — a confirmar si algún contexto necesitaría reaccionar a ellos (ver pendientes).
+- **Nota de diseño**: este caso de uso **no acepta** `categoryId`/`tagId`. Para cambiar la categoría de un movimiento, el frontend debe invocar `ReclassifyFinancialItem` por separado (dos llamadas si el usuario edita ambos tipos de campo a la vez). El command/DTO de entrada debe tiparse de forma estricta (sin campos opcionales de categoría) para que enviar esos campos por error sea rechazado por TypeScript o por el esquema de validación HTTP, en vez de ignorarse en silencio.
 
 ---
 
@@ -49,7 +48,7 @@ Corrige el monto de un movimiento ya registrado.
 
 Cambia la categoría y/o tag de un movimiento.
 
-- **Actor**: mismo criterio que `UpdateFinancialItemAmount`.
+- **Actor**: mismo criterio que `UpdateFinancialItem`.
 - **Precondiciones**: el `FinancialItem` existe; la nueva categoría existe, pertenece a la familia y está `Active`; si hay tag, pertenece a esa categoría y está `Active`.
 - **Entrada**: `familyId`, `itemId`, `newCategoryId`, `newTagId` (opcional).
 - **Flujo principal**:
@@ -66,7 +65,7 @@ Cambia la categoría y/o tag de un movimiento.
 
 Elimina un movimiento.
 
-- **Actor**: mismo criterio que `UpdateFinancialItemAmount`.
+- **Actor**: mismo criterio que `UpdateFinancialItem`.
 - **Precondiciones**: el `FinancialItem` existe y pertenece a la familia.
 - **Entrada**: `familyId`, `itemId`.
 - **Flujo principal**:
