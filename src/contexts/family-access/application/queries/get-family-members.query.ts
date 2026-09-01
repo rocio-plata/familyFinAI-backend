@@ -1,9 +1,10 @@
 // contexts/family-access/application/queries/get-family-members.query.ts
-import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
+
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
+import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
-import type { UserId } from "../../domain/value-objects/user-id.js";
 import type { Role } from "../../domain/value-objects/role.js";
+import type { UserId } from "../../domain/value-objects/user-id.js";
 
 interface GetFamilyMembersInput {
   familyId: FamilyId;
@@ -30,5 +31,5 @@ class GetFamilyMembersQuery {
   }
 }
 
-export { GetFamilyMembersQuery };
 export type { FamilyMemberDTO };
+export { GetFamilyMembersQuery };

@@ -1,14 +1,15 @@
 // tests/contexts/family-access/get-family-members.query.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
 import { GetFamilyMembersQuery } from "../../../src/contexts/family-access/application/queries/get-family-members.query.js";
-import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
+import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
+import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("GetFamilyMembersQuery", () => {
   let familyRepository: InMemoryFamilyRepository;
