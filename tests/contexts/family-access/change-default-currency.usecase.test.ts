@@ -1,17 +1,17 @@
 // tests/contexts/family-access/change-default-currency.usecase.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
 import { ChangeDefaultCurrencyUseCase } from "../../../src/contexts/family-access/application/commands/change-default-currency.usecase.js";
-import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
+import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { Currency } from "../../../src/shared-kernel/domain/currency.js";
-import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
-import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
 import { UnsupportedCurrencyError } from "../../../src/shared-kernel/errors/unsupported-currency.error.js";
+import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("ChangeDefaultCurrencyUseCase", () => {
   let familyRepository: InMemoryFamilyRepository;
@@ -37,7 +37,8 @@ describe("ChangeDefaultCurrencyUseCase", () => {
 
   test("rechaza si la familia no existe", async () => {
     await assert.rejects(
-      () => useCase.execute({ familyId: FamilyId.generate(), newCurrency: "USD", changedBy: ownerId }),
+      () =>
+        useCase.execute({ familyId: FamilyId.generate(), newCurrency: "USD", changedBy: ownerId }),
       FamilyNotFoundError,
     );
   });
