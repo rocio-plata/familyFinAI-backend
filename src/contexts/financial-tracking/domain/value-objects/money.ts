@@ -4,8 +4,8 @@ import { InvalidMoneyError } from "../errors/invalid-money.error.js";
 
 class Money {
   private constructor(
-    private readonly amount: number, // en la unidad mínima (p. ej. centavos) para evitar errores de coma flotante
-    private readonly currency: Currency,
+    private readonly _amount: number,
+    private readonly _currency: Currency,
   ) {}
 
   static of(amount: number, currency: Currency): Money {
@@ -13,14 +13,22 @@ class Money {
     return new Money(amount, currency);
   }
 
+  get amount(): number {
+    return this._amount;
+  }
+
+  get currency(): Currency {
+    return this._currency;
+  }
+
   add(other: Money): Money {
-    if (this.currency !== other.currency) throw new InvalidMoneyError();
-    return new Money(this.amount + other.amount, this.currency);
+    if (this._currency !== other._currency) throw new InvalidMoneyError();
+    return new Money(this._amount + other._amount, this._currency);
   }
 
   isGreaterThan(other: Money): boolean {
-    if (this.currency !== other.currency) throw new InvalidMoneyError();
-    return this.amount > other.amount;
+    if (this._currency !== other._currency) throw new InvalidMoneyError();
+    return this._amount > other._amount;
   }
 }
 

@@ -13,7 +13,7 @@ import { FamilyId } from "../../../src/contexts/family-access/domain/value-objec
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("ChangeMemberRoleUseCase", () => {

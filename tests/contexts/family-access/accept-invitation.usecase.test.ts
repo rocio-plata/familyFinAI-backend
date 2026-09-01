@@ -12,7 +12,7 @@ import { FamilyName } from "../../../src/contexts/family-access/domain/value-obj
 import { InvitationId } from "../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "./doubles/in-memory-invitation.repository.js";
 import { createPendingInvitation } from "./helpers/create-pending-invitation.js";
