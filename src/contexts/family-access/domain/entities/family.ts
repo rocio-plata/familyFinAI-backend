@@ -5,6 +5,7 @@ import { CannotRemoveLastOwnerError } from "../errors/cannot-remove-last-owner.e
 import { InsufficientRoleError } from "../errors/insufficient-role.error.js";
 import { MemberNotFoundError } from "../errors/member-not-found.error.js";
 import { FamilyCreated } from "../events/family-created.event.js";
+import { MemberRemoved } from "../events/member-removed.event.js";
 import type { EmailAddress } from "../value-objects/email-address.js";
 import { FamilyId } from "../value-objects/family-id.js";
 import type { FamilyName } from "../value-objects/family-name.js";
@@ -77,12 +78,14 @@ class Family {
     const remover = this.findMembership(removedBy);
     if (!remover?.role.canRemoveMembers()) throw new InsufficientRoleError();
 
-    const remainingOwners = this._members.filter(
-      (m) => m.role.isOwner() && !m.userId.equals(memberId),
-    );
+    const target = this.findMembership(memberId);
+    if (!target) throw new MemberNotFoundError(memberId);
+
+    const remainingOwners = this._members.filter((m) => m.role.isOwner() && !m.userId.equals(memberId));
     if (remainingOwners.length === 0) throw new CannotRemoveLastOwnerError();
 
     this._members = this._members.filter((m) => !m.userId.equals(memberId));
+    this.domainEvents.push(new MemberRemoved(this.id, memberId, removedBy));
   }
 
   changeRole(memberId: UserId, newRole: Role): void {
