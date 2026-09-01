@@ -1,22 +1,21 @@
 // tests/contexts/family-access/accept-invitation.usecase.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
 import { AcceptInvitationUseCase } from "../../../src/contexts/family-access/application/commands/accept-invitation.usecase.js";
-import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
-import { InMemoryInvitationRepository } from "./doubles/in-memory-invitation.repository.js";
-import { FakeEventBus } from "./doubles/fake-event-bus.js";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { InvitationNotFoundError } from "../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
+import { InvitationNotPendingError } from "../../../src/contexts/family-access/domain/errors/invitation-not-pending.error.js";
+import { InvitationAccepted } from "../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
 import { EmailAddress } from "../../../src/contexts/family-access/domain/value-objects/email-address.js";
+import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { InvitationId } from "../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { InvitationId } from "../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
-import { InvitationNotPendingError } from "../../../src/contexts/family-access/domain/errors/invitation-not-pending.error.js";
-import { InvitationExpiredError } from "../../../src/contexts/family-access/domain/errors/invitation-expired.error.js";
-import { InvitationNotFoundError } from "../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
-import { InvitationAccepted } from "../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
+import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
+import { InMemoryInvitationRepository } from "./doubles/in-memory-invitation.repository.js";
 import { createPendingInvitation } from "./helpers/create-pending-invitation.js";
-
 
 describe("AcceptInvitationUseCase", () => {
   let familyRepository: InMemoryFamilyRepository;
@@ -38,7 +37,11 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("agrega al usuario como miembro de la familia con el rol de la invitación", async () => {
-    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(
+      family,
+      EmailAddress.of("nuevo@ejemplo.com"),
+      Role.member(),
+    );
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
 
@@ -51,7 +54,11 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("marca la invitación como aceptada", async () => {
-    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(
+      family,
+      EmailAddress.of("nuevo@ejemplo.com"),
+      Role.member(),
+    );
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
 
@@ -63,13 +70,21 @@ describe("AcceptInvitationUseCase", () => {
 
   test("rechaza si la invitación no existe", async () => {
     await assert.rejects(
-      () => useCase.execute({ invitationId: InvitationId.generate(), acceptingUserId: UserId.generate() }),
+      () =>
+        useCase.execute({
+          invitationId: InvitationId.generate(),
+          acceptingUserId: UserId.generate(),
+        }),
       InvitationNotFoundError,
     );
   });
 
   test("rechaza si la invitación ya fue aceptada previamente", async () => {
-    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(
+      family,
+      EmailAddress.of("nuevo@ejemplo.com"),
+      Role.member(),
+    );
     const firstAcceptingUserId = UserId.generate();
     invitation.accept(firstAcceptingUserId);
     await invitationRepository.save(invitation);
@@ -81,7 +96,11 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("publica el evento InvitationAccepted", async () => {
-    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(
+      family,
+      EmailAddress.of("nuevo@ejemplo.com"),
+      Role.member(),
+    );
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
 
