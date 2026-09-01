@@ -30,6 +30,8 @@ class AcceptInvitationUseCase {
     if (!family) throw new FamilyNotFoundError(invitation.familyId);
 
     family.addMemberFromInvitationData(command.acceptingUserId, invitation.role);
+    // TODO: envolver ambos save() en una transacción de BD (Unit of Work) al conectar Drizzle/Postgres.
+    // Si falla este segundo save, queda inconsistencia: invitación Accepted sin miembro agregado.
     await this.familyRepository.save(family);
 
     for (const event of invitation.pullDomainEvents()) {

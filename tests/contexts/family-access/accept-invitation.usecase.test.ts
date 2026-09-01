@@ -15,6 +15,8 @@ import { InvitationNotPendingError } from "../../../src/contexts/family-access/d
 import { InvitationExpiredError } from "../../../src/contexts/family-access/domain/errors/invitation-expired.error.js";
 import { InvitationNotFoundError } from "../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
 import { InvitationAccepted } from "../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
+import { createPendingInvitation } from "./helpers/create-pending-invitation.js";
+
 
 describe("AcceptInvitationUseCase", () => {
   let familyRepository: InMemoryFamilyRepository;
@@ -36,7 +38,7 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("agrega al usuario como miembro de la familia con el rol de la invitación", async () => {
-    const invitation = family.inviteMember(EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
 
@@ -49,7 +51,7 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("marca la invitación como aceptada", async () => {
-    const invitation = family.inviteMember(EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
 
@@ -67,7 +69,7 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("rechaza si la invitación ya fue aceptada previamente", async () => {
-    const invitation = family.inviteMember(EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
     const firstAcceptingUserId = UserId.generate();
     invitation.accept(firstAcceptingUserId);
     await invitationRepository.save(invitation);
@@ -79,12 +81,9 @@ describe("AcceptInvitationUseCase", () => {
   });
 
   test("publica el evento InvitationAccepted", async () => {
-    const invitation = family.inviteMember(EmailAddress.of("nuevo@ejemplo.com"), Role.member());
+    const invitation = createPendingInvitation(family, EmailAddress.of("nuevo@ejemplo.com"), Role.member());
     await invitationRepository.save(invitation);
     const acceptingUserId = UserId.generate();
-
-    // limpiamos el bus de eventos antes de ejecutar el caso de uso para asegurarnos de que no haya eventos previos
-     invitation.pullDomainEvents();   // ← limpia el MemberInvited generado al crear la invitación
 
     await useCase.execute({ invitationId: invitation.id, acceptingUserId });
 
