@@ -65,6 +65,16 @@ describe("FinancialItem", () => {
       item.reclassify(newCategory);
       assert.ok(item.categoryAssignment.equals(newCategory));
     });
+
+    it("dispara ItemReclassified", () => {
+      const item = FinancialItem.create(makeProps());
+      item.pullDomainEvents();
+      const newCategory = CategoryAssignment.of(CategoryId.generate());
+      item.reclassify(newCategory);
+      const events = item.pullDomainEvents();
+      assert.equal(events.length, 1);
+      assert.equal(events[0]?.eventName, "financial-tracking.item-reclassified");
+    });
   });
 
   describe("updateAmount()", () => {
