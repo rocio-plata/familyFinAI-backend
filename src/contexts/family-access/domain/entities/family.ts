@@ -81,7 +81,9 @@ class Family {
     const target = this.findMembership(memberId);
     if (!target) throw new MemberNotFoundError(memberId);
 
-    const remainingOwners = this._members.filter((m) => m.role.isOwner() && !m.userId.equals(memberId));
+    const remainingOwners = this._members.filter(
+      (m) => m.role.isOwner() && !m.userId.equals(memberId),
+    );
     if (remainingOwners.length === 0) throw new CannotRemoveLastOwnerError();
 
     this._members = this._members.filter((m) => !m.userId.equals(memberId));

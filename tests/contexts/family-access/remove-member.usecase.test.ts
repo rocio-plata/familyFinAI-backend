@@ -1,19 +1,20 @@
 // tests/contexts/family-access/remove-member.usecase.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
 import { RemoveMemberUseCase } from "../../../src/contexts/family-access/application/commands/remove-member.usecase.js";
-import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
-import { FakeEventBus } from "./doubles/fake-event-bus.js";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
+import { CannotRemoveLastOwnerError } from "../../../src/contexts/family-access/domain/errors/cannot-remove-last-owner.error.js";
+import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
+import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { MemberNotFoundError } from "../../../src/contexts/family-access/domain/errors/member-not-found.error.js";
+import { MemberRemoved } from "../../../src/contexts/family-access/domain/events/member-removed.event.js";
+import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
-import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
-import { CannotRemoveLastOwnerError } from "../../../src/contexts/family-access/domain/errors/cannot-remove-last-owner.error.js";
-import { MemberNotFoundError } from "../../../src/contexts/family-access/domain/errors/member-not-found.error.js";
-import { MemberRemoved } from "../../../src/contexts/family-access/domain/events/member-removed.event.js";
+import { FakeEventBus } from "./doubles/fake-event-bus.js";
+import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("RemoveMemberUseCase", () => {
   let familyRepository: InMemoryFamilyRepository;
@@ -46,7 +47,12 @@ describe("RemoveMemberUseCase", () => {
 
   test("rechaza si la familia no existe", async () => {
     await assert.rejects(
-      () => useCase.execute({ familyId: FamilyId.generate(), memberId: UserId.generate(), removedBy: ownerId }),
+      () =>
+        useCase.execute({
+          familyId: FamilyId.generate(),
+          memberId: UserId.generate(),
+          removedBy: ownerId,
+        }),
       FamilyNotFoundError,
     );
   });
@@ -73,7 +79,8 @@ describe("RemoveMemberUseCase", () => {
 
   test("rechaza si el miembro a remover no existe en la familia", async () => {
     await assert.rejects(
-      () => useCase.execute({ familyId: family.id, memberId: UserId.generate(), removedBy: ownerId }),
+      () =>
+        useCase.execute({ familyId: family.id, memberId: UserId.generate(), removedBy: ownerId }),
       MemberNotFoundError,
     );
   });
