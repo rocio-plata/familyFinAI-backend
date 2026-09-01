@@ -3,7 +3,7 @@ import type { UserId } from "../../contexts/family-access/domain/value-objects/u
 
 class RefreshToken {
   private constructor(
-    private readonly value: string,        // string aleatorio, no JWT — ej. crypto.randomBytes(32).toString("hex")
+    private readonly value: string, // string aleatorio, no JWT — ej. crypto.randomBytes(32).toString("hex")
     private readonly userId: UserId,
     private readonly expiresAt: Date,
     private revokedAt: Date | null,
@@ -16,7 +16,13 @@ class RefreshToken {
     return new RefreshToken(value, userId, expiresAt, null);
   }
 
-  isExpired(): boolean { return this.expiresAt < new Date(); }
-  isRevoked(): boolean { return this.revokedAt !== null; }
-  revoke(): void { this.revokedAt = new Date(); }
+  isExpired(): boolean {
+    return this.expiresAt < new Date();
+  }
+  isRevoked(): boolean {
+    return this.revokedAt !== null;
+  }
+  revoke(): void {
+    this.revokedAt = new Date();
+  }
 }

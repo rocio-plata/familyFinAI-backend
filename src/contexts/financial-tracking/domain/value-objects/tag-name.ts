@@ -1,4 +1,6 @@
 // contexts/financial-tracking/domain/value-objects/tag-name.js
+import { InvalidTagNameError } from "../errors/invalid-tag-name.error.js";
+
 const MAX_TAG_NAME_LENGTH = 30;
 
 class TagName {

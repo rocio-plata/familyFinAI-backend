@@ -1,4 +1,6 @@
 // contexts/financial-tracking/domain/value-objects/category-name.ts
+import { InvalidCategoryNameError } from "../errors/invalid-category-name.error.js";
+
 const MAX_CATEGORY_NAME_LENGTH = 50;
 
 class CategoryName {
@@ -12,7 +14,9 @@ class CategoryName {
     }
 
     if (trimmed.length > MAX_CATEGORY_NAME_LENGTH) {
-      throw new InvalidCategoryNameError(`El nombre no puede superar ${MAX_CATEGORY_NAME_LENGTH} caracteres`);
+      throw new InvalidCategoryNameError(
+        `El nombre no puede superar ${MAX_CATEGORY_NAME_LENGTH} caracteres`,
+      );
     }
 
     return new CategoryName(trimmed);

@@ -1,6 +1,7 @@
 // contexts/financial-tracking/domain/value-objects/category-id.ts
 import { randomUUID } from "node:crypto";
 import { isValidUUID } from "../../../../shared-kernel/domain/uuid.js";
+import { InvalidCategoryIdError } from "../errors/invalid-id.error.js";
 
 class CategoryId {
   private constructor(private readonly value: string) {}

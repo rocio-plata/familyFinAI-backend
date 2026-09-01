@@ -1,18 +1,45 @@
 // contexts/financial-tracking/domain/entities/tag.ts
-import  { TagStatus } from '../value-objects/tag-status.js';
-import { TagId } from '../value-objects/tag-id.js';
-import { TagName } from '../value-objects/tag-name.js';
+
+import { TagId } from "../value-objects/tag-id.js";
+import type { TagName } from "../value-objects/tag-name.js";
+import { TagStatus } from "../value-objects/tag-status.js";
 
 class Tag {
   private constructor(
-    private readonly id: TagId,
-    private name: TagName,
-    private displayOrder: number,
-    private status: TagStatus,   // Active | Deprecated — misma lógica que Category
+    private readonly _id: TagId,
+    private _name: TagName,
+    private _displayOrder: number,
+    private _status: TagStatus,
   ) {}
 
-  rename(newName: TagName): void { }
-  deprecate(): void { this.status = TagStatus.Deprecated; }
+  get id(): TagId {
+    return this._id;
+  }
+  get name(): TagName {
+    return this._name;
+  }
+  get displayOrder(): number {
+    return this._displayOrder;
+  }
+  get status(): TagStatus {
+    return this._status;
+  }
+
+  static create(name: TagName, displayOrder: number): Tag {
+    return new Tag(TagId.generate(), name, displayOrder, TagStatus.Active);
+  }
+
+  rename(newName: TagName): void {
+    this._name = newName;
+  }
+
+  changeDisplayOrder(newOrder: number): void {
+    this._displayOrder = newOrder;
+  }
+
+  deprecate(): void {
+    this._status = TagStatus.Deprecated;
+  }
 }
 
 export { Tag };

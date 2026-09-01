@@ -1,10 +1,10 @@
 // platform/auth/tokens.ts
-import { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
-import { JwtService } from "./jwt.js";
-import { RefreshTokenRepository } from "../../contexts/family-access/domain/repositories/refresh-token.repository.js";
+
 import { RefreshToken } from "../../contexts/family-access/domain/entities/refresh-token.js";
 import { InvalidRefreshTokenError } from "../../contexts/family-access/domain/errors/invalid-refresh-token.error.js";
-
+import type { RefreshTokenRepository } from "../../contexts/family-access/domain/repositories/refresh-token.repository.js";
+import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
+import type { JwtService } from "./jwt.js";
 
 interface TokenPair {
   accessToken: string;
@@ -20,7 +20,7 @@ class TokenService {
   async issueTokenPair(userId: UserId): Promise<TokenPair> {
     const accessToken = await this.jwtService.sign(userId, { expiresIn: "15m" });
 
-    const refreshToken = RefreshToken.generate(userId);   // valor aleatorio opaco, no un JWT
+    const refreshToken = RefreshToken.generate(userId); // valor aleatorio opaco, no un JWT
     await this.refreshTokenRepository.save(refreshToken);
 
     return { accessToken, refreshToken: refreshToken.value };

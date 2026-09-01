@@ -1,0 +1,12 @@
+// shared-kernel/errors/domain-error.ts
+abstract class DomainError extends Error {
+  abstract readonly code: string;
+
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+export { DomainError };

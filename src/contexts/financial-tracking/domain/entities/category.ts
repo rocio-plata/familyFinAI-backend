@@ -1,39 +1,66 @@
 // contexts/financial-tracking/domain/entities/category.ts
 
-import { CategoryId } from '../value-objects/category-id.js';
-import { FamilyId } from '../../../family-access/domain/value-objects/family-id.js';
-import { CategoryName } from '../value-objects/category-name.js';
-import { CategoryStatus } from '../value-objects/category-status.js';
-import { TagName } from '../value-objects/tag-name.js';
-import { TagId } from '../value-objects/tag-id.js';
-import { Tag } from './tag.js';
-
+import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { CategoryId } from "../value-objects/category-id.js";
+import type { CategoryName } from "../value-objects/category-name.js";
+import { CategoryStatus } from "../value-objects/category-status.js";
+import type { TagId } from "../value-objects/tag-id.js";
+import type { TagName } from "../value-objects/tag-name.js";
+import { Tag } from "./tag.js";
 
 class Category {
   private constructor(
-    private readonly id: CategoryId,
-    private readonly familyId: FamilyId,
-    private name: CategoryName,
-    private status: CategoryStatus,
-    private readonly tags: Tag[], // orden = displayOrder
+    private readonly _id: CategoryId,
+    private readonly _familyId: FamilyId,
+    private _name: CategoryName,
+    private _status: CategoryStatus,
+    private _tags: Tag[],
   ) {}
 
+  get id(): CategoryId {
+    return this._id;
+  }
+  get familyId(): FamilyId {
+    return this._familyId;
+  }
+  get name(): CategoryName {
+    return this._name;
+  }
+  get status(): CategoryStatus {
+    return this._status;
+  }
+  get tags(): readonly Tag[] {
+    return this._tags;
+  } // readonly array — evita que muten la lista desde fuera
+
+  static create(familyId: FamilyId, name: CategoryName): Category {
+    return new Category(CategoryId.generate(), familyId, name, CategoryStatus.Active, []);
+  }
+
+  addTag(name: TagName): void {
+    const nextOrder = this.tags.length;
+    this._tags.push(Tag.create(name, nextOrder));
+  }
+
+  rename(newName: CategoryName): void {
+    this._name = newName;
+  }
+
   deprecate(): void {
-    this.status = CategoryStatus.Deprecated;
+    this._status = CategoryStatus.Deprecated;
   }
 
   reactivate(): void {
-    this.status = CategoryStatus.Active;
+    this._status = CategoryStatus.Active;
   }
 
-   addTag(name: TagName): void {
-    const nextOrder = this.tags.length; // se añade al final por defecto
-    this.tags.push(Tag.create(name, nextOrder));
+  reorderTags(_orderedTagIds: TagId[]): void {
+    // valida que orderedTagIds contenga exactamente los mismos IDs que this._tags,
+    // luego reasigna displayOrder de cada Tag según su posición en el array
   }
 
-  reorderTags(orderedTagIds: TagId[]): void {
-    // valida que orderedTagIds contenga exactamente los mismos IDs que this.tags
-    // y reasigna displayOrder según la posición en el array
+  markAsDeleted(): void {
+    // llamado únicamente por CategoryDeletionService tras confirmar que no tiene items asociados
   }
 }
 

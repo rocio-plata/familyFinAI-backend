@@ -1,9 +1,10 @@
 // platform/auth/jwt.ts
-import { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
-import { SignJWT, jwtVerify } from "jose";
+
+import { jwtVerify, SignJWT } from "jose";
+import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 
 interface JwtPayload {
-  sub: string;        // UserId
+  sub: string; // UserId
   email: string;
   iat: number;
   exp: number;
@@ -27,4 +28,6 @@ class JwtService {
   }
 }
 
-export const jwtService = new JwtService(new TextEncoder().encode(process.env.JWT_SECRET || "default_secret"));
+export const jwtService = new JwtService(
+  new TextEncoder().encode(process.env.JWT_SECRET || "default_secret"),
+);
