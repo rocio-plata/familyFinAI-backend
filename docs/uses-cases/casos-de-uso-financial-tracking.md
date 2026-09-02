@@ -119,13 +119,16 @@ Reactiva una categoría previamente deprecada, permitiendo volver a usarla en nu
 
 Renombra una categoría existente.
 
-- **Entrada**: `familyId`, `categoryId`, `newName`.
+- **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
+- **Precondiciones**: la `Category` existe y pertenece a la familia; quien solicita es `Owner`; el nuevo nombre no colisiona con otra categoría de la familia (comparación case-insensitive, sin importar su estado `Active` o `Deprecated` — mismo criterio que `CreateCategory`).
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `newName`.
 - **Flujo principal**:
-  1. Se busca la `Category`.
-  2. Se valida `newName` y que no colisione con otra categoría existente.
-  3. Se invoca `category.rename(newName)`.
-  4. Se persiste.
-- **Errores posibles**: `CategoryNotFoundError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
+  1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
+  2. Se busca la `Category`, validando que pertenezca a la familia.
+  3. Se valida `newName` y que no colisione con otra categoría existente de la familia (excluyendo a la propia).
+  4. Se invoca `category.rename(newName)`.
+  5. Se persiste.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: ninguno definido — a evaluar si `Reporting`/`AI Assistance` necesitan reaccionar a un renombrado (probablemente sí, para no mostrar el nombre viejo en reportes históricos o en `MerchantCategoryHistory`).
 
 ---
@@ -252,7 +255,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
 | `FinancialItemNotFoundError` | UpdateFinancialItemAmount, ReclassifyFinancialItem, DeleteFinancialItem | ❌ nuevo |
-| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory | ❌ nuevo |
+| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory | ❌ nuevo |
 | `CategoryNotFoundError` | Varios | ❌ nuevo |
 | `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
 | `TagNotFoundError` | Varios | ❌ nuevo |
@@ -267,7 +270,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido** para `CreateCategory`: restringido a `Owner` (ver caso de uso 5); pendiente definir el resto (`RenameCategory`, `DeleteCategory`, `DeprecateCategory`, tags, etc.).
+1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido** para `CreateCategory`, `ReactivateCategory` y `RenameCategory`: restringidos a `Owner`; pendiente definir el resto (`DeleteCategory`, `DeprecateCategory`, tags, etc.).
 2. **Eventos de renombrado**: `RenameCategory`/`RenameTag` no tienen evento definido en el catálogo original del proyecto — hay que decidir si `Reporting` y `AI Assistance` (`MerchantCategoryHistory`) necesitan enterarse de un cambio de nombre para no mostrar/usar el nombre viejo.
 3. **`DeleteCategory`/`DeleteTag` sin evento**: a confirmar si esto es correcto (por definición, una categoría eliminable nunca tuvo items, así que no debería haber nada que revertir en otros contextos) o si igual conviene emitir un evento por auditoría.
 4. **`AddTagToCategory` sobre categoría deprecada**: ¿se permite agregar tags nuevos a una categoría ya deprecada, o debería rechazarse?
