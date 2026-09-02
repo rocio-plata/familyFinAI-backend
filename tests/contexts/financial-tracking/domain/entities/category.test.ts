@@ -44,6 +44,15 @@ describe("Category", () => {
       assert.equal(cat.tags[0]?.displayOrder, 0);
       assert.equal(cat.tags[1]?.displayOrder, 1);
     });
+
+    it("dispara TagCreated", () => {
+      const cat = Category.create(familyId, catName);
+      cat.pullDomainEvents();
+      cat.addTag(TagName.of("Supermercado"));
+      const events = cat.pullDomainEvents();
+      assert.equal(events.length, 1);
+      assert.equal(events[0]?.eventName, "financial-tracking.tag-created");
+    });
   });
 
   describe("rename()", () => {

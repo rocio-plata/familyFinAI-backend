@@ -5,6 +5,7 @@ import type { FamilyId } from "../../../family-access/domain/value-objects/famil
 import { CategoryCreated } from "../events/category-created.event.js";
 import { CategoryDeprecated } from "../events/category-deprecated.event.js";
 import { CategoryReactivated } from "../events/category-reactivated.event.js";
+import { TagCreated } from "../events/tag-created.event.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import type { CategoryName } from "../value-objects/category-name.js";
 import { CategoryStatus } from "../value-objects/category-status.js";
@@ -55,7 +56,9 @@ class Category {
 
   addTag(name: TagName): void {
     const nextOrder = this.tags.length;
-    this._tags.push(Tag.create(name, nextOrder));
+    const tag = Tag.create(name, nextOrder);
+    this._tags.push(tag);
+    this.domainEvents.push(new TagCreated(tag.id, this.id, this.familyId.toString()));
   }
 
   rename(newName: CategoryName): void {
