@@ -2,6 +2,7 @@
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { InvalidTagOrderError } from "../errors/invalid-tag-order.error.js";
 import { CategoryCreated } from "../events/category-created.event.js";
 import { CategoryDeprecated } from "../events/category-deprecated.event.js";
 import { CategoryReactivated } from "../events/category-reactivated.event.js";
@@ -75,9 +76,24 @@ class Category {
     this.domainEvents.push(new CategoryReactivated(this.id, this.familyId.toString()));
   }
 
-  reorderTags(_orderedTagIds: TagId[]): void {
-    // valida que orderedTagIds contenga exactamente los mismos IDs que this._tags,
-    // luego reasigna displayOrder de cada Tag según su posición en el array
+  reorderTags(orderedTagIds: TagId[]): void {
+    const currentIds = this._tags.map((tag) => tag.id);
+    const sameLength = orderedTagIds.length === currentIds.length;
+    const noDuplicates =
+      new Set(orderedTagIds.map((id) => id.toString())).size === orderedTagIds.length;
+    const sameSet =
+      sameLength &&
+      noDuplicates &&
+      currentIds.every((id) => orderedTagIds.some((orderedId) => orderedId.equals(id)));
+
+    if (!sameSet) {
+      throw new InvalidTagOrderError();
+    }
+
+    for (const [index, tagId] of orderedTagIds.entries()) {
+      const tag = this._tags.find((t) => t.id.equals(tagId));
+      tag?.changeDisplayOrder(index);
+    }
   }
 
   markAsDeleted(): void {

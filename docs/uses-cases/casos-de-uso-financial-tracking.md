@@ -189,12 +189,14 @@ Agrega un tag nuevo dentro de una categoría.
 
 Reordena los tags de una categoría según la preferencia manual del usuario.
 
+- **Actor**: cualquier `Member` de la familia (mismo criterio que `AddTagToCategory` — es una preferencia de organización personal/diaria, no administrativa).
+- **Precondiciones**: la `Category` existe y pertenece a la familia; `orderedTagIds` contiene exactamente los mismos tags que ya tiene la categoría (sin faltantes, sin extras, sin duplicados).
 - **Entrada**: `familyId`, `categoryId`, `orderedTagIds` (array completo de `TagId` en el nuevo orden).
 - **Flujo principal**:
-  1. Se busca la `Category`.
+  1. Se busca la `Category`, validando que pertenezca a la familia.
   2. Se invoca `category.reorderTags(orderedTagIds)` — valida que el array contenga exactamente los mismos tags que ya tiene la categoría, y reasigna `displayOrder` según la posición.
   3. Se persiste.
-- **Errores posibles**: `CategoryNotFoundError`, `InvalidTagOrderError` (nuevo — el array no coincide con los tags actuales de la categoría).
+- **Errores posibles**: `CategoryNotFoundError`, `InvalidTagOrderError` (el array no coincide con los tags actuales de la categoría).
 - **Eventos disparados**: ninguno.
 
 ---
@@ -279,7 +281,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory` y `DeprecateCategory` restringidos a `Owner`; `AddTagToCategory` permitido para cualquier `Member`; pendiente definir el resto (`ReorderCategoryTags`, tags de renombrado/borrado, etc.).
+1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory` y `DeprecateCategory` restringidos a `Owner`; `AddTagToCategory` y `ReorderCategoryTags` permitidos para cualquier `Member`; pendiente definir el resto (tags de renombrado/borrado, etc.).
 2. **Eventos de renombrado**: `RenameCategory`/`RenameTag` no tienen evento definido en el catálogo original del proyecto — hay que decidir si `Reporting` y `AI Assistance` (`MerchantCategoryHistory`) necesitan enterarse de un cambio de nombre para no mostrar/usar el nombre viejo.
 3. **`DeleteCategory`/`DeleteTag` sin evento**: a confirmar si esto es correcto (por definición, una categoría eliminable nunca tuvo items, así que no debería haber nada que revertir en otros contextos) o si igual conviene emitir un evento por auditoría.
 4. **`AddTagToCategory` sobre categoría deprecada**: **decidido** — se rechaza con `CategoryNotActiveError`; una categoría debe reactivarse primero (`ReactivateCategory`) antes de poder agregarle tags nuevos.
