@@ -94,11 +94,28 @@ Crea una categoría nueva para la familia.
   5. Se persiste.
 - **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: `CategoryCreated`.
-- **Nota de diseño**: una categoría `Deprecated` con el mismo nombre **bloquea** la creación de una nueva — si se deprecó fue porque no se necesitaba, así que no tiene sentido crear un duplicado. Volver a usarla requerirá un caso de uso dedicado de reactivación (`ReactivateCategory`, pendiente de implementar).
+- **Nota de diseño**: una categoría `Deprecated` con el mismo nombre **bloquea** la creación de una nueva — si se deprecó fue porque no se necesitaba, así que no tiene sentido crear un duplicado. Para volver a usarla, el flujo correcto es `ReactivateCategory` (caso de uso 6), no crear una categoría nueva con el mismo nombre.
 
 ---
 
-### 6. RenameCategory
+### 6. ReactivateCategory
+
+Reactiva una categoría previamente deprecada, permitiendo volver a usarla en nuevos registros.
+
+- **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
+- **Precondiciones**: la `Category` existe y pertenece a la familia; quien solicita es `Owner`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`.
+- **Flujo principal**:
+  1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
+  2. Se busca la `Category`, validando que pertenezca a la familia.
+  3. Se invoca `category.reactivate()` (idempotente — si ya estaba `Active`, no falla).
+  4. Se persiste.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`.
+- **Eventos disparados**: `CategoryReactivated` (consumido por `AI Assistance`, simétrico a `CategoryDeprecated`, para volver a sugerir la categoría).
+
+---
+
+### 7. RenameCategory
 
 Renombra una categoría existente.
 
@@ -113,7 +130,7 @@ Renombra una categoría existente.
 
 ---
 
-### 7. DeleteCategory
+### 8. DeleteCategory
 
 Elimina físicamente una categoría, usando `CategoryDeletionService`.
 
@@ -127,7 +144,7 @@ Elimina físicamente una categoría, usando `CategoryDeletionService`.
 
 ---
 
-### 8. DeprecateCategory
+### 9. DeprecateCategory
 
 Marca una categoría como no disponible para nuevos registros, preservando el histórico.
 
@@ -141,7 +158,7 @@ Marca una categoría como no disponible para nuevos registros, preservando el hi
 
 ---
 
-### 9. AddTagToCategory
+### 10. AddTagToCategory
 
 Agrega un tag nuevo dentro de una categoría.
 
@@ -156,7 +173,7 @@ Agrega un tag nuevo dentro de una categoría.
 
 ---
 
-### 10. ReorderCategoryTags
+### 11. ReorderCategoryTags
 
 Reordena los tags de una categoría según la preferencia manual del usuario.
 
@@ -172,7 +189,7 @@ Reordena los tags de una categoría según la preferencia manual del usuario.
 
 ## Tag
 
-### 11. RenameTag
+### 12. RenameTag
 
 - **Entrada**: `familyId`, `categoryId`, `tagId`, `newName`.
 - **Flujo principal**: análogo a `RenameCategory`, operando sobre el `Tag` dentro de la `Category`.
@@ -181,7 +198,7 @@ Reordena los tags de una categoría según la preferencia manual del usuario.
 
 ---
 
-### 12. DeleteTag
+### 13. DeleteTag
 
 Elimina físicamente un tag, usando `TagDeletionService`.
 
@@ -192,7 +209,7 @@ Elimina físicamente un tag, usando `TagDeletionService`.
 
 ---
 
-### 13. DeprecateTag
+### 14. DeprecateTag
 
 - **Entrada**: `familyId`, `categoryId`, `tagId`.
 - **Flujo principal**: análogo a `DeprecateCategory`, invocando `tag.deprecate()`.
@@ -203,7 +220,7 @@ Elimina físicamente un tag, usando `TagDeletionService`.
 
 ## Queries
 
-### 14. GetFinancialItems
+### 15. GetFinancialItems
 
 Lista y filtra los movimientos financieros de la familia — corresponde a la "Consulta de items" de la especificación original.
 
@@ -216,7 +233,7 @@ Lista y filtra los movimientos financieros de la familia — corresponde a la "C
 
 ---
 
-### 15. GetCategories
+### 16. GetCategories
 
 Lista las categorías (con sus tags) de la familia — para poblar selectores en la UI y la sección de administración de categorías.
 
@@ -235,7 +252,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
 | `FinancialItemNotFoundError` | UpdateFinancialItemAmount, ReclassifyFinancialItem, DeleteFinancialItem | ❌ nuevo |
-| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory | ❌ nuevo |
+| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory | ❌ nuevo |
 | `CategoryNotFoundError` | Varios | ❌ nuevo |
 | `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
 | `TagNotFoundError` | Varios | ❌ nuevo |
