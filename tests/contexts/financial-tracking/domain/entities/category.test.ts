@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { InvalidTagOrderError } from "../../../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
 import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { TagId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 
 describe("Category", () => {
@@ -87,6 +89,47 @@ describe("Category", () => {
       cat.deprecate();
       cat.reactivate();
       assert.equal(cat.status, CategoryStatus.Active);
+    });
+  });
+
+  describe("reorderTags()", () => {
+    it("reasigna displayOrder según la posición en el array recibido", () => {
+      const cat = Category.create(familyId, catName);
+      cat.addTag(TagName.of("Supermercado"));
+      cat.addTag(TagName.of("Farmacia"));
+      const [first, second] = cat.tags;
+
+      cat.reorderTags([second.id, first.id]);
+
+      assert.equal(cat.tags.find((t) => t.id.equals(second.id))?.displayOrder, 0);
+      assert.equal(cat.tags.find((t) => t.id.equals(first.id))?.displayOrder, 1);
+    });
+
+    it("lanza InvalidTagOrderError si falta un tag en el array", () => {
+      const cat = Category.create(familyId, catName);
+      cat.addTag(TagName.of("Supermercado"));
+      cat.addTag(TagName.of("Farmacia"));
+      const [first] = cat.tags;
+
+      assert.throws(() => cat.reorderTags([first.id]), InvalidTagOrderError);
+    });
+
+    it("lanza InvalidTagOrderError si el array tiene un tag que no pertenece a la categoría", () => {
+      const cat = Category.create(familyId, catName);
+      cat.addTag(TagName.of("Supermercado"));
+      const foreignTagId = TagId.generate();
+      const [first] = cat.tags;
+
+      assert.throws(() => cat.reorderTags([first.id, foreignTagId]), InvalidTagOrderError);
+    });
+
+    it("lanza InvalidTagOrderError si el array tiene un tag duplicado", () => {
+      const cat = Category.create(familyId, catName);
+      cat.addTag(TagName.of("Supermercado"));
+      cat.addTag(TagName.of("Farmacia"));
+      const [first] = cat.tags;
+
+      assert.throws(() => cat.reorderTags([first.id, first.id]), InvalidTagOrderError);
     });
   });
 });
