@@ -19,6 +19,10 @@ class InMemoryCategoryRepository implements CategoryRepository {
     return [...this.categories.values()].filter((category) => category.familyId.equals(familyId));
   }
 
+  async delete(categoryId: CategoryId): Promise<void> {
+    this.categories.delete(categoryId.toString());
+  }
+
   add(category: Category): void {
     this.categories.set(category.id.toString(), category);
   }
