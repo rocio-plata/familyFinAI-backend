@@ -3,6 +3,7 @@
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { CategoryCreated } from "../events/category-created.event.js";
+import { CategoryDeprecated } from "../events/category-deprecated.event.js";
 import { CategoryReactivated } from "../events/category-reactivated.event.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import type { CategoryName } from "../value-objects/category-name.js";
@@ -63,6 +64,7 @@ class Category {
 
   deprecate(): void {
     this._status = CategoryStatus.Deprecated;
+    this.domainEvents.push(new CategoryDeprecated(this.id, this.familyId.toString()));
   }
 
   reactivate(): void {

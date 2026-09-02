@@ -61,6 +61,15 @@ describe("Category", () => {
       cat.deprecate();
       assert.equal(cat.status, CategoryStatus.Deprecated);
     });
+
+    it("dispara CategoryDeprecated", () => {
+      const cat = Category.create(familyId, catName);
+      cat.pullDomainEvents();
+      cat.deprecate();
+      const events = cat.pullDomainEvents();
+      assert.equal(events.length, 1);
+      assert.equal(events[0]?.eventName, "financial-tracking.category-deprecated");
+    });
   });
 
   describe("reactivate()", () => {
