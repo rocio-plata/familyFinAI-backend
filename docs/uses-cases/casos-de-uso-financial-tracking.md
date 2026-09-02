@@ -155,12 +155,15 @@ Elimina físicamente una categoría, usando `CategoryDeletionService`.
 
 Marca una categoría como no disponible para nuevos registros, preservando el histórico.
 
-- **Entrada**: `familyId`, `categoryId`.
+- **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
+- **Precondiciones**: la `Category` existe y pertenece a la familia; quien solicita es `Owner`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`.
 - **Flujo principal**:
-  1. Se busca la `Category`.
-  2. Se invoca `category.deprecate()` (siempre permitido, sin chequeo de items).
-  3. Se persiste.
-- **Errores posibles**: `CategoryNotFoundError`.
+  1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
+  2. Se busca la `Category`, validando que pertenezca a la familia.
+  3. Se invoca `category.deprecate()` (siempre permitido, sin chequeo de items).
+  4. Se persiste.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`.
 - **Eventos disparados**: `CategoryDeprecated` (consumido por `AI Assistance`, para no sugerir categorías deprecadas).
 
 ---
@@ -259,7 +262,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
 | `FinancialItemNotFoundError` | UpdateFinancialItemAmount, ReclassifyFinancialItem, DeleteFinancialItem | ❌ nuevo |
-| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory,DeleteCategory | ❌ nuevo |
+| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory,DeleteCategory, DeprecateCategory | ❌ nuevo |
 | `CategoryNotFoundError` | Varios | ❌ nuevo |
 | `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
 | `TagNotFoundError` | Varios | ❌ nuevo |
@@ -274,7 +277,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido** para `CreateCategory`, `ReactivateCategory`, `RenameCategory` y `DeleteCategory`: restringidos a `Owner`; pendiente definir el resto (`DeprecateCategory`, tags, etc.).
+1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido** para `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory` y `DeprecateCategory`: restringidos a `Owner`; pendiente definir el resto (tags, etc.).
 2. **Eventos de renombrado**: `RenameCategory`/`RenameTag` no tienen evento definido en el catálogo original del proyecto — hay que decidir si `Reporting` y `AI Assistance` (`MerchantCategoryHistory`) necesitan enterarse de un cambio de nombre para no mostrar/usar el nombre viejo.
 3. **`DeleteCategory`/`DeleteTag` sin evento**: a confirmar si esto es correcto (por definición, una categoría eliminable nunca tuvo items, así que no debería haber nada que revertir en otros contextos) o si igual conviene emitir un evento por auditoría.
 4. **`AddTagToCategory` sobre categoría deprecada**: ¿se permite agregar tags nuevos a una categoría ya deprecada, o debería rechazarse?
