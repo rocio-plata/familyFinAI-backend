@@ -172,13 +172,15 @@ Marca una categoría como no disponible para nuevos registros, preservando el hi
 
 Agrega un tag nuevo dentro de una categoría.
 
+- **Actor**: cualquier `Member` de la familia (a diferencia de los demás casos de uso de `Category`, este no está restringido a `Owner` — cualquier miembro puede agregar tags de uso diario).
+- **Precondiciones**: la `Category` existe, pertenece a la familia y está `Active`; el nombre del tag no colisiona con otro tag existente en esa categoría (comparación case-insensitive).
 - **Entrada**: `familyId`, `categoryId`, `tagName`.
 - **Flujo principal**:
-  1. Se busca la `Category`, validando que esté `Active` (¿se puede agregar un tag a una categoría deprecada? — ver pendientes).
+  1. Se busca la `Category`, validando que pertenezca a la familia y esté `Active` (¿se puede agregar un tag a una categoría deprecada? — se decidió que no, ver pendientes).
   2. Se valida `tagName` y que no colisione con otro tag existente en esa categoría.
   3. Se invoca `category.addTag(tagName)` (agrega al final, con el siguiente `displayOrder`).
   4. Se persiste.
-- **Errores posibles**: `CategoryNotFoundError`, `InvalidTagNameError`, `DuplicateTagNameError`.
+- **Errores posibles**: `CategoryNotFoundError`, `CategoryNotActiveError`, `InvalidTagNameError`, `DuplicateTagNameError`.
 - **Eventos disparados**: `TagCreated`.
 
 ---
@@ -264,7 +266,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 | `FinancialItemNotFoundError` | UpdateFinancialItemAmount, ReclassifyFinancialItem, DeleteFinancialItem | ❌ nuevo |
 | `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory,DeleteCategory, DeprecateCategory | ❌ nuevo |
 | `CategoryNotFoundError` | Varios | ❌ nuevo |
-| `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
+| `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem, AddTagToCategory | ❌ nuevo |
 | `TagNotFoundError` | Varios | ❌ nuevo |
 | `TagNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
 | `TagDoesNotBelongToCategoryError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
@@ -277,9 +279,9 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido** para `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory` y `DeprecateCategory`: restringidos a `Owner`; pendiente definir el resto (tags, etc.).
+1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory` y `DeprecateCategory` restringidos a `Owner`; `AddTagToCategory` permitido para cualquier `Member`; pendiente definir el resto (`ReorderCategoryTags`, tags de renombrado/borrado, etc.).
 2. **Eventos de renombrado**: `RenameCategory`/`RenameTag` no tienen evento definido en el catálogo original del proyecto — hay que decidir si `Reporting` y `AI Assistance` (`MerchantCategoryHistory`) necesitan enterarse de un cambio de nombre para no mostrar/usar el nombre viejo.
 3. **`DeleteCategory`/`DeleteTag` sin evento**: a confirmar si esto es correcto (por definición, una categoría eliminable nunca tuvo items, así que no debería haber nada que revertir en otros contextos) o si igual conviene emitir un evento por auditoría.
-4. **`AddTagToCategory` sobre categoría deprecada**: ¿se permite agregar tags nuevos a una categoría ya deprecada, o debería rechazarse?
+4. **`AddTagToCategory` sobre categoría deprecada**: **decidido** — se rechaza con `CategoryNotActiveError`; una categoría debe reactivarse primero (`ReactivateCategory`) antes de poder agregarle tags nuevos.
 5. **Estrategia de borrado de `FinancialItem`**: `DeleteFinancialItem` — ¿borrado físico o soft-delete (campo `deletedAt`)? Afecta directamente cómo se implementa `FinancialItemRepository.delete()` y si `GetFinancialItems` necesita excluir eliminados.
 6. **Resolución de `Currency` por defecto**: `CreateFinancialItem` necesita leer `family.defaultCurrency` cuando no se especifica moneda explícita — esto acopla el caso de uso de `Financial Tracking` a una consulta hacia `Family & Access` (mismo patrón que `CategoryLookupPort` que ya usa `AI Assistance`, pero en sentido inverso).
