@@ -3,6 +3,7 @@
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { CategoryCreated } from "../events/category-created.event.js";
+import { CategoryReactivated } from "../events/category-reactivated.event.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import type { CategoryName } from "../value-objects/category-name.js";
 import { CategoryStatus } from "../value-objects/category-status.js";
@@ -66,6 +67,7 @@ class Category {
 
   reactivate(): void {
     this._status = CategoryStatus.Active;
+    this.domainEvents.push(new CategoryReactivated(this.id, this.familyId.toString()));
   }
 
   reorderTags(_orderedTagIds: TagId[]): void {
