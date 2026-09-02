@@ -17,6 +17,10 @@ class InMemoryFinancialItemRepository implements FinancialItemRepository {
     return this.items.get(id.toString()) ?? null;
   }
 
+  async delete(id: FinancialItemId): Promise<void> {
+    this.items.delete(id.toString());
+  }
+
   async countByCategory(categoryId: CategoryId): Promise<number> {
     let count = 0;
     for (const item of this.items.values()) {
