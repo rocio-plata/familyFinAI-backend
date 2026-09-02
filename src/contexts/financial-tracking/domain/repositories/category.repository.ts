@@ -7,6 +7,7 @@ interface CategoryRepository {
   save(category: Category): Promise<void>;
   findById(categoryId: CategoryId): Promise<Category | null>;
   findByFamilyId(familyId: FamilyId): Promise<Category[]>;
+  delete(categoryId: CategoryId): Promise<void>;
 }
 
 export type { CategoryRepository };
