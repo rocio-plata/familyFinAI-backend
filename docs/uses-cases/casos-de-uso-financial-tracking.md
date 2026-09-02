@@ -83,16 +83,18 @@ Elimina un movimiento.
 
 Crea una categoría nueva para la familia.
 
-- **Actor**: cualquier `Member` (a confirmar si se restringe a `Owner` — ver pendientes).
-- **Precondiciones**: la familia existe; no existe ya una categoría con el mismo nombre (comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
-- **Entrada**: `familyId`, `name`.
+- **Actor**: únicamente el `Owner` de la familia. Decisión tomada para mantener la taxonomía de categorías bajo control administrativo — evita que cualquier miembro modifique una estructura compartida por toda la familia.
+- **Precondiciones**: la familia existe; quien solicita es `Owner` de esa familia; no existe ya una categoría con el mismo nombre en la familia, sin importar su estado (`Active` o `Deprecated` — comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `name`.
 - **Flujo principal**:
-  1. Se valida `name` como `CategoryName`.
-  2. Se verifica que no exista otra categoría activa con el mismo nombre en la familia.
-  3. Se invoca `Category.create(familyId, name)`.
-  4. Se persiste.
-- **Errores posibles**: `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
+  1. Se consulta la membresía de `requestedBy` en la familia (`GetFamilyMembershipQuery`, de `Family & Access`) y se valida que su rol sea `Owner`.
+  2. Se valida `name` como `CategoryName`.
+  3. Se verifica que no exista otra categoría con el mismo nombre en la familia, sea `Active` o `Deprecated`.
+  4. Se invoca `Category.create(familyId, name)`.
+  5. Se persiste.
+- **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: `CategoryCreated`.
+- **Nota de diseño**: una categoría `Deprecated` con el mismo nombre **bloquea** la creación de una nueva — si se deprecó fue porque no se necesitaba, así que no tiene sentido crear un duplicado. Volver a usarla requerirá un caso de uso dedicado de reactivación (`ReactivateCategory`, pendiente de implementar).
 
 ---
 
@@ -233,6 +235,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
 | `FinancialItemNotFoundError` | UpdateFinancialItemAmount, ReclassifyFinancialItem, DeleteFinancialItem | ❌ nuevo |
+| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory | ❌ nuevo |
 | `CategoryNotFoundError` | Varios | ❌ nuevo |
 | `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
 | `TagNotFoundError` | Varios | ❌ nuevo |
@@ -247,7 +250,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? ¿Cualquiera puede crear/eliminar categorías, o eso queda reservado a `Owner`?
+1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido** para `CreateCategory`: restringido a `Owner` (ver caso de uso 5); pendiente definir el resto (`RenameCategory`, `DeleteCategory`, `DeprecateCategory`, tags, etc.).
 2. **Eventos de renombrado**: `RenameCategory`/`RenameTag` no tienen evento definido en el catálogo original del proyecto — hay que decidir si `Reporting` y `AI Assistance` (`MerchantCategoryHistory`) necesitan enterarse de un cambio de nombre para no mostrar/usar el nombre viejo.
 3. **`DeleteCategory`/`DeleteTag` sin evento**: a confirmar si esto es correcto (por definición, una categoría eliminable nunca tuvo items, así que no debería haber nada que revertir en otros contextos) o si igual conviene emitir un evento por auditoría.
 4. **`AddTagToCategory` sobre categoría deprecada**: ¿se permite agregar tags nuevos a una categoría ya deprecada, o debería rechazarse?
