@@ -1,10 +1,9 @@
-import Fastify from "fastify";
+// platform/server.ts
+import { buildApp } from "./app.js";
 
-const app = Fastify({ logger: true });
+// (a medida que conectemos Drizzle/Postgres, aquí se construyen las dependencias reales)
 
-app.get("/health", async () => {
-  return { status: "ok", timestamp: new Date().toISOString() };
-});
+const app = buildApp({});
 
 const start = async () => {
   try {
