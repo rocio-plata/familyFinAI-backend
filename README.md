@@ -46,27 +46,22 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
    npm install
    ```
 
-3. **Configurar variables de entorno**
+3. **Variables de entorno**
 
-   Copia `.env.example` a `.env` y completa los valores reales:
-   ```bash
-   cp .env.example .env
-   ```
-   Variables requeridas: `DATABASE_URL` (connection string de Neon), `JWT_SECRET`, `JWT_ACCESS_TOKEN_EXPIRY`.
+   > Aún no hay conexión real a Postgres ni un `.env`/`.env.example` en el repo: los adaptadores de infraestructura (repositorios Drizzle, rutas HTTP) todavía no están implementados, y toda la suite de tests usa repositorios in-memory. Esta sección se completará cuando se agreguen esos adaptadores (`DATABASE_URL`, `JWT_SECRET`, etc.).
 
 4. **Levantar el servidor en modo desarrollo**
    ```bash
    npm run dev
    ```
-   Deberías ver el log de Fastify escuchando en el puerto 3000. Verifica con:
+   Deberías ver el log de Fastify escuchando en el puerto 3000. Por ahora el único endpoint expuesto es el de salud:
    ```bash
    curl http://localhost:3000/health
    ```
 
 5. **Correr los tests**
    ```bash
-   npm test              # una sola corrida
-   npm run test:watch    # modo watch
+   npm test
    ```
 
 6. **Correr el lint**
@@ -89,8 +84,6 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
 | `npm run build` | Compila TypeScript a `dist/` |
 | `npm start` | Corre el build compilado (producción) |
 | `npm test` | Corre los tests unitarios (`node:test`) |
-| `npm run test:watch` | Tests en modo watch |
-| `npm run test:coverage` | Tests con reporte de cobertura |
 | `npm run lint` | Revisa el código con Biome (sin modificar archivos) |
 | `npm run lint:fix` | Revisa y corrige automáticamente lo que Biome pueda resolver |
 
@@ -233,6 +226,18 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 
 ## Estado actual
 
-**Definido:** bounded contexts; entidades, value objects y errores de dominio de `Financial Tracking` y `Family & Access`; anticorruption layer de `AI Assistance`; eventos de dominio entre contextos; flujo de autenticación/autorización; primer caso de uso (`CreateFamily`) implementado con TDD; configuración de testing y lint.
+**Implementado (dominio + aplicación, con TDD y dobles in-memory):**
 
-**Pendiente:** modelo de datos concreto en Postgres, `NaturalLanguageQueryPort`, resto de los casos de uso de `Family & Access` y de los demás contextos, roles/permisos granulares, estrategia de despliegue.
+- **Family & Access** — los 9 casos de uso documentados en `docs/uses-cases/family-access.md`: `CreateFamily`, `InviteMember`, `AcceptInvitation`, `RevokeInvitation`, `RemoveMember`, `ChangeMemberRole`, `ChangeDefaultCurrency`, `GetFamilyMembership`, `GetFamilyMembers`.
+- **Financial Tracking** (core domain) — los 16 casos de uso documentados en `docs/uses-cases/casos-de-uso-financial-tracking.md`: `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem`, `DeleteFinancialItem`, `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `AddTagToCategory`, `ReorderCategoryTags`, `RenameTag`, `DeleteTag`, `DeprecateTag`, `GetFinancialItems`, `GetCategories`.
+- Eventos de dominio entre contextos, event bus in-process (`platform/events`), y flujo de autenticación/autorización (JWT con rotación de refresh tokens, middlewares `authenticate`/`requireFamilyMembership`) en `platform/auth`.
+- Anticorruption layer de `AI Assistance` definida a nivel de diseño (puertos), sin adaptadores concretos todavía.
+
+**Pendiente:**
+
+- `Budgeting`, `Reporting & Analytics` y `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
+- Adaptadores de infraestructura para `Family & Access` y `Financial Tracking`: repositorios Drizzle sobre Postgres (hoy solo hay repositorios in-memory usados en tests) y rutas HTTP Fastify (el servidor solo expone `/health`).
+- Variables de entorno y conexión real a Neon/Postgres (`DATABASE_URL`, `JWT_SECRET`, etc.) — aún no están cableadas en el código.
+- `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.
+- Resolución del `Currency` por defecto de la familia dentro de `CreateFinancialItem` (hoy recibe el monto ya construido con su moneda).
+- Roles/permisos granulares para los casos de uso de `FinancialItem` (`CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem`, `DeleteFinancialItem` no validan rol todavía) y estrategia de despliegue.
