@@ -3,7 +3,7 @@
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 import { InvalidRefreshTokenError } from "./errors/invalid-refresh-token.error.js";
 import { PossibleTokenTheftError } from "./errors/possible-token-theft.error.js";
-import type { JwtService } from "./jwt.js";
+import type { JwtSigner } from "./jwt-signer.js";
 import { RefreshToken } from "./refresh-token.js";
 import type { RefreshTokenRepository } from "./refresh-token.repository.js";
 
@@ -14,7 +14,7 @@ interface TokenPair {
 
 class TokenService {
   constructor(
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtSigner,
     private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 

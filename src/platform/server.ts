@@ -1,9 +1,19 @@
 // platform/server.ts
+import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { buildApp } from "./app.js";
+import { JwtService } from "./auth/jwt.js";
+import { InProcessEventBus } from "./events/in-process-event-bus.js";
 
-// (a medida que conectemos Drizzle/Postgres, aquí se construyen las dependencias reales)
+// (a medida que conectemos Drizzle/Postgres, el InMemoryFamilyRepository se reemplaza por el adaptador real)
 
-const app = buildApp({});
+const jwtSecret = process.env.JWT_SECRET ?? "dev-only-insecure-secret";
+const app = buildApp({
+  jwtService: new JwtService(new TextEncoder().encode(jwtSecret)),
+  familyAccess: {
+    familyRepository: new InMemoryFamilyRepository(),
+    eventBus: new InProcessEventBus(),
+  },
+});
 
 const start = async () => {
   try {

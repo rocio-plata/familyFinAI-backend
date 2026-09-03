@@ -1,6 +1,7 @@
 // platform/auth/jwt.ts
 import { jwtVerify, SignJWT } from "jose";
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
+import type { JwtSigner, SignOptions } from "./jwt-signer.js";
 
 interface JwtPayload {
   sub: string;
@@ -8,11 +9,7 @@ interface JwtPayload {
   exp: number;
 }
 
-interface SignOptions {
-  expiresIn?: string;
-}
-
-class JwtService {
+class JwtService implements JwtSigner {
   constructor(private readonly secret: Uint8Array) {}
 
   async sign(userId: UserId, options?: SignOptions): Promise<string> {
