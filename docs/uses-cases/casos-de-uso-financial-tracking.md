@@ -227,9 +227,10 @@ Elimina físicamente un tag, usando `TagDeletionService`.
 
 ### 14. DeprecateTag
 
-- **Entrada**: `familyId`, `categoryId`, `tagId`.
-- **Flujo principal**: análogo a `DeprecateCategory`, invocando `tag.deprecate()`.
-- **Errores posibles**: `CategoryNotFoundError`, `TagNotFoundError`.
+- **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `tagId`.
+- **Flujo principal**: análogo a `DeprecateCategory` (incluyendo la validación de rol `Owner` vía `GetFamilyMembershipQuery`), invocando `category.deprecateTag(tagId)` (busca el tag dentro de la categoría, invoca `tag.deprecate()` y registra el evento).
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `TagNotFoundError`.
 - **Eventos disparados**: `TagDeprecated`.
 
 ---
