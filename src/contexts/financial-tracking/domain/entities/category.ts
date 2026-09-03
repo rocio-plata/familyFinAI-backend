@@ -3,10 +3,12 @@
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { InvalidTagOrderError } from "../errors/invalid-tag-order.error.js";
+import { TagNotFoundError } from "../errors/tag-not-found.error.js";
 import { CategoryCreated } from "../events/category-created.event.js";
 import { CategoryDeprecated } from "../events/category-deprecated.event.js";
 import { CategoryReactivated } from "../events/category-reactivated.event.js";
 import { TagCreated } from "../events/tag-created.event.js";
+import { TagDeprecated } from "../events/tag-deprecated.event.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import type { CategoryName } from "../value-objects/category-name.js";
 import { CategoryStatus } from "../value-objects/category-status.js";
@@ -94,6 +96,15 @@ class Category {
       const tag = this._tags.find((t) => t.id.equals(tagId));
       tag?.changeDisplayOrder(index);
     }
+  }
+
+  deprecateTag(tagId: TagId): void {
+    const tag = this._tags.find((t) => t.id.equals(tagId));
+    if (!tag) {
+      throw new TagNotFoundError(tagId.toString());
+    }
+    tag.deprecate();
+    this.domainEvents.push(new TagDeprecated(tag.id, this.id, this.familyId.toString()));
   }
 
   removeTag(tagId: TagId): void {
