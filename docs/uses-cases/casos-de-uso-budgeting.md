@@ -2,145 +2,166 @@
 
 Documentación de los casos de uso del contexto `Budgeting`, previa a su implementación. Sigue la misma convención usada en `casos-de-uso-family-access.md` y `casos-de-uso-financial-tracking.md`: **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio disparados**.
 
-Recordatorio de arquitectura: `Budgeting` es un **subdominio de soporte** (no core domain). Es principalmente **consumidor** de eventos de `Financial Tracking` (`ItemRecorded`, `ItemAmountChanged`, `ItemReclassified`, `ItemDeleted`) — la mayoría de sus casos de uso son comandos explícitos del usuario (crear/editar presupuesto), mientras que el recálculo de "gastado" ocurre vía **event handlers**, no vía comando directo.
+Recordatorio de arquitectura: `Budgeting` es un **subdominio de soporte** (no core domain). Consume eventos de `Financial Tracking` (`ItemRecorded`, `ItemAmountChanged`, `ItemReclassified`, `ItemDeleted`) para mantener el seguimiento de gasto actualizado — el usuario interactúa con comandos explícitos (crear/editar presupuesto), mientras el recálculo del gasto ocurre vía **event handlers**.
 
-Basado en las entidades y value objects ya mencionados: `Budget`, `BudgetPeriod`, `Overspend`, y el patrón `OnItemRecordedHandler` que ya esbozamos como ejemplo al definir la comunicación entre contextos.
+## Modelo de mensualidad: híbrido (recurrente + overrides por período)
+
+Los presupuestos son **mensuales**, con un modelo híbrido: se definen una vez y se aplican automáticamente cada mes (recurrente), pero se pueden sobrescribir para un mes específico sin afectar los demás. Esto separa dos conceptos que cambian por razones distintas:
+
+- **`BudgetConfiguration`** (Aggregate Root) — la configuración recurrente por familia + categoría: un monto por defecto, y un mapa de excepciones puntuales por período (`overrides`). Cambia con poca frecuencia (el usuario la edita a propósito).
+- **`BudgetPeriodStatus`** (Aggregate Root separado) — el seguimiento real de gasto de una familia + categoría + mes específico, con el límite resuelto (`limitAmount`, snapshot al momento de crear el registro del mes) y el `spent` acumulado. Cambia con cada movimiento financiero registrado en esa categoría/mes.
+- **`BudgetPeriod`** (Value Object) — año + mes (ej. `"2026-09"`), con `BudgetPeriod.current()` y `BudgetPeriod.fromDate(date)` como factories.
+
+`BudgetPeriodStatus.limitAmount` es un snapshot deliberado: si se cambia el `defaultAmount` de la configuración, los períodos ya generados no cambian su límite retroactivamente — solo los períodos nuevos (o un recálculo explícito, ver pendientes) toman el valor actualizado.
 
 ---
 
-## Comandos
+## Comandos sobre `BudgetConfiguration`
 
-### 1. CreateBudget
+### 1. CreateBudgetConfiguration
 
-Define un presupuesto mensual para una categoría específica.
+Define un presupuesto recurrente para una categoría, con un monto por defecto que aplica desde ahora en adelante, todos los meses.
 
-- **Actor**: un `Member` de la familia (a definir si se restringe a `Owner` — ver pendientes, mismo punto abierto que en `Financial Tracking`).
-- **Precondiciones**: la familia existe; la categoría existe en `Financial Tracking` y está `Active`; no existe ya un presupuesto activo para esa categoría en el mismo período.
-- **Entrada**: `familyId`, `categoryId`, `amount` (monto límite), `period` (mes/año, ej. `2026-09`).
+- **Actor**: un `Member` de la familia (a definir si se restringe a `Owner` — ver pendientes).
+- **Precondiciones**: la familia existe; la categoría existe en `Financial Tracking` y está `Active`; no existe ya una `BudgetConfiguration` activa para esa categoría.
+- **Entrada**: `familyId`, `categoryId`, `defaultAmount`.
 - **Flujo principal**:
-  1. Se valida `amount` como `Money` (reutilizando el Value Object de `Financial Tracking`, vía `shared-kernel` o una consulta cruzada — ver pendientes).
-  2. Se valida que la categoría exista y esté activa (consulta a `Financial Tracking`, similar al patrón `CategoryLookupPort` que ya usa `AI Assistance`).
-  3. Se valida que no exista otro `Budget` activo para la misma `categoryId` + `period`.
-  4. Se invoca `Budget.create(familyId, categoryId, amount, period)`.
-  5. Se persiste vía `BudgetRepository.save()`.
-- **Errores posibles**: `InvalidMoneyError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `DuplicateBudgetForPeriodError`.
+  1. Se valida `defaultAmount` como `Money`.
+  2. Se valida que la categoría exista y esté activa (consulta cruzada a `Financial Tracking`, vía un puerto tipo `CategoryLookupPort`).
+  3. Se valida que no exista otra `BudgetConfiguration` activa para la misma `categoryId`.
+  4. Se invoca `BudgetConfiguration.create(familyId, categoryId, defaultAmount)`.
+  5. Se persiste vía `BudgetConfigurationRepository.save()`.
+- **Errores posibles**: `InvalidMoneyError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `DuplicateBudgetConfigurationError`.
 - **Eventos disparados**: `BudgetCreated`.
 
 ---
 
-### 2. UpdateBudgetAmount
+### 2. UpdateDefaultBudgetAmount
 
-Modifica el monto límite de un presupuesto ya definido.
+Modifica el monto por defecto de la configuración recurrente (afecta a los períodos futuros que no tengan un override propio; no modifica retroactivamente períodos ya generados).
 
-- **Actor**: mismo criterio que `CreateBudget`.
-- **Precondiciones**: el `Budget` existe y pertenece a la familia.
-- **Entrada**: `familyId`, `budgetId`, `newAmount`.
+- **Actor**: mismo criterio que `CreateBudgetConfiguration`.
+- **Precondiciones**: la `BudgetConfiguration` existe y pertenece a la familia.
+- **Entrada**: `familyId`, `budgetConfigurationId`, `newDefaultAmount`.
 - **Flujo principal**:
-  1. Se busca el `Budget`, validando que pertenezca a la familia.
-  2. Se valida `newAmount` como `Money`.
-  3. Se invoca `budget.updateAmount(newAmount)` — esto puede hacer que un presupuesto pase de "ok" a `Overspent` o viceversa, dependiendo del gasto ya acumulado.
+  1. Se busca la `BudgetConfiguration`.
+  2. Se valida `newDefaultAmount` como `Money`.
+  3. Se invoca `budgetConfiguration.updateDefaultAmount(newDefaultAmount)`.
   4. Se persiste.
-- **Errores posibles**: `BudgetNotFoundError`, `InvalidMoneyError`.
-- **Eventos disparados**: `BudgetOverspent` (solo si el nuevo monto deja el presupuesto en estado de sobregiro y no lo estaba antes).
+- **Errores posibles**: `BudgetConfigurationNotFoundError`, `InvalidMoneyError`.
+- **Eventos disparados**: ninguno.
+- **Nota de diseño (confirmada)**: este cambio **nunca** afecta `BudgetPeriodStatus` ya generados (meses pasados o el mes en curso) — solo aplica a partir de los períodos que se generen desde ahora en adelante, ya que `BudgetPeriodStatus` toma un snapshot del límite al momento de crearse. Esto es distinto del comportamiento de `SetBudgetOverrideForPeriod` (caso de uso 3), que sí actualiza de inmediato el `BudgetPeriodStatus` del mes específico al que apunta, incluso si ya tiene gasto acumulado.
 
 ---
 
-### 3. DeleteBudget
+### 3. SetBudgetOverrideForPeriod
 
-Elimina un presupuesto (deja de hacerse seguimiento a esa categoría/período).
+Sobrescribe el monto límite para un mes específico, sin afectar la configuración recurrente ni otros meses.
 
-- **Actor**: mismo criterio que `CreateBudget`.
-- **Precondiciones**: el `Budget` existe y pertenece a la familia.
-- **Entrada**: `familyId`, `budgetId`.
+- **Actor**: mismo criterio que `CreateBudgetConfiguration`.
+- **Precondiciones**: la `BudgetConfiguration` existe.
+- **Entrada**: `familyId`, `budgetConfigurationId`, `period`, `overrideAmount`.
 - **Flujo principal**:
-  1. Se busca el `Budget`.
-  2. Se elimina vía `BudgetRepository.delete()`.
-- **Errores posibles**: `BudgetNotFoundError`.
-- **Eventos disparados**: ninguno definido — a diferencia de `Financial Tracking`, eliminar un presupuesto no debería afectar a otros contextos (nadie más consume el estado de un `Budget`).
+  1. Se busca la `BudgetConfiguration`.
+  2. Se valida `overrideAmount` como `Money`.
+  3. Se invoca `budgetConfiguration.setOverrideForPeriod(period, overrideAmount)`.
+  4. Se persiste.
+  5. Se busca el `BudgetPeriodStatus` correspondiente a `familyId` + `categoryId` + `period`. Si existe (ya hay gasto registrado ese mes), se actualiza su `limitAmount` al nuevo `overrideAmount` de inmediato — el cambio aplica en el momento, incluso con gasto ya acumulado. Si no existe todavía, no hay nada que actualizar (se creará con el valor correcto cuando llegue el primer gasto).
+- **Errores posibles**: `BudgetConfigurationNotFoundError`, `InvalidMoneyError`.
+- **Eventos disparados**: `BudgetOverspent` (si al actualizar el `limitAmount` el `BudgetPeriodStatus` queda en sobregiro y no lo estaba antes).
+
+---
+
+### 4. RemoveBudgetOverrideForPeriod
+
+Elimina la excepción de un mes específico, volviendo a usar el monto por defecto de la configuración recurrente para ese período.
+
+- **Entrada**: `familyId`, `budgetConfigurationId`, `period`.
+- **Flujo principal**:
+  1. Se busca la `BudgetConfiguration`.
+  2. Se invoca `budgetConfiguration.removeOverrideForPeriod(period)`.
+  3. Se persiste.
+- **Errores posibles**: `BudgetConfigurationNotFoundError`, `NoOverrideForPeriodError` (si no existía override para ese período).
+- **Eventos disparados**: ninguno.
+
+---
+
+### 5. DeactivateBudgetConfiguration
+
+Desactiva el presupuesto recurrente — deja de generar seguimiento para meses futuros, pero conserva el histórico de `BudgetPeriodStatus` ya generado.
+
+- **Entrada**: `familyId`, `budgetConfigurationId`.
+- **Flujo principal**:
+  1. Se busca la `BudgetConfiguration`.
+  2. Se invoca `budgetConfiguration.deactivate()`.
+  3. Se persiste.
+- **Errores posibles**: `BudgetConfigurationNotFoundError`.
+- **Eventos disparados**: ninguno.
+- **Nota de diseño**: se prefiere `deactivate()` sobre un borrado físico, ya que el histórico de `BudgetPeriodStatus` de meses pasados debe seguir siendo consultable en `Reporting` aunque el presupuesto ya no esté vigente — mismo criterio que "deprecar" en `Category`/`Tag`.
 
 ---
 
 ## Queries
 
-### 4. GetBudgets
+### 6. GetBudgets
 
 Lista los presupuestos de la familia para un período dado, con su estado de gasto — corresponde a la tabla `Category / Budget / Spent / Remaining` de la especificación original.
 
 - **Actor**: cualquier `Member` de la familia.
-- **Entrada**: `familyId`, `period` (opcional, default: mes actual).
+- **Entrada**: `familyId`, `period` (opcional, default: `BudgetPeriod.current()`).
 - **Flujo principal**:
-  1. Se consulta `BudgetRepository.findByFamilyAndPeriod()`.
-  2. Por cada `Budget`, se calcula `Remaining = Budget - Spent` (el campo `Spent` ya vive actualizado en el propio `Budget`, mantenido por el event handler — ver más abajo, no se recalcula en la query).
-  3. Se devuelve la lista mapeada a DTO, incluyendo el nombre de la categoría (requiere resolver `categoryId → nombre`, consulta cruzada a `Financial Tracking`).
-- **Errores posibles**: ninguno propio (una familia sin presupuestos definidos devuelve lista vacía).
-- **Nota de producto**: según la especificación original, esta sección es **opcional y configurable desde Settings** — la visibilidad del feature es una preferencia de UI/familia, no una regla de este caso de uso en sí.
+  1. Se buscan todas las `BudgetConfiguration` activas de la familia.
+  2. Por cada una, se resuelve el monto aplicable al período (`resolveAmountFor(period)` — override si existe, si no el `defaultAmount`).
+  3. Se busca el `BudgetPeriodStatus` correspondiente a esa categoría + período; si no existe todavía (nadie ha gastado en esa categoría este mes), se asume `spent = 0` sin crear el registro (se crea recién con el primer `ItemRecorded`, ver el handler correspondiente).
+  4. Se calcula `Remaining = limitAmount - spent`.
+  5. Se devuelve la lista, incluyendo el nombre de la categoría (consulta cruzada a `Financial Tracking`).
+- **Errores posibles**: ninguno propio.
+- **Nota de producto**: esta sección es **opcional y configurable desde Settings**, según la especificación original — la visibilidad es una preferencia de UI/familia, no una regla de este caso de uso.
 
 ---
 
-## Event Handlers (reacciones, no casos de uso invocados por el usuario)
+## Event Handlers (reacciones automáticas, no invocados por el usuario)
 
-Estos no se exponen como endpoints HTTP — se registran contra el `EventBus` y reaccionan automáticamente a lo que ocurre en `Financial Tracking`.
+Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financial Tracking`. Todos operan sobre `BudgetPeriodStatus`, nunca sobre `BudgetConfiguration`.
 
-### 5. OnItemRecordedHandler
+### 7. OnItemRecordedHandler
 
-Recalcula el gasto acumulado de un presupuesto cuando se registra un nuevo movimiento.
-
-- **Se dispara con**: `ItemRecorded` (publicado por `Financial Tracking`).
-- **Precondición**: existe un `Budget` activo para la `categoryId` y el período (mes) del evento; si no existe, el handler no hace nada (no todas las categorías tienen presupuesto).
+- **Se dispara con**: `ItemRecorded`.
 - **Flujo principal**:
-  1. Si `event.type !== Expense`, se ignora (los presupuestos solo hacen seguimiento de gastos, no de ingresos).
-  2. Se busca el `Budget` activo por `familyId` + `categoryId` + período correspondiente a `event.occurredOn`.
-  3. Si no existe, no se hace nada.
-  4. Se invoca `budget.registerSpending(event.amount)` — el propio agregado protege su invariante de overspend.
-  5. Se persiste el `Budget` actualizado.
-- **Eventos disparados**: `BudgetOverspent` (solo si `registerSpending` hace que el presupuesto cruce el límite y no lo había cruzado antes).
+  1. Si `event.type !== Expense`, se ignora.
+  2. Se busca una `BudgetConfiguration` activa para `familyId` + `categoryId` del evento; si no existe, no se hace nada (no todas las categorías tienen presupuesto).
+  3. Se calcula `period = BudgetPeriod.fromDate(event.occurredOn)`.
+  4. Se busca (o se crea, si es el primer gasto del mes en esa categoría) el `BudgetPeriodStatus` para `familyId` + `categoryId` + `period`, usando `budgetConfiguration.resolveAmountFor(period)` como `limitAmount` inicial.
+  5. Se invoca `budgetPeriodStatus.registerSpending(event.amount)`.
+  6. Se persiste.
+- **Eventos disparados**: `BudgetOverspent` (si `registerSpending` cruza el límite y no lo había cruzado antes).
 
 ---
 
-### 6. OnItemAmountChangedHandler
-
-Ajusta el gasto acumulado cuando se corrige el monto de un movimiento ya registrado.
+### 8. OnItemAmountChangedHandler
 
 - **Se dispara con**: `ItemAmountChanged`.
-- **Flujo principal**: similar a `OnItemRecordedHandler`, pero calculando la diferencia (`newAmount - oldAmount`) en vez de sumar el monto completo — requiere que el evento incluya ambos valores, o que el handler pueda calcular la diferencia de otra forma (ver pendientes).
+- **Precondición de diseño**: requiere que el evento incluya tanto el monto anterior como el nuevo (`previousAmount`, `newAmount`) — ver pendientes, hoy el evento solo definía el estado nuevo.
+- **Flujo principal**: igual que `OnItemRecordedHandler` en la resolución del `BudgetPeriodStatus`, pero aplicando la diferencia (`newAmount - previousAmount`) en vez del monto completo.
 - **Eventos disparados**: `BudgetOverspent` (si aplica).
 
 ---
 
-### 7. OnItemReclassifiedHandler
-
-Mueve el gasto de un presupuesto a otro cuando un movimiento cambia de categoría.
+### 9. OnItemReclassifiedHandler
 
 - **Se dispara con**: `ItemReclassified`.
 - **Flujo principal**:
-  1. Se resta el monto del `Budget` de la categoría anterior (si existía uno para ese período).
-  2. Se suma el monto al `Budget` de la nueva categoría (si existe uno para ese período).
-- **Eventos disparados**: `BudgetOverspent` (para el presupuesto de destino, si aplica).
+  1. Se resta el monto del `BudgetPeriodStatus` de la categoría anterior (si existía uno para ese período).
+  2. Se suma el monto al `BudgetPeriodStatus` de la nueva categoría (creándolo si es necesario, igual que en `OnItemRecordedHandler`).
+- **Eventos disparados**: `BudgetOverspent` (para el `BudgetPeriodStatus` de destino, si aplica).
 
 ---
 
-### 8. OnItemDeletedHandler
-
-Revierte el efecto de un movimiento eliminado sobre el presupuesto correspondiente.
+### 10. OnItemDeletedHandler
 
 - **Se dispara con**: `ItemDeleted`.
-- **Flujo principal**: resta el monto del `Budget` correspondiente a la categoría/período del item eliminado, si existe.
-- **Eventos disparados**: ninguno (revertir un gasto nunca genera un nuevo sobregiro).
-
----
-
-### 9. ClosePeriod (proceso, no evento reactivo)
-
-Cierra un período mensual, consolidando el estado final de todos los presupuestos de la familia. A diferencia de los handlers anteriores, este no reacciona a un evento de `Financial Tracking` — se dispara por tiempo (fin de mes) o manualmente.
-
-- **Actor**: proceso programado (cron/scheduled job) — a definir mecanismo concreto (ver pendientes).
-- **Entrada**: `familyId`, `period`.
-- **Flujo principal**:
-  1. Se buscan todos los `Budget` activos de la familia para ese período.
-  2. Se invoca `budget.closePeriod()` en cada uno (marca el período como cerrado, deja de aceptar más `registerSpending`).
-  3. Se persisten.
-- **Errores posibles**: ninguno propio.
-- **Eventos disparados**: `BudgetPeriodClosed` (consumido por `Reporting`, para consolidar el histórico del período).
+- **Flujo principal**: resta el monto del `BudgetPeriodStatus` correspondiente a la categoría/período del item eliminado, si existe.
+- **Eventos disparados**: ninguno.
 
 ---
 
@@ -148,16 +169,16 @@ Cierra un período mensual, consolidando el estado final de todos los presupuest
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
-| `BudgetNotFoundError` | UpdateBudgetAmount, DeleteBudget | ❌ nuevo |
-| `DuplicateBudgetForPeriodError` | CreateBudget | ❌ nuevo |
-| `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudget | (compartidos con `Financial Tracking`, ya documentados ahí) |
-| `InvalidMoneyError` | CreateBudget, UpdateBudgetAmount | ✅ ya definido (en `Financial Tracking` — a decidir si se mueve a `shared-kernel`, ver pendientes) |
+| `BudgetConfigurationNotFoundError` | UpdateDefaultBudgetAmount, SetBudgetOverrideForPeriod, RemoveBudgetOverrideForPeriod, DeactivateBudgetConfiguration | ❌ nuevo |
+| `DuplicateBudgetConfigurationError` | CreateBudgetConfiguration | ❌ nuevo |
+| `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ❌ nuevo |
+| `InvalidBudgetPeriodError` | Construcción de `BudgetPeriod` (mes fuera de 1–12) | ❌ nuevo |
+| `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudgetConfiguration | (compartidos con `Financial Tracking`) |
+| `InvalidMoneyError` | Varios | ✅ ya definido (pendiente de mover a `shared-kernel`, ver más abajo) |
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: mismo punto abierto que en `Financial Tracking` — ¿cualquier `Member` puede crear/editar/eliminar presupuestos, o queda reservado a `Owner`?
-2. **`Money` compartido**: `Budgeting` necesita el Value Object `Money` que hoy vive en `financial-tracking/domain/value-objects/`. Como ya movimos `Currency` a `shared-kernel` por la misma razón, probablemente `Money` deba seguir el mismo camino para que `Budgeting` no dependa del dominio interno de `Financial Tracking`.
-3. **Consulta cruzada de categorías**: `CreateBudget` y `GetBudgets` necesitan resolver `categoryId → datos de la categoría` (para validar que existe/está activa, y para mostrar su nombre). Se resolvería con un puerto similar a `CategoryLookupPort`, que ya definimos como ejemplo cuando vimos `AI Assistance`.
-4. **`OnItemAmountChangedHandler`**: necesita saber el monto *anterior* del item para calcular la diferencia — hay que decidir si el evento `ItemAmountChanged` debe incluir `previousAmount` además del nuevo (hoy no está definido qué payload exacto lleva este evento).
-5. **Mecanismo de `ClosePeriod`**: ¿cron job dentro del propio backend (ej. `node-cron`), un endpoint que se llama externamente (ej. desde un servicio de scheduling del proveedor cloud), o se calcula "al vuelo" en `GetBudgets` sin necesidad de un cierre físico? Esto último simplificaría bastante el diseño y evitaría depender de infraestructura de scheduling — a evaluar si `ClosePeriod` es realmente necesario para el MVP.
-6. **Definición de "período"**: se asume mensual en toda la documentación (consistente con la especificación original), pero no está formalizado como Value Object (`BudgetPeriod`) con sus propias reglas (ej. cómo se calculan los límites de un mes, zona horaria a usar).
+1. **Permisos**: mismo punto abierto que en `Financial Tracking` — ¿cualquier `Member` puede gestionar presupuestos, o solo `Owner`?
+2. **`Money` compartido**: sigue pendiente moverlo a `shared-kernel`, igual que `Currency`, para que `Budgeting` no dependa del dominio interno de `Financial Tracking`.
+3. **Consulta cruzada de categorías**: `CreateBudgetConfiguration` y `GetBudgets` necesitan un puerto tipo `CategoryLookupPort` hacia `Financial Tracking`.
+4. **`ItemAmountChanged` necesita `previousAmount`**: hay que confirmar/ajustar el payload del evento para que `OnItemAmountChangedHandler` pueda calcular la diferencia correctamente.
