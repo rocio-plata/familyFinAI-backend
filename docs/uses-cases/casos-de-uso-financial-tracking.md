@@ -4,6 +4,8 @@ Documentación de los casos de uso del contexto `Financial Tracking` (core domai
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
+> **Estado de implementación**: los 16 casos de uso de este documento (1–16) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
+
 ---
 
 ## FinancialItem
@@ -268,25 +270,27 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
-| `FinancialItemNotFoundError` | UpdateFinancialItemAmount, ReclassifyFinancialItem, DeleteFinancialItem | ❌ nuevo |
-| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory,DeleteCategory, DeprecateCategory | ❌ nuevo |
-| `CategoryNotFoundError` | Varios | ❌ nuevo |
-| `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem, AddTagToCategory | ❌ nuevo |
-| `TagNotFoundError` | Varios | ❌ nuevo |
-| `TagNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
-| `TagDoesNotBelongToCategoryError` | CreateFinancialItem, ReclassifyFinancialItem | ❌ nuevo |
-| `DuplicateCategoryNameError` | CreateCategory, RenameCategory | ❌ nuevo |
-| `DuplicateTagNameError` | AddTagToCategory, RenameTag | ❌ nuevo |
-| `InvalidTagOrderError` | ReorderCategoryTags | ❌ nuevo |
+| `FinancialItemNotFoundError` | UpdateFinancialItem, ReclassifyFinancialItem, DeleteFinancialItem | ✅ ya definido |
+| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory, DeleteCategory, DeprecateCategory, RenameTag, DeleteTag, DeprecateTag | ✅ ya definido |
+| `CategoryNotFoundError` | Varios | ✅ ya definido |
+| `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem, AddTagToCategory | ✅ ya definido |
+| `TagNotFoundError` | Varios | ✅ ya definido |
+| `TagNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ✅ ya definido |
+| `TagDoesNotBelongToCategoryError` | CreateFinancialItem, ReclassifyFinancialItem | ✅ ya definido |
+| `DuplicateCategoryNameError` | CreateCategory, RenameCategory | ✅ ya definido |
+| `DuplicateTagNameError` | AddTagToCategory, RenameTag | ✅ ya definido |
+| `InvalidTagOrderError` | ReorderCategoryTags | ✅ ya definido |
 | `CategoryHasAssociatedItemsError` | DeleteCategory | ✅ ya definido |
 | `TagHasAssociatedItemsError` | DeleteTag | ✅ ya definido |
 | `InvalidMoneyError`, `InvalidTitleError`, `InvalidNoteError`, `FutureTransactionDateError`, `InvalidCategoryNameError`, `InvalidTagNameError` | CreateFinancialItem y afines | ✅ ya definidos |
 
 ## Pendientes antes de implementar
 
-1. **Permisos**: a diferencia de `Family & Access` (donde casi todo requería `Owner`), aquí no está definido qué rol puede hacer qué para la mayoría de los casos de uso. La especificación original sugiere que cualquier miembro puede registrar/consultar — pero ¿cualquier miembro puede editar o eliminar un movimiento que registró *otro* miembro? Ya **decidido**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory` y `DeprecateCategory` restringidos a `Owner`; `AddTagToCategory` y `ReorderCategoryTags` permitidos para cualquier `Member`; pendiente definir el resto (tags de renombrado/borrado, etc.).
-2. **Eventos de renombrado**: `RenameCategory`/`RenameTag` no tienen evento definido en el catálogo original del proyecto — hay que decidir si `Reporting` y `AI Assistance` (`MerchantCategoryHistory`) necesitan enterarse de un cambio de nombre para no mostrar/usar el nombre viejo.
-3. **`DeleteCategory`/`DeleteTag` sin evento**: a confirmar si esto es correcto (por definición, una categoría eliminable nunca tuvo items, así que no debería haber nada que revertir en otros contextos) o si igual conviene emitir un evento por auditoría.
-4. **`AddTagToCategory` sobre categoría deprecada**: **decidido** — se rechaza con `CategoryNotActiveError`; una categoría debe reactivarse primero (`ReactivateCategory`) antes de poder agregarle tags nuevos.
-5. **Estrategia de borrado de `FinancialItem`**: `DeleteFinancialItem` — ¿borrado físico o soft-delete (campo `deletedAt`)? Afecta directamente cómo se implementa `FinancialItemRepository.delete()` y si `GetFinancialItems` necesita excluir eliminados.
-6. **Resolución de `Currency` por defecto**: `CreateFinancialItem` necesita leer `family.defaultCurrency` cuando no se especifica moneda explícita — esto acopla el caso de uso de `Financial Tracking` a una consulta hacia `Family & Access` (mismo patrón que `CategoryLookupPort` que ya usa `AI Assistance`, pero en sentido inverso).
+> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 16 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
+
+1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
+2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Sigue pendiente para `Reporting`/`AI Assistance` si en el futuro necesitan reaccionar a un renombrado.
+3. **`DeleteCategory`/`DeleteTag` sin evento** — **resuelto**: se implementaron sin publicar eventos (no reciben `EventBus`), confirmando que por definición nunca tuvieron items asociados y no hay nada que revertir en otros contextos.
+4. **`AddTagToCategory` sobre categoría deprecada** — **resuelto e implementado**: se rechaza con `CategoryNotActiveError`; una categoría debe reactivarse primero (`ReactivateCategory`) antes de poder agregarle tags nuevos.
+5. **Estrategia de borrado de `FinancialItem`** — **resuelto**: borrado físico. `DeleteFinancialItemUseCase` invoca `FinancialItemRepository.delete()` y publica `ItemDeleted` para que `Budgeting`/`Reporting` reviertan el efecto de `ItemRecorded`.
+6. **Resolución de `Currency` por defecto**: sigue pendiente. `CreateFinancialItemUseCase` recibe un `amount: Money` ya construido (con la moneda ya resuelta) — no consulta `family.defaultCurrency` internamente. La resolución del default (cuando el cliente no especifica moneda) queda diferida a la capa que construya el comando de entrada (previsiblemente la capa HTTP, aún no implementada para este contexto).
