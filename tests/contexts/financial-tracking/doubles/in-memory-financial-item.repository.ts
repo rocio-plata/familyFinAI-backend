@@ -1,5 +1,10 @@
-// tests/contexts/financial-tracking/doubles/in-memory-financial-item.repository.tsimport type { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
-import type { FinancialItemRepository } from "../../../../src/contexts/financial-tracking/domain/repositories/financial-item.repository.js";
+// tests/contexts/financial-tracking/doubles/in-memory-financial-item.repository.ts
+import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import type {
+  FinancialItemFilters,
+  FinancialItemRepository,
+} from "../../../../src/contexts/financial-tracking/domain/repositories/financial-item.repository.js";
 import type { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import type { FinancialItemId } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
 import type { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
@@ -21,6 +26,34 @@ class InMemoryFinancialItemRepository implements FinancialItemRepository {
 
   async findById(id: FinancialItemId): Promise<FinancialItem | null> {
     return this.items.get(id.toString()) ?? null;
+  }
+
+  async findByFamilyId(
+    familyId: FamilyId,
+    filters?: FinancialItemFilters,
+  ): Promise<FinancialItem[]> {
+    return [...this.items.values()].filter((item) => {
+      if (item.familyId.toString() !== familyId.toString()) return false;
+      if (filters?.categoryId && !item.categoryAssignment.categoryId.equals(filters.categoryId)) {
+        return false;
+      }
+      if (filters?.tagId && !item.categoryAssignment.tagId?.equals(filters.tagId)) {
+        return false;
+      }
+      if (filters?.type && item.type !== filters.type) {
+        return false;
+      }
+      if (filters?.period) {
+        const occurredOn = item.occurredOn.value.getTime();
+        if (
+          occurredOn < filters.period.from.getTime() ||
+          occurredOn > filters.period.to.getTime()
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   async delete(id: FinancialItemId): Promise<void> {
