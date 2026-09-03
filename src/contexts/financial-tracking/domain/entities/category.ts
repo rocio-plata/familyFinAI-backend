@@ -96,6 +96,11 @@ class Category {
     }
   }
 
+  removeTag(tagId: TagId): void {
+    // llamado únicamente por TagDeletionService tras confirmar que no tiene items asociados
+    this._tags = this._tags.filter((tag) => !tag.id.equals(tagId));
+  }
+
   markAsDeleted(): void {
     // llamado únicamente por CategoryDeletionService tras confirmar que no tiene items asociados
   }
