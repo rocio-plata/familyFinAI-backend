@@ -205,9 +205,10 @@ Reordena los tags de una categoría según la preferencia manual del usuario.
 
 ### 12. RenameTag
 
-- **Entrada**: `familyId`, `categoryId`, `tagId`, `newName`.
-- **Flujo principal**: análogo a `RenameCategory`, operando sobre el `Tag` dentro de la `Category`.
-- **Errores posibles**: `CategoryNotFoundError`, `TagNotFoundError`, `InvalidTagNameError`, `DuplicateTagNameError`.
+- **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `tagId`, `newName`.
+- **Flujo principal**: análogo a `RenameCategory`, operando sobre el `Tag` dentro de la `Category` (incluyendo la validación de rol `Owner` vía `GetFamilyMembershipQuery`).
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `TagNotFoundError`, `InvalidTagNameError`, `DuplicateTagNameError`.
 - **Eventos disparados**: ninguno definido (mismo pendiente que `RenameCategory`).
 
 ---
@@ -216,9 +217,10 @@ Reordena los tags de una categoría según la preferencia manual del usuario.
 
 Elimina físicamente un tag, usando `TagDeletionService`.
 
-- **Entrada**: `familyId`, `categoryId`, `tagId`.
-- **Flujo principal**: análogo a `DeleteCategory`, usando `TagDeletionService.delete(tag)` (consulta `FinancialItemRepository.countByTag()`).
-- **Errores posibles**: `CategoryNotFoundError`, `TagNotFoundError`, `TagHasAssociatedItemsError`.
+- **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `tagId`.
+- **Flujo principal**: análogo a `DeleteCategory` (incluyendo la validación de rol `Owner` vía `GetFamilyMembershipQuery`), usando `TagDeletionService.delete(tag)` (consulta `FinancialItemRepository.countByTag()`).
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `TagNotFoundError`, `TagHasAssociatedItemsError`.
 - **Eventos disparados**: ninguno definido.
 
 ---
