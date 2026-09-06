@@ -1,8 +1,10 @@
 // /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
+import type { AcceptInvitationUseCase } from "../../application/commands/accept-invitation.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
+import { InvitationId } from "../../domain/value-objects/invitation-id.js";
 
 interface FamilyRoutesDependencies {
   authenticate: preHandlerHookHandler;
@@ -10,6 +12,7 @@ interface FamilyRoutesDependencies {
     minRole?: import("../../domain/value-objects/role.js").Role,
   ) => preHandlerHookHandler;
   createFamilyUseCase: CreateFamilyUseCase;
+  acceptInvitationUseCase: AcceptInvitationUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
 }
 
@@ -63,6 +66,30 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
           joinedAt: m.joinedAt.toISOString(),
         })),
       );
+    },
+  );
+
+  app.post(
+    "/invitations/:invitationId/accept",
+    {
+      preHandler: [deps.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          required: ["invitationId"],
+          properties: { invitationId: { type: "string" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { invitationId } = request.params as { invitationId: string };
+
+      await deps.acceptInvitationUseCase.execute({
+        invitationId: InvitationId.of(invitationId),
+        acceptingUserId: request.userId,
+      });
+
+      return reply.code(204).send();
     },
   );
 }
