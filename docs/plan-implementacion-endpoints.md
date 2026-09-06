@@ -7,7 +7,8 @@ Orden lógico para exponer, vía Fastify, los casos de uso ya diseñados (y en s
 ## Estado actual (punto de partida)
 
 - **Piezas transversales ya construidas**: `buildApp()`/`AppDependencies`, manejador global de errores (`DomainError` → status HTTP + errores de validación de JSON Schema de Fastify → 400), middleware `authenticate`, `buildFamilyAccessModule()` (helper de composición por contexto).
-- **Identity** (contexto nuevo, upstream de todo): casos de uso implementados y testeados a nivel de aplicación — `RegisterUser`, `Login`, `GetUserProfile`, `ChangePassword`, `GetUserIdByEmail` (query interna, ya integrada vía `IdentityUserDirectoryAdapter`, no se expone por HTTP). Falta implementar `UpdateDisplayName` (solo documentado). Existe el workflow de composición `RegisterUserWithPersonalFamilyWorkflow` (`platform/workflows/`), que orquesta `RegisterUser` + `CreateFamily`. **Ninguna ruta HTTP ni `identity.module.ts` todavía.**
+- **Identity** (contexto nuevo, upstream de todo): casos de uso implementados y testeados a nivel de aplicación — `RegisterUser`, `Login`, `GetUserProfile`, `ChangePassword`, `GetUserIdByEmail` (query interna, ya integrada vía `IdentityUserDirectoryAdapter`, wireada en `server.ts`, no se expone por HTTP). Falta implementar `UpdateDisplayName` (solo documentado). Existe el workflow de composición `RegisterUserWithPersonalFamilyWorkflow` (`platform/workflows/`), que orquesta `RegisterUser` + `CreateFamily`. `buildIdentityModule()` ✅ implementado. Rutas expuestas: `POST /auth/register` ✅ y `POST /auth/login` ✅. Pendientes: `GET /me/profile`, `PATCH /me/display-name` (bloqueado por `UpdateDisplayName` sin implementar), `PATCH /me/password`.
+- **`platform/auth`**: `JwtService`, `TokenService` (con rotación y detección de robo) y `RefreshToken` ya implementados a nivel de servicio, pero **`POST /auth/refresh` y `POST /auth/logout` todavía no están conectados a ninguna ruta HTTP** — quedaron pendientes de sesiones anteriores y no estaban reflejados en este plan; se agregan ahora en la Fase 1.
 - **Family & Access**: los 9 casos de uso originales están implementados, testeados y **expuestos por HTTP** (`POST /families`, `GET /families/:familyId/members`, `POST /families/:familyId/invitations`, `POST /invitations/:invitationId/accept`, `DELETE /invitations/:invitationId`, `DELETE /families/:familyId/members/:memberId`, `PATCH /families/:familyId/members/:memberId/role`, `PATCH /families/:familyId/settings/currency`, `GET /families/:familyId/members/me`), todos con TDD completo. Además, ya se implementó la extensión multi-familia a nivel de aplicación (`GetFamiliesForUser`, `ReorderMyFamilies`, `displayOrder` en `Member`) — **sin ruta HTTP todavía**.
 - **Financial Tracking, Budgeting, Reporting, AI Assistance**: documentados (casos de uso), con las entidades/value objects centrales implementados, pero **ningún caso de uso de aplicación ni ruta HTTP** todavía.
 - **Persistencia**: todo corre sobre repositorios in-memory. La integración con Postgres/Drizzle está documentada pero no implementada (bloqueada por el patrón `reconstitute()` pendiente).
@@ -30,9 +31,10 @@ Para mantener consistencia, cada endpoint nuevo sigue el mismo checklist, ya val
 
 Antes de escalar a docenas de endpoints, resolver esto evita repetir el mismo problema muchas veces:
 
-1. **Helper de registro de dependencias por contexto**: ya resuelto para `Family & Access` (`buildFamilyAccessModule()`). Falta el análogo `buildIdentityModule()` antes de exponer las rutas de la Fase 1.
+1. ~~**Helper de registro de dependencias por contexto**: ya resuelto para `Family & Access` (`buildFamilyAccessModule()`). Falta el análogo `buildIdentityModule()` antes de exponer las rutas de la Fase 1.~~ ✅ `buildIdentityModule()` implementado.
 2. **`requireFamilyMembership` conectado de verdad**: ✅ confirmado end-to-end con los endpoints de `Family & Access` (Fase 2).
 3. **Confirmar el criterio de permisos pendiente**: varios documentos de casos de uso (`Financial Tracking`, `Budgeting`) dejaron abierto si las acciones requieren `Owner` o cualquier `Member`. Antes de exponer esos endpoints, conviene resolverlo — cambia qué `minRole` se pasa a `requireFamilyMembership` en cada ruta. `Financial Tracking` ya quedó resuelto en su documento de casos de uso; `Budgeting` sigue pendiente de diseño.
+4. **`EmailAddress` movida a `shared-kernel`**: pendiente identificado en `identity-y-multi-familia.md` — hoy `Identity` reutiliza el VO de `family-access` en lugar de tenerlo en `shared-kernel`. No bloquea nada por ahora (ambos contextos ya lo comparten funcionalmente), pero conviene resolverlo antes de que un tercer contexto necesite `EmailAddress`.
 
 ---
 
@@ -40,12 +42,16 @@ Antes de escalar a docenas de endpoints, resolver esto evita repetir el mismo pr
 
 Hasta ahora, obtener un token válido para probar los endpoints de `Family & Access` requería un script manual (`npm run token`). Este contexto resuelve el flujo real: sin él no existe una forma legítima de que un usuario obtenga su primer token. Por eso, en términos de dependencias, debería haberse expuesto **antes** que `Family & Access` — se documenta ahora en su posición lógica, aunque en la práctica `Family & Access` ya se implementó primero (usando tokens generados manualmente para las pruebas).
 
-0. **`buildIdentityModule()`**: mismo patrón que `buildFamilyAccessModule()` (Fase 0, punto 1) — evita recargar `buildApp()` con la construcción manual de cada caso de uso.
-1. `POST /auth/register` — invoca el workflow `RegisterUserWithPersonalFamilyWorkflow` (ya implementado), **no** `RegisterUserUseCase` directamente (ver `docs/identity-y-multi-familia.md`). No requiere `authenticate`.
-2. `POST /auth/login` (`Login`). No requiere `authenticate`.
-3. `GET /me/profile` (`GetUserProfile`) — requiere `authenticate`, sin `requireFamilyMembership` (no depende de una familia específica).
-4. `PATCH /me/display-name` (`UpdateDisplayName`) — **el caso de uso todavía no está implementado**, hay que escribirlo antes (mismo patrón TDD que el resto: dominio primero, luego la ruta).
-5. `PATCH /me/password` (`ChangePassword`) — requiere `authenticate`.
+0. ~~`buildIdentityModule()`~~ ✅ — mismo patrón que `buildFamilyAccessModule()` (Fase 0, punto 1).
+1. ~~`POST /auth/register`~~ ✅ — invoca el workflow `RegisterUserWithPersonalFamilyWorkflow`, **no** `RegisterUserUseCase` directamente (ver `docs/identity-y-multi-familia.md`). No requiere `authenticate`.
+2. ~~`POST /auth/login` (`Login`)~~ ✅. No requiere `authenticate`.
+3. `GET /me/profile` (`GetUserProfile`) — **pendiente**: requiere `authenticate`, sin `requireFamilyMembership` (no depende de una familia específica).
+4. `PATCH /me/display-name` (`UpdateDisplayName`) — **pendiente**: el caso de uso todavía no está implementado, hay que escribirlo antes (mismo patrón TDD que el resto: dominio primero, luego la ruta).
+5. `PATCH /me/password` (`ChangePassword`) — **pendiente**: requiere `authenticate`.
+6. `POST /auth/refresh` (`TokenService.refresh`) — **pendiente**: cerrado a nivel de servicio pero nunca conectado a una ruta HTTP real. Con test de integración cubriendo rotación normal, token inválido, y el caso de reuso detectado (`PossibleTokenTheftError` → 401). No requiere `authenticate` (el propio refresh token es la credencial).
+7. `POST /auth/logout` (`TokenService.revokeAll`) — **pendiente**: requiere `authenticate` como preHandler.
+
+**Nota de composición**: los puntos 6 y 7 no dependen de que exista `User` (`TokenService` solo trabaja con `UserId`), por lo que podrían haberse resuelto en paralelo a cualquier otro punto de esta fase; se registran aquí, junto al resto de rutas de autenticación, en vez de en un módulo aparte, salvo que se prefiera agruparlas en su propio `platform/auth/auth.module.ts` (mismo patrón `buildXModule`) para no sobrecargar `app.ts`.
 
 **Nota**: `GetUserIdByEmail` no se expone por HTTP — es una query interna que ya consume `Family & Access` vía `IdentityUserDirectoryAdapter`.
 
