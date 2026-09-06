@@ -70,6 +70,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         createFamilyUseCase: useCases.createFamily,
         acceptInvitationUseCase: useCases.acceptInvitation,
         revokeInvitationUseCase: useCases.revokeInvitation,
+        removeMemberUseCase: useCases.removeMember,
         getFamilyMembersQuery: useCases.getFamilyMembers,
       });
     },
