@@ -6,7 +6,6 @@ import { EmailAlreadyRegisteredError } from "../../../src/contexts/identity/doma
 import { InvalidDisplayNameError } from "../../../src/contexts/identity/domain/errors/invalid-display-name.error.js";
 import { WeakPasswordError } from "../../../src/contexts/identity/domain/errors/weak-password.error.js";
 import { UserRegistered } from "../../../src/contexts/identity/domain/events/user-registered.event.js";
-import { PasswordHash } from "../../../src/contexts/identity/domain/value-objects/password-hash.js";
 import { TokenService } from "../../../src/platform/auth/tokens.js";
 import { FakeJwtService } from "../../platform/auth/doubles/fake-jwt-service.js";
 import { InMemoryRefreshTokenRepository } from "../../platform/auth/doubles/in-memory-refresh-token.repository.js";
@@ -48,7 +47,12 @@ describe("RegisterUserUseCase", () => {
     });
 
     const persisted = await userRepository.findById(user.id);
-    assert.ok(persisted?.verifyPassword(PasswordHash.fromStoredHash("hashed:supersecreta")));
+    assert.ok(
+      persisted?.verifyPassword(
+        "cualquier-texto",
+        (_plainText, storedHash) => storedHash === "hashed:supersecreta",
+      ),
+    );
   });
 
   test("emite un par de tokens de acceso", async () => {

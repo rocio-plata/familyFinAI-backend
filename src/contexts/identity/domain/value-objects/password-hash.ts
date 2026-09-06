@@ -22,6 +22,11 @@ class PasswordHash {
     return this.value === other.value;
   }
 
+  // delega en la función de verificación real (ej. scrypt), que sabe extraer el salt del hash almacenado
+  matches(plainText: string, verify: (plainText: string, storedHash: string) => boolean): boolean {
+    return verify(plainText, this.value);
+  }
+
   toString(): string {
     return this.value;
   }

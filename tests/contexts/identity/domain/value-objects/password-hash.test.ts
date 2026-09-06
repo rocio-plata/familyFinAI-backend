@@ -29,4 +29,13 @@ describe("PasswordHash", () => {
     assert.ok(a.equals(b));
     assert.ok(!a.equals(c));
   });
+
+  it("matches() delega la verificación en la función recibida", () => {
+    const hash = PasswordHash.fromStoredHash("salt:digest");
+    const verifyOk = (plainText: string, storedHash: string) =>
+      plainText === "supersecreta" && storedHash === "salt:digest";
+
+    assert.ok(hash.matches("supersecreta", verifyOk));
+    assert.ok(!hash.matches("otra-contraseña", verifyOk));
+  });
 });
