@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/application/commands/update-financial-item.usecase.ts
+// /src/contexts/financial-tracking/application/commands/update-financial-item.usecase.ts
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { FinancialItem } from "../../domain/entities/financial-item.js";

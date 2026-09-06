@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/errors/future-transaction-date.error.ts
+// /src/contexts/financial-tracking/domain/errors/future-transaction-date.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class FutureTransactionDateError extends DomainError {

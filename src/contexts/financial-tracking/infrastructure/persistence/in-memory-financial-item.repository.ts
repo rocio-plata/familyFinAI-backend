@@ -1,4 +1,4 @@
-// contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.ts
+// /src/contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.ts
 
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { FinancialItem } from "../../domain/entities/financial-item.js";

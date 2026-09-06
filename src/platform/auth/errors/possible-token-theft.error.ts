@@ -1,4 +1,4 @@
-// platform/auth/errors/possible-token-theft.error.ts
+// /src/platform/auth/errors/possible-token-theft.error.ts
 import { DomainError } from "../../../shared-kernel/errors/domain-error.js";
 
 class PossibleTokenTheftError extends DomainError {

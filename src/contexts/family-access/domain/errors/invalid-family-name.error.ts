@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/invalid-family-name.error.ts
+// /src/contexts/family-access/domain/errors/invalid-family-name.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidFamilyNameError extends DomainError {

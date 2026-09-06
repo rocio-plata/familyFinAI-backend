@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/application/commands/create-financial-item.usecase.ts
+// /src/contexts/financial-tracking/application/commands/create-financial-item.usecase.ts
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
@@ -83,14 +83,13 @@ class CreateFinancialItemUseCase {
     };
     const item = FinancialItem.create(props);
 
-    // 6. Publicar eventos
-    const events = item.pullDomainEvents();
-    for (const event of events) {
+    // 6. Persistir
+    await this.itemRepository.save(item);
+
+    // 7. Publicar eventos
+    for (const event of item.pullDomainEvents()) {
       await this.eventBus.publish(event);
     }
-
-    // 7. Persistir
-    await this.itemRepository.save(item);
 
     return item;
   }

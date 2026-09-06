@@ -1,4 +1,4 @@
-// shared-kernel/domain/currency.ts
+// /src/shared-kernel/errors/unsupported-currency.error.ts
 import { DomainError } from "../errors/domain-error.js";
 
 class UnsupportedCurrencyError extends DomainError {

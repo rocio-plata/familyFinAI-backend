@@ -1,4 +1,4 @@
-// src/contexts/family-access/domain/value-objects/invitation-id.ts
+// /src/contexts/family-access/domain/value-objects/invitation-id.ts
 import { randomUUID } from "node:crypto";
 import { isValidUUID } from "../../../../shared-kernel/domain/uuid.js";
 import { InvalidInvitationIdError } from "../errors/invalid-invitation-id.error.js";

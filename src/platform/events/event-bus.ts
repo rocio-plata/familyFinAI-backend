@@ -1,4 +1,4 @@
-// platform/events/event-bus.ts
+// /src/platform/events/event-bus.ts
 import type { DomainEvent } from "../../shared-kernel/domain/domain-event.js";
 
 interface EventBus {

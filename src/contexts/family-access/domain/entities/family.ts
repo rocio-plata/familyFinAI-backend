@@ -1,4 +1,4 @@
-// contexts/family-access/domain/entities/family.ts
+// /src/contexts/family-access/domain/entities/family.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import { CannotRemoveLastOwnerError } from "../errors/cannot-remove-last-owner.error.js";

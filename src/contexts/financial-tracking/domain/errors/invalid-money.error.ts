@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/errors/invalid-money.error.ts
+// /src/contexts/financial-tracking/domain/errors/invalid-money.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidMoneyError extends DomainError {

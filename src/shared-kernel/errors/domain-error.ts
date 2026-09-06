@@ -1,4 +1,4 @@
-// shared-kernel/errors/domain-error.ts
+// /src/shared-kernel/errors/domain-error.ts
 abstract class DomainError extends Error {
   abstract readonly code: string;
 

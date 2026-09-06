@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/errors/tag-does-not-belong-to-category.error.ts
+// /src/contexts/financial-tracking/domain/errors/tag-does-not-belong-to-category.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class TagDoesNotBelongToCategoryError extends DomainError {

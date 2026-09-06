@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/errors/category-not-active.error.ts
+// /src/contexts/financial-tracking/domain/errors/category-not-active.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class CategoryNotActiveError extends DomainError {

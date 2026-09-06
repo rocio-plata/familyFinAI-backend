@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/entities/category.ts
+// /src/contexts/financial-tracking/domain/entities/category.ts
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";

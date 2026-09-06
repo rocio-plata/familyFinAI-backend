@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/category-assignment.ts
+// /src/contexts/financial-tracking/domain/value-objects/category-assignment.ts
 import type { CategoryId } from "./category-id.js";
 import type { TagId } from "./tag-id.js";
 

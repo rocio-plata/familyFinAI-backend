@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/financial-item-type.ts
+// /src/contexts/financial-tracking/domain/value-objects/financial-item-type.ts
 enum FinancialItemType {
   Expense = "EXPENSE",
   Income = "INCOME",

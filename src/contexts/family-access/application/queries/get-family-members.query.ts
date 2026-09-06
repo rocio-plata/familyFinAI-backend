@@ -1,4 +1,4 @@
-// contexts/family-access/application/queries/get-family-members.query.ts
+// /src/contexts/family-access/application/queries/get-family-members.query.ts
 
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
 import type { FamilyRepository } from "../../domain/repositories/family.repository.js";

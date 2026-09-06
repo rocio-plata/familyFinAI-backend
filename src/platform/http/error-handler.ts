@@ -1,4 +1,4 @@
-// platform/http/error-handler.ts
+// /src/platform/http/error-handler.ts
 import type { FastifyError, FastifyInstance } from "fastify";
 import { DomainError } from "../../shared-kernel/errors/domain-error.js";
 import { resolveHttpStatus } from "./domain-error-http-status.js";
@@ -8,6 +8,10 @@ function registerErrorHandler(app: FastifyInstance): void {
     if (error instanceof DomainError) {
       const status = resolveHttpStatus(error);
       return reply.code(status).send({ error: error.code, message: error.message });
+    }
+
+    if ("validation" in error && error.validation) {
+      return reply.code(400).send({ error: "HTTP.INVALID_REQUEST_BODY", message: error.message });
     }
 
     request.log.error(error);

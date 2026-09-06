@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/application/commands/delete-category.usecase.ts
+// /src/contexts/financial-tracking/application/commands/delete-category.usecase.ts
 import type { GetFamilyMembershipQuery } from "../../../family-access/application/queries/get-family-membership.query.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";

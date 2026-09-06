@@ -1,4 +1,4 @@
-// platform/auth/refresh-token.repository.ts
+// /src/platform/auth/refresh-token.repository.ts
 
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 import type { RefreshToken } from "./refresh-token.js";

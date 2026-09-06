@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/events/item-reclassified.event.ts
+// /src/contexts/financial-tracking/domain/events/item-reclassified.event.ts
 import { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { CategoryId } from "../value-objects/category-id.js";
 import type { FinancialItemId } from "../value-objects/financial-item-id.js";

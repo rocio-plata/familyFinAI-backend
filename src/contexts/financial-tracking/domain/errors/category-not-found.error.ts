@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/errors/category-not-found.error.ts
+// /src/contexts/financial-tracking/domain/errors/category-not-found.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class CategoryNotFoundError extends DomainError {

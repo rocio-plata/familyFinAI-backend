@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/family-not-found.error.ts
+// /src/contexts/family-access/domain/errors/family-not-found.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class FamilyNotFoundError extends DomainError {

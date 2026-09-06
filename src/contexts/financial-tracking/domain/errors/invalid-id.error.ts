@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/errors/invalid-id.error.ts
+// /src/contexts/financial-tracking/domain/errors/invalid-id.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidFinancialItemIdError extends DomainError {

@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/errors/invalid-tag-name.error.ts
+// /src/contexts/financial-tracking/domain/errors/invalid-tag-name.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidTagNameError extends DomainError {

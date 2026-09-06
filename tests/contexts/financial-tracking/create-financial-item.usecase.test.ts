@@ -22,6 +22,10 @@ import { Title } from "../../../src/contexts/financial-tracking/domain/value-obj
 import { TransactionDate } from "../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
 import { Currency } from "../../../src/shared-kernel/domain/currency.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
+import {
+  OrderRecordingEventBus,
+  OrderRecordingFinancialItemRepository,
+} from "./doubles/execution-order-recorder.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
 import { InMemoryFinancialItemRepository } from "./doubles/in-memory-financial-item.repository.js";
 
@@ -120,6 +124,32 @@ describe("CreateFinancialItemUseCase", () => {
     const event = eventBus.publishedEvents[0];
     assert.ok(event instanceof ItemRecorded);
     assert.equal(event.eventName, "financial-tracking.item-recorded");
+  });
+
+  test("persiste el item antes de publicar ItemRecorded", async () => {
+    const operations: string[] = [];
+    const orderRecordingRepository = new OrderRecordingFinancialItemRepository(operations);
+    const orderRecordingEventBus = new OrderRecordingEventBus(operations);
+    const orderRecordingUseCase = new CreateFinancialItemUseCase(
+      orderRecordingRepository,
+      categoryRepository,
+      orderRecordingEventBus,
+    );
+    const category = Category.create(familyId, CategoryName.of("Servicios"));
+    categoryRepository.add(category);
+
+    await orderRecordingUseCase.execute({
+      familyId,
+      recordedBy,
+      categoryId: category.id,
+      tagId: null,
+      amount: Money.of(50000, Currency.default()),
+      title: Title.of("Pago de internet"),
+      note: null,
+      occurredOn: TransactionDate.of(new Date("2024-01-15")),
+    });
+
+    assert.deepEqual(operations, ["persist", "publish"]);
   });
 
   test("rechaza monto negativo", async () => {

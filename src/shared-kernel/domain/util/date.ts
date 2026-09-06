@@ -1,4 +1,4 @@
-// shared-kernel/domain/util/date.ts
+// /src/shared-kernel/domain/util/date.ts
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);

@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/services/tag-deletion.service.ts
+// /src/contexts/financial-tracking/domain/services/tag-deletion.service.ts
 import type { Tag } from "../entities/tag.js";
 import { TagHasAssociatedItemsError } from "../errors/tag-has-associated-items.error.js";
 import type { FinancialItemRepository } from "../repositories/financial-item.repository.js";

@@ -1,10 +1,11 @@
 // tests/platform/auth/doubles/fake-jwt-service.ts
 
 import type { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import type { JwtPayload, JwtService } from "../../../../src/platform/auth/jwt.js";
+import type { JwtPayload } from "../../../../src/platform/auth/jwt.js";
+import type { JwtSigner, SignOptions } from "../../../../src/platform/auth/jwt-signer.js";
 
-class FakeJwtService implements Pick<JwtService, "sign" | "verify"> {
-  async sign(userId: UserId): Promise<string> {
+class FakeJwtService implements JwtSigner {
+  async sign(userId: UserId, _options?: SignOptions): Promise<string> {
     // token "falso" pero determinístico, suficiente para tests — no valida criptografía real
     return `fake-jwt.${userId.toString()}`;
   }

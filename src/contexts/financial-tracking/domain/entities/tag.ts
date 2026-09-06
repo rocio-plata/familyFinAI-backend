@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/entities/tag.ts
+// /src/contexts/financial-tracking/domain/entities/tag.ts
 
 import { TagId } from "../value-objects/tag-id.js";
 import type { TagName } from "../value-objects/tag-name.js";

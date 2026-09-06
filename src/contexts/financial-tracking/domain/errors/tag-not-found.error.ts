@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/errors/tag-not-found.error.ts
+// /src/contexts/financial-tracking/domain/errors/tag-not-found.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class TagNotFoundError extends DomainError {

@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/application/queries/get-financial-items.query.ts
+// /src/contexts/financial-tracking/application/queries/get-financial-items.query.ts
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import type {

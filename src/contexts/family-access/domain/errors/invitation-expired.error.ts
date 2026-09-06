@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/invitation-expired.error.ts
+// /src/contexts/family-access/domain/errors/invitation-expired.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvitationExpiredError extends DomainError {

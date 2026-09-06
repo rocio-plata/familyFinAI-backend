@@ -1,4 +1,4 @@
-// contexts/family-access/domain/events/member-removed.event.ts
+// /src/contexts/family-access/domain/events/member-removed.event.ts
 import { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../value-objects/family-id.js";
 import type { UserId } from "../value-objects/user-id.js";

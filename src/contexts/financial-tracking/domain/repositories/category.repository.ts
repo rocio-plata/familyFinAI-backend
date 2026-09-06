@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/repositories/category.repository.ts
+// /src/contexts/financial-tracking/domain/repositories/category.repository.ts
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { Category } from "../entities/category.js";
 import type { CategoryId } from "../value-objects/category-id.js";

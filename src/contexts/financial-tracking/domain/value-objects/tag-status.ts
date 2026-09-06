@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/tag-status.ts
+// /src/contexts/financial-tracking/domain/value-objects/tag-status.ts
 enum TagStatus {
   Active = "ACTIVE",
   Deprecated = "DEPRECATED", // preparado para el futuro

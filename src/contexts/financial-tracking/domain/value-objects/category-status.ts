@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/category-status.ts
+// /src/contexts/financial-tracking/domain/value-objects/category-status.ts
 enum CategoryStatus {
   Active = "ACTIVE",
   Deprecated = "DEPRECATED", // preparado para el futuro
