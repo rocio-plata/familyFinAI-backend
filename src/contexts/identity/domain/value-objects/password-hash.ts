@@ -1,4 +1,6 @@
 // /src/contexts/identity/domain/value-objects/password-hash.ts
+import { WeakPasswordError } from "../errors/weak-password.error.js";
+
 const MIN_PASSWORD_LENGTH = 8;
 
 class PasswordHash {
@@ -6,6 +8,9 @@ class PasswordHash {
 
   // recibe el hash ya calculado — el hasheo concreto (scrypt) es un detalle de infraestructura
   static fromPlainText(plainText: string, hash: (plainText: string) => string): PasswordHash {
+    if (plainText.length < MIN_PASSWORD_LENGTH) {
+      throw new WeakPasswordError();
+    }
     return new PasswordHash(hash(plainText));
   }
 
