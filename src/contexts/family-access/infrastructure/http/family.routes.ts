@@ -7,6 +7,7 @@ import type { CreateFamilyUseCase } from "../../application/commands/create-fami
 import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
 import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
+import type { GetFamilyMembershipQuery } from "../../application/queries/get-family-membership.query.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
 import { Role } from "../../domain/value-objects/role.js";
@@ -22,6 +23,7 @@ interface FamilyRoutesDependencies {
   changeMemberRoleUseCase: ChangeMemberRoleUseCase;
   changeDefaultCurrencyUseCase: ChangeDefaultCurrencyUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
+  getFamilyMembershipQuery: GetFamilyMembershipQuery;
 }
 
 function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependencies): void {
@@ -74,6 +76,37 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
           joinedAt: m.joinedAt.toISOString(),
         })),
       );
+    },
+  );
+
+  app.get(
+    "/families/:familyId/members/me",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+
+      const membership = await deps.getFamilyMembershipQuery.execute({
+        familyId: FamilyId.of(familyId),
+        userId: request.userId,
+      });
+      // requireFamilyMembership ya garantizó que la membresía existe
+      if (!membership) throw new Error("Unreachable: membership already verified by preHandler");
+
+      return reply.code(200).send({
+        familyId: membership.familyId.toString(),
+        userId: membership.userId.toString(),
+        role: membership.role.isOwner() ? "OWNER" : "MEMBER",
+        joinedAt: membership.joinedAt.toISOString(),
+      });
     },
   );
 
