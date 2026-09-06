@@ -43,6 +43,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
     loginUseCase: identityModule.useCases.login,
     getUserProfileQuery: identityModule.useCases.getUserProfile,
     changePasswordUseCase: identityModule.useCases.changePassword,
+    updateDisplayNameUseCase: identityModule.useCases.updateDisplayName,
     authenticate: authenticate(dependencies.jwtService),
   });
 

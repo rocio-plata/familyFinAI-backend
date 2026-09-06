@@ -4,6 +4,7 @@ import type { EventBus } from "../../platform/events/event-bus.js";
 import { ChangePasswordUseCase } from "./application/commands/change-password.usecase.js";
 import { LoginUseCase } from "./application/commands/login.usecase.js";
 import { RegisterUserUseCase } from "./application/commands/register-user.usecase.js";
+import { UpdateDisplayNameUseCase } from "./application/commands/update-display-name.usecase.js";
 import { GetUserIdByEmailQuery } from "./application/queries/get-user-id-by-email.query.js";
 import { GetUserProfileQuery } from "./application/queries/get-user-profile.query.js";
 import type { UserRepository } from "./domain/repositories/user.repository.js";
@@ -21,6 +22,7 @@ interface IdentityModule {
     registerUser: RegisterUserUseCase;
     login: LoginUseCase;
     changePassword: ChangePasswordUseCase;
+    updateDisplayName: UpdateDisplayNameUseCase;
     getUserProfile: GetUserProfileQuery;
     getUserIdByEmail: GetUserIdByEmailQuery;
   };
@@ -40,6 +42,7 @@ function buildIdentityModule(deps: IdentityModuleDependencies): IdentityModule {
       deps.hashPassword,
       deps.verifyPassword,
     ),
+    updateDisplayName: new UpdateDisplayNameUseCase(deps.userRepository),
     getUserProfile: new GetUserProfileQuery(deps.userRepository),
     getUserIdByEmail: new GetUserIdByEmailQuery(deps.userRepository),
   };

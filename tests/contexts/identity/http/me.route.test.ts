@@ -89,4 +89,45 @@ describe("rutas de perfil propio", () => {
     assert.equal(response.statusCode, 400);
     assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
   });
+
+  test("actualiza el nombre para mostrar del usuario autenticado", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: "/me/display-name",
+      headers: { authorization },
+      payload: { displayName: "Rocío Plaza" },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(JSON.parse(response.body).displayName, "Rocío Plaza");
+
+    const profileResponse = await app.inject({
+      method: "GET",
+      url: "/me/profile",
+      headers: { authorization },
+    });
+    assert.equal(JSON.parse(profileResponse.body).displayName, "Rocío Plaza");
+  });
+
+  test("rechaza la actualización de nombre para mostrar sin token", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: "/me/display-name",
+      payload: { displayName: "Rocío Plaza" },
+    });
+
+    assert.equal(response.statusCode, 401);
+  });
+
+  test("rechaza un nombre para mostrar vacío", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: "/me/display-name",
+      headers: { authorization },
+      payload: { displayName: "" },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
+  });
 });

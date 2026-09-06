@@ -3,6 +3,7 @@ import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { RegisterUserWithPersonalFamilyWorkflow } from "../../../../platform/workflows/register-user-with-personal-family.workflow.js";
 import type { ChangePasswordUseCase } from "../../application/commands/change-password.usecase.js";
 import type { LoginUseCase } from "../../application/commands/login.usecase.js";
+import type { UpdateDisplayNameUseCase } from "../../application/commands/update-display-name.usecase.js";
 import type { GetUserProfileQuery } from "../../application/queries/get-user-profile.query.js";
 
 interface IdentityRoutesDependencies {
@@ -10,6 +11,7 @@ interface IdentityRoutesDependencies {
   loginUseCase: LoginUseCase;
   getUserProfileQuery: GetUserProfileQuery;
   changePasswordUseCase: ChangePasswordUseCase;
+  updateDisplayNameUseCase: UpdateDisplayNameUseCase;
   authenticate: preHandlerHookHandler;
 }
 
@@ -87,6 +89,30 @@ function registerIdentityRoutes(app: FastifyInstance, deps: IdentityRoutesDepend
       createdAt: profile.createdAt.toISOString(),
     });
   });
+
+  app.patch(
+    "/me/display-name",
+    {
+      preHandler: deps.authenticate,
+      schema: {
+        body: {
+          type: "object",
+          required: ["displayName"],
+          properties: {
+            displayName: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { displayName } = request.body as { displayName: string };
+
+      await deps.updateDisplayNameUseCase.execute({ userId: request.userId, displayName });
+      const profile = await deps.getUserProfileQuery.execute({ userId: request.userId });
+
+      return reply.code(200).send({ displayName: profile.displayName });
+    },
+  );
 
   app.patch(
     "/me/password",
