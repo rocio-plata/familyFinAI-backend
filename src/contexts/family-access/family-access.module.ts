@@ -68,6 +68,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(useCases.getFamilyMembership, minRole),
         createFamilyUseCase: useCases.createFamily,
+        acceptInvitationUseCase: useCases.acceptInvitation,
         getFamilyMembersQuery: useCases.getFamilyMembers,
       });
     },
