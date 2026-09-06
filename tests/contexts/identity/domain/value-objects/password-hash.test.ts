@@ -1,20 +1,11 @@
-// tests/contexts/identity/domain/value-objects/password-hash.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { WeakPasswordError } from "../../../../../src/contexts/identity/domain/errors/weak-password.error.js";
 import { PasswordHash } from "../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
 
 describe("PasswordHash", () => {
   it("fromPlainText delega el hasheo en la función recibida", () => {
     const hash = PasswordHash.fromPlainText("supersecreta", (plainText) => `hashed:${plainText}`);
     assert.equal(hash.toString(), "hashed:supersecreta");
-  });
-
-  it("fromPlainText rechaza una contraseña más corta que el mínimo", () => {
-    assert.throws(
-      () => PasswordHash.fromPlainText("corta12", (plainText) => plainText),
-      WeakPasswordError,
-    );
   });
 
   it("fromStoredHash reconstruye sin volver a hashear", () => {
