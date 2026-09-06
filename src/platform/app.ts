@@ -1,9 +1,12 @@
 // platform/app.ts
 import Fastify, { type FastifyInstance } from "fastify";
+import {
+  buildFamilyAccessModule,
+  type FamilyAccessModuleDependencies,
+} from "../contexts/family-access/family-access.module.js";
 import { authenticate } from "./auth/authenticate.middleware.js";
 import type { JwtSigner } from "./auth/jwt-signer.js";
 import { registerErrorHandler } from "./http/error-handler.js";
-import { buildFamilyAccessModule, type FamilyAccessModuleDependencies } from "../contexts/family-access/family-access.module.js";
 
 interface AppDependencies {
   jwtService: JwtSigner;

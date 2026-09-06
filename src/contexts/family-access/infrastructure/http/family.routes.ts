@@ -1,13 +1,14 @@
-// contexts/family-access/infrastructure/http/family.routes.ts (ruta nueva agregada)
+// /src/contexts/family-access/infrastructure/http/family.routes.ts (ruta nueva agregada)
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
-import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 
 interface FamilyRoutesDependencies {
   authenticate: preHandlerHookHandler;
-  requireFamilyMembership: (minRole?: import("../../domain/value-objects/role.js").Role) => preHandlerHookHandler;
+  requireFamilyMembership: (
+    minRole?: import("../../domain/value-objects/role.js").Role,
+  ) => preHandlerHookHandler;
   createFamilyUseCase: CreateFamilyUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
 }
@@ -66,5 +67,5 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
   );
 }
 
-export { registerFamilyRoutes };
 export type { FamilyRoutesDependencies };
+export { registerFamilyRoutes };

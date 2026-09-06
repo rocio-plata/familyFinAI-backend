@@ -1,18 +1,19 @@
 // tests/contexts/family-access/http/get-family-members.route.test.ts
-import { test, describe, beforeEach } from "node:test";
+
 import assert from "node:assert/strict";
-import { buildApp } from "../../../../src/platform/app.js";
-import { InMemoryFamilyRepository } from "../doubles/in-memory-family.repository.js";
-import { InMemoryInvitationRepository } from "../doubles/in-memory-invitation.repository.js";
-import { FakeUserDirectory } from "../doubles/fake-user-directory.js";
-import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
-import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
+import { beforeEach, describe, test } from "node:test";
+import type { FastifyInstance } from "fastify";
 import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import type { FastifyInstance } from "fastify";
+import { buildApp } from "../../../../src/platform/app.js";
+import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
+import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
+import { FakeUserDirectory } from "../doubles/fake-user-directory.js";
+import { InMemoryFamilyRepository } from "../doubles/in-memory-family.repository.js";
+import { InMemoryInvitationRepository } from "../doubles/in-memory-invitation.repository.js";
 
 describe("GET /families/:familyId/members", () => {
   let app: FastifyInstance;
