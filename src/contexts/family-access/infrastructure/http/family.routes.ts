@@ -4,10 +4,12 @@ import type { AcceptInvitationUseCase } from "../../application/commands/accept-
 import type { ChangeDefaultCurrencyUseCase } from "../../application/commands/change-default-currency.usecase.js";
 import type { ChangeMemberRoleUseCase } from "../../application/commands/change-member-role.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
+import type { InviteMemberUseCase } from "../../application/commands/invite-member.usecase.js";
 import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
 import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import type { GetFamilyMembershipQuery } from "../../application/queries/get-family-membership.query.js";
+import { EmailAddress } from "../../domain/value-objects/email-address.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
 import { Role } from "../../domain/value-objects/role.js";
@@ -17,6 +19,7 @@ interface FamilyRoutesDependencies {
   authenticate: preHandlerHookHandler;
   requireFamilyMembership: (minRole?: Role) => preHandlerHookHandler;
   createFamilyUseCase: CreateFamilyUseCase;
+  inviteMemberUseCase: InviteMemberUseCase;
   acceptInvitationUseCase: AcceptInvitationUseCase;
   revokeInvitationUseCase: RevokeInvitationUseCase;
   removeMemberUseCase: RemoveMemberUseCase;
@@ -249,6 +252,48 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
       });
 
       return reply.code(204).send();
+    },
+  );
+
+  app.post(
+    "/families/:familyId/invitations",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string" } },
+        },
+        body: {
+          type: "object",
+          required: ["email", "role"],
+          properties: {
+            email: { type: "string", minLength: 1 },
+            role: { type: "string", enum: ["OWNER", "MEMBER"] },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { email, role } = request.body as { email: string; role: "OWNER" | "MEMBER" };
+
+      const invitation = await deps.inviteMemberUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        email: EmailAddress.of(email),
+        role: role === "OWNER" ? Role.owner() : Role.member(),
+        invitedBy: request.userId,
+      });
+
+      return reply.code(201).send({
+        id: invitation.id.toString(),
+        familyId: invitation.familyId.toString(),
+        invitedEmail: invitation.invitedEmail.toString(),
+        role: invitation.role.isOwner() ? "OWNER" : "MEMBER",
+        status: invitation.status,
+        expiresAt: invitation.expiresAt.toISOString(),
+      });
     },
   );
 }
