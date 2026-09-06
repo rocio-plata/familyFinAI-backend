@@ -1,4 +1,4 @@
-// platform/server.ts
+// /src/platform/server.ts
 import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { buildApp } from "./app.js";
 import { JwtService } from "./auth/jwt.js";

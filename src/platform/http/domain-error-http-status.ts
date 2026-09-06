@@ -1,4 +1,4 @@
-// platform/http/domain-error-http-status.ts
+// /src/platform/http/domain-error-http-status.ts
 import type { DomainError } from "../../shared-kernel/errors/domain-error.js";
 
 const SUFFIX_RULES: Array<{ suffix: string; status: number }> = [

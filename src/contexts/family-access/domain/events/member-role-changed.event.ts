@@ -1,4 +1,4 @@
-// contexts/family-access/domain/events/member-role-changed.event.ts
+// /src/contexts/family-access/domain/events/member-role-changed.event.ts
 import { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FamilyId } from "../value-objects/family-id.js";
 import type { Role } from "../value-objects/role.js";

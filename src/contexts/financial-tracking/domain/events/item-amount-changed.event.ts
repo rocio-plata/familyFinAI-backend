@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/events/item-amount-changed.event.ts
+// /src/contexts/financial-tracking/domain/events/item-amount-changed.event.ts
 import { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { FinancialItemId } from "../value-objects/financial-item-id.js";
 

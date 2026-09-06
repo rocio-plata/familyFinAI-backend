@@ -1,4 +1,4 @@
-// platform/auth/jwt-signer.ts
+// /src/platform/auth/jwt-signer.ts
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 import type { JwtPayload } from "./jwt.js";
 

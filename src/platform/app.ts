@@ -1,4 +1,4 @@
-// platform/app.ts
+// /src/platform/app.ts
 import Fastify, { type FastifyInstance } from "fastify";
 import { CreateFamilyUseCase } from "../contexts/family-access/application/commands/create-family.usecase.js";
 import type { FamilyRepository } from "../contexts/family-access/domain/repositories/family.repository.js";

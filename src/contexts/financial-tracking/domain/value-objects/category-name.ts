@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/category-name.ts
+// /src/contexts/financial-tracking/domain/value-objects/category-name.ts
 import { InvalidCategoryNameError } from "../errors/invalid-category-name.error.js";
 
 const MAX_CATEGORY_NAME_LENGTH = 50;

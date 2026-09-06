@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/invalid-email.error.ts
+// /src/contexts/family-access/domain/errors/invalid-email.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidEmailError extends DomainError {

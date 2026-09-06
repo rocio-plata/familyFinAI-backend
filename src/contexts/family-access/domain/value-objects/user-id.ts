@@ -1,4 +1,4 @@
-// src/contexts/family-access/domain/value-objects/user-id.ts
+// /src/contexts/family-access/domain/value-objects/user-id.ts
 import { randomUUID } from "node:crypto";
 import { isValidUUID } from "../../../../shared-kernel/domain/uuid.js";
 import { InvalidUserIdError } from "../errors/invalid-user-id-error.js";

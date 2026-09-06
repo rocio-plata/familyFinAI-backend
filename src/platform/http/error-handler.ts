@@ -1,4 +1,4 @@
-// platform/http/error-handler.ts
+// /src/platform/http/error-handler.ts
 import type { FastifyError, FastifyInstance } from "fastify";
 import { DomainError } from "../../shared-kernel/errors/domain-error.js";
 import { resolveHttpStatus } from "./domain-error-http-status.js";

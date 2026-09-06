@@ -1,4 +1,4 @@
-// contexts/family-access/infrastructure/http/family.routes.ts
+// /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";

@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/financial-item-id.ts
+// /src/contexts/financial-tracking/domain/value-objects/financial-item-id.ts
 import { randomUUID } from "node:crypto";
 import { isValidUUID } from "../../../../shared-kernel/domain/uuid.js";
 import { InvalidFinancialItemIdError } from "../errors/invalid-id.error.js";

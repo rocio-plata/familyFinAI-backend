@@ -1,4 +1,4 @@
-// platform/auth/require-family-membership.middleware.ts
+// /src/platform/auth/require-family-membership.middleware.ts
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { GetFamilyMembershipQuery } from "../../contexts/family-access/application/queries/get-family-membership.query.js";
 import { FamilyId } from "../../contexts/family-access/domain/value-objects/family-id.js";

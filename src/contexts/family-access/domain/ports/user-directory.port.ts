@@ -1,4 +1,4 @@
-// contexts/family-access/domain/ports/user-directory.port.ts
+// /src/contexts/family-access/domain/ports/user-directory.port.ts
 import type { EmailAddress } from "../value-objects/email-address.js";
 import type { UserId } from "../value-objects/user-id.js";
 

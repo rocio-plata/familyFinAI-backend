@@ -1,4 +1,4 @@
-// platform/auth/fastify.d.ts
+// /src/platform/auth/fastify.d.ts
 import "fastify";
 import type { FamilyId } from "../../contexts/family-access/domain/value-objects/family-id.js";
 import type { Role } from "../../contexts/family-access/domain/value-objects/role.js";

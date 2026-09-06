@@ -1,4 +1,4 @@
-// contexts/family-access/application/commands/create-family.usecase.ts
+// /src/contexts/family-access/application/commands/create-family.usecase.ts
 
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import { Family } from "../../domain/entities/family.js";

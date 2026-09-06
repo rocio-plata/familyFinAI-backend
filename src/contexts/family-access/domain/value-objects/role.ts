@@ -1,4 +1,4 @@
-// contexts/family-access/domain/value-objects/role.ts
+// /src/contexts/family-access/domain/value-objects/role.ts
 enum RoleType {
   Owner = "OWNER",
   Member = "MEMBER",

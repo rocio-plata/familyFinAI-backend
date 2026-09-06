@@ -1,4 +1,4 @@
-// src/contexts/family-access/domain/entities/invitation.ts
+// /src/contexts/family-access/domain/entities/invitation.ts
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import { addDays } from "../../../../shared-kernel/domain/util/date.js";

@@ -1,4 +1,4 @@
-// contexts/family-access/application/commands/change-default-currency.usecase.ts
+// /src/contexts/family-access/application/commands/change-default-currency.usecase.ts
 
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";

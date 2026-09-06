@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/invitation-not-accepted.error.ts
+// /src/contexts/family-access/domain/errors/invitation-not-accepted.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvitationNotAcceptedError extends DomainError {

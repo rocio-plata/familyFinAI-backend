@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/errors/unsupported-currency.error.ts
+// /src/contexts/financial-tracking/domain/errors/unsupported-currency.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class UnsupportedCurrencyError extends DomainError {

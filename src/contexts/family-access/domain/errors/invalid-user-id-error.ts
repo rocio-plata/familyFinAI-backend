@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/invalid-user-id-error.ts
+// /src/contexts/family-access/domain/errors/invalid-user-id-error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidUserIdError extends DomainError {

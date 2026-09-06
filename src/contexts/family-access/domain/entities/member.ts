@@ -1,4 +1,4 @@
-// src/contexts/family-access/domain/entities/member.ts
+// /src/contexts/family-access/domain/entities/member.ts
 
 import { Role } from "../value-objects/role.js";
 import type { UserId } from "../value-objects/user-id.js";

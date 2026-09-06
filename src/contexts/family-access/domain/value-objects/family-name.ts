@@ -1,4 +1,4 @@
-// src/contexts/family-access/domain/value-objects/family-name.ts
+// /src/contexts/family-access/domain/value-objects/family-name.ts
 
 import { InvalidFamilyNameError } from "../errors/invalid-family-name.error.js";
 

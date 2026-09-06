@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/money.ts
+// /src/contexts/financial-tracking/domain/value-objects/money.ts
 import type { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { InvalidMoneyError } from "../errors/invalid-money.error.js";
 

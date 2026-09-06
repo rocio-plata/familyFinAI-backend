@@ -1,4 +1,4 @@
-// contexts/family-access/domain/value-objects/invitation-status.ts
+// /src/contexts/family-access/domain/value-objects/invitation-status.ts
 enum InvitationStatus {
   // (Pending | Accepted | Expired | Revoked)
   Pending = "PENDING",

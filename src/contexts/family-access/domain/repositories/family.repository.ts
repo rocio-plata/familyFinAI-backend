@@ -1,4 +1,4 @@
-// contexts/family-access/domain/repositories/family.repository.ts
+// /src/contexts/family-access/domain/repositories/family.repository.ts
 import type { Family } from "../entities/family.js";
 import type { FamilyId } from "../value-objects/family-id.js";
 

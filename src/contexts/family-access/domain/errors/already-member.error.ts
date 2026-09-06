@@ -1,4 +1,4 @@
-// contexts/family-access/domain/errors/already-member.error.ts
+// /src/contexts/family-access/domain/errors/already-member.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class AlreadyMemberError extends DomainError {

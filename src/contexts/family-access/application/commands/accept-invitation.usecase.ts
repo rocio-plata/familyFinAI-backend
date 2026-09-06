@@ -1,4 +1,4 @@
-// contexts/family-access/application/commands/accept-invitation.usecase.ts
+// /src/contexts/family-access/application/commands/accept-invitation.usecase.ts
 
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";

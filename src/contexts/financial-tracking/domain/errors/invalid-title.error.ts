@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/errors/invalid-title.error.ts
+// /src/contexts/financial-tracking/domain/errors/invalid-title.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class InvalidTitleError extends DomainError {

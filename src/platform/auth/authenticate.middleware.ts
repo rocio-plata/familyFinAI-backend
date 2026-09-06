@@ -1,4 +1,4 @@
-// platform/auth/authenticate.middleware.ts
+// /src/platform/auth/authenticate.middleware.ts
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 import type { JwtSigner } from "./jwt-signer.js";

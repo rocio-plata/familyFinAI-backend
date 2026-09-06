@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/application/commands/deprecate-tag.usecase.ts
+// /src/contexts/financial-tracking/application/commands/deprecate-tag.usecase.ts
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { GetFamilyMembershipQuery } from "../../../family-access/application/queries/get-family-membership.query.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";

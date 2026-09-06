@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/errors/duplicate-category-name.error.ts
+// /src/contexts/financial-tracking/domain/errors/duplicate-category-name.error.ts
 import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 
 class DuplicateCategoryNameError extends DomainError {

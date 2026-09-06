@@ -1,4 +1,4 @@
-// platform/auth/jwt.ts
+// /src/platform/auth/jwt.ts
 import { jwtVerify, SignJWT } from "jose";
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 import type { JwtSigner, SignOptions } from "./jwt-signer.js";

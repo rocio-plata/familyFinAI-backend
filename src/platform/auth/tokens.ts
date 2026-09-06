@@ -1,4 +1,4 @@
-// platform/auth/tokens.ts
+// /src/platform/auth/tokens.ts
 
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 import { InvalidRefreshTokenError } from "./errors/invalid-refresh-token.error.js";

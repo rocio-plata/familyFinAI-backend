@@ -1,4 +1,4 @@
-// contexts/family-access/application/queries/get-family-membership.query.ts
+// /src/contexts/family-access/application/queries/get-family-membership.query.ts
 import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
 import type { Role } from "../../domain/value-objects/role.js";

@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/domain/events/category-created.event.ts
+// /src/contexts/financial-tracking/domain/events/category-created.event.ts
 import { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { CategoryId } from "../value-objects/category-id.js";
 

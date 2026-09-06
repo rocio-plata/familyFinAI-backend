@@ -36,7 +36,7 @@ No existe todavía una ruta que implemente la cadena completa `authenticate` + `
 - **Resuelto:** `CreateFinancialItemUseCase` ahora persiste el ítem mediante `itemRepository.save` antes de extraer y publicar sus eventos. Una prueba de regresión verifica el orden `persist → publish`.
 - Hay un query bajo `src/contexts/family-access/application/commands/get-family-membership.query.ts`, duplicado además en la carpeta correcta `application/queries/`. Esto contradice la separación de commands y queries.
 - La guía indica preferir `type` salvo que se necesite `implements`, pero varios DTOs y comandos usan `interface` sin esa necesidad, por ejemplo `CreateFamilyCommand`.
-- El formato del primer comentario de los archivos no es uniforme respecto de la norma: muchos omiten el prefijo `src/` y alguno tiene una ruta que no corresponde al archivo, como el comentario de `src/shared-kernel/domain/currency.ts`.
+- **Resuelto:** los 132 archivos TypeScript bajo `src/` ahora comienzan con un comentario uniforme que identifica su ruta, con el formato `// /src/ruta/al/archivo.ts`.
 - `POST /families` declara un `DomainError` anónimo para un body inválido. La guía pide errores específicos y ubicados en `domain/errors`.
 - La arquitectura documenta Budgeting, Reporting, AI Assistance, adaptadores Drizzle y `platform/db`, pero el repositorio solo materializa Family Access y Financial Tracking. El servidor usa `InMemoryFamilyRepository`, no PostgreSQL/Neon; parece un avance parcial, también descrito como pendiente en la documentación.
 - La documentación menciona `financial-item.routes.ts` como ejemplo de middleware, pero ese archivo no existe actualmente.

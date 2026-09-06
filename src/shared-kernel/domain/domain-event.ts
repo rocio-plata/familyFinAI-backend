@@ -1,4 +1,4 @@
-// shared-kernel/domain/domain-event.ts
+// /src/shared-kernel/domain/domain-event.ts
 import { randomUUID } from "node:crypto";
 
 abstract class DomainEvent {

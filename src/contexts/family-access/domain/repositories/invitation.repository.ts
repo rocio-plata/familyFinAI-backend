@@ -1,4 +1,4 @@
-// contexts/family-access/domain/repositories/invitation.repository.ts
+// /src/contexts/family-access/domain/repositories/invitation.repository.ts
 import type { Invitation } from "../entities/invitation.js";
 import type { FamilyId } from "../value-objects/family-id.js";
 import type { InvitationId } from "../value-objects/invitation-id.js";

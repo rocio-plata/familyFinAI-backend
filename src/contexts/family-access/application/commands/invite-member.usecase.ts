@@ -1,4 +1,4 @@
-// contexts/family-access/application/commands/invite-member.usecase.ts
+// /src/contexts/family-access/application/commands/invite-member.usecase.ts
 
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { Invitation } from "../../domain/entities/invitation.js";

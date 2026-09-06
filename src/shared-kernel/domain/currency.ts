@@ -1,4 +1,4 @@
-// contexts/financial-tracking/domain/value-objects/currency.ts
+// /src/shared-kernel/domain/currency.ts
 import { UnsupportedCurrencyError } from "../errors/unsupported-currency.error.js";
 
 const SUPPORTED_CURRENCIES = ["CLP", "USD", "EUR"] as const;

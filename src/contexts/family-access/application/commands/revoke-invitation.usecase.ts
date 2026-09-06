@@ -1,4 +1,4 @@
-// contexts/family-access/application/commands/revoke-invitation.usecase.ts
+// /src/contexts/family-access/application/commands/revoke-invitation.usecase.ts
 
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
 import { InsufficientRoleError } from "../../domain/errors/insufficient-role.error.js";

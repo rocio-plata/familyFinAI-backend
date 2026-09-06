@@ -1,4 +1,4 @@
-// platform/events/in-process-event-bus.ts
+// /src/platform/events/in-process-event-bus.ts
 
 import type { DomainEvent } from "../../shared-kernel/domain/domain-event.js";
 import type { EventBus } from "./event-bus.js";

@@ -1,4 +1,4 @@
-// platform/auth/refresh-token.ts
+// /src/platform/auth/refresh-token.ts
 import { randomBytes } from "node:crypto";
 import type { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
 

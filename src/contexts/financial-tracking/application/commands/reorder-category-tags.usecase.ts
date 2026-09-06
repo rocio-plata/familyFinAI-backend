@@ -1,4 +1,4 @@
-// src/contexts/financial-tracking/application/commands/reorder-category-tags.usecase.ts
+// /src/contexts/financial-tracking/application/commands/reorder-category-tags.usecase.ts
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { Category } from "../../domain/entities/category.js";
 import { CategoryNotFoundError } from "../../domain/errors/category-not-found.error.js";
