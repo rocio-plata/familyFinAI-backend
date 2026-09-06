@@ -68,6 +68,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(useCases.getFamilyMembership, minRole),
         createFamilyUseCase: useCases.createFamily,
+        inviteMemberUseCase: useCases.inviteMember,
         acceptInvitationUseCase: useCases.acceptInvitation,
         revokeInvitationUseCase: useCases.revokeInvitation,
         removeMemberUseCase: useCases.removeMember,
