@@ -1,5 +1,6 @@
 // /src/platform/server.ts
 import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
+import { InMemoryInvitationRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { buildApp } from "./app.js";
 import { JwtService } from "./auth/jwt.js";
 import { InProcessEventBus } from "./events/in-process-event-bus.js";
@@ -8,9 +9,11 @@ import { InProcessEventBus } from "./events/in-process-event-bus.js";
 
 const jwtSecret = process.env.JWT_SECRET ?? "dev-only-insecure-secret";
 const app = buildApp({
-  jwtService: new JwtService(new TextEncoder().encode(jwtSecret)),
+  jwtService: new JwtService(jwtSecret),
   familyAccess: {
     familyRepository: new InMemoryFamilyRepository(),
+    invitationRepository: new InMemoryInvitationRepository(),
+    userDirectory: { findUserIdByEmail: async () => null }, // placeholder hasta definir el sistema de identidad real
     eventBus: new InProcessEventBus(),
   },
 });

@@ -1,19 +1,13 @@
-// /src/platform/app.ts
+// platform/app.ts
 import Fastify, { type FastifyInstance } from "fastify";
-import { CreateFamilyUseCase } from "../contexts/family-access/application/commands/create-family.usecase.js";
-import type { FamilyRepository } from "../contexts/family-access/domain/repositories/family.repository.js";
-import { registerFamilyRoutes } from "../contexts/family-access/infrastructure/http/family.routes.js";
 import { authenticate } from "./auth/authenticate.middleware.js";
 import type { JwtSigner } from "./auth/jwt-signer.js";
-import type { EventBus } from "./events/event-bus.js";
 import { registerErrorHandler } from "./http/error-handler.js";
+import { buildFamilyAccessModule, type FamilyAccessModuleDependencies } from "../contexts/family-access/family-access.module.js";
 
 interface AppDependencies {
   jwtService: JwtSigner;
-  familyAccess: {
-    familyRepository: FamilyRepository;
-    eventBus: EventBus;
-  };
+  familyAccess: FamilyAccessModuleDependencies;
 }
 
 function buildApp(dependencies: AppDependencies): FastifyInstance {
@@ -25,15 +19,8 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
     return { status: "ok", timestamp: new Date().toISOString() };
   });
 
-  const createFamilyUseCase = new CreateFamilyUseCase(
-    dependencies.familyAccess.familyRepository,
-    dependencies.familyAccess.eventBus,
-  );
-
-  registerFamilyRoutes(app, {
-    authenticate: authenticate(dependencies.jwtService),
-    createFamilyUseCase,
-  });
+  const familyAccessModule = buildFamilyAccessModule(dependencies.familyAccess);
+  familyAccessModule.registerRoutes(app, authenticate(dependencies.jwtService));
 
   return app;
 }
