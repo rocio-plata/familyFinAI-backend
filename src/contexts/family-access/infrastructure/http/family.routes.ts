@@ -1,6 +1,7 @@
 // /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { AcceptInvitationUseCase } from "../../application/commands/accept-invitation.usecase.js";
+import type { ChangeMemberRoleUseCase } from "../../application/commands/change-member-role.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
 import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
@@ -17,6 +18,7 @@ interface FamilyRoutesDependencies {
   acceptInvitationUseCase: AcceptInvitationUseCase;
   revokeInvitationUseCase: RevokeInvitationUseCase;
   removeMemberUseCase: RemoveMemberUseCase;
+  changeMemberRoleUseCase: ChangeMemberRoleUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
 }
 
@@ -143,6 +145,41 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
         familyId: FamilyId.of(familyId),
         memberId: UserId.of(memberId),
         removedBy: request.userId,
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.patch(
+    "/families/:familyId/members/:memberId/role",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "memberId"],
+          properties: {
+            familyId: { type: "string" },
+            memberId: { type: "string" },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["newRole"],
+          properties: { newRole: { type: "string", enum: ["OWNER", "MEMBER"] } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, memberId } = request.params as { familyId: string; memberId: string };
+      const { newRole } = request.body as { newRole: "OWNER" | "MEMBER" };
+
+      await deps.changeMemberRoleUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        memberId: UserId.of(memberId),
+        newRole: newRole === "OWNER" ? Role.owner() : Role.member(),
+        changedBy: request.userId,
       });
 
       return reply.code(204).send();
