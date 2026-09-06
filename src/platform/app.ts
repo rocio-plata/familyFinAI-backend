@@ -11,10 +11,11 @@ import { registerErrorHandler } from "./http/error-handler.js";
 interface AppDependencies {
   jwtService: JwtSigner;
   familyAccess: FamilyAccessModuleDependencies;
+  logLevel?: string;
 }
 
 function buildApp(dependencies: AppDependencies): FastifyInstance {
-  const app = Fastify({ logger: true });
+  const app = Fastify({ logger: { level: dependencies.logLevel ?? "info" } });
 
   registerErrorHandler(app);
 

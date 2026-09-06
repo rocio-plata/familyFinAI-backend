@@ -4,7 +4,8 @@
   "description": "> Smarter family finances.",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/platform/server.ts",
+    "dev": "LOG_LEVEL=debug tsx watch src/platform/server.ts",
+    "token": "tsx scripts/generate-token.ts",
     "lint": "biome check src tests",
     "lint:fix": "biome check --write src tests",
     "build": "tsc",
