@@ -71,6 +71,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         acceptInvitationUseCase: useCases.acceptInvitation,
         revokeInvitationUseCase: useCases.revokeInvitation,
         removeMemberUseCase: useCases.removeMember,
+        changeMemberRoleUseCase: useCases.changeMemberRole,
         getFamilyMembersQuery: useCases.getFamilyMembers,
       });
     },
