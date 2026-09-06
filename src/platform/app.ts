@@ -4,13 +4,20 @@ import {
   buildFamilyAccessModule,
   type FamilyAccessModuleDependencies,
 } from "../contexts/family-access/family-access.module.js";
+import {
+  buildIdentityModule,
+  type IdentityModuleDependencies,
+} from "../contexts/identity/identity.module.js";
+import { registerIdentityRoutes } from "../contexts/identity/infrastructure/http/identity.routes.js";
 import { authenticate } from "./auth/authenticate.middleware.js";
 import type { JwtSigner } from "./auth/jwt-signer.js";
 import { registerErrorHandler } from "./http/error-handler.js";
+import { RegisterUserWithPersonalFamilyWorkflow } from "./workflows/register-user-with-personal-family.workflow.js";
 
 interface AppDependencies {
   jwtService: JwtSigner;
   familyAccess: FamilyAccessModuleDependencies;
+  identity: IdentityModuleDependencies;
   logLevel?: string;
 }
 
@@ -24,6 +31,15 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
   });
 
   const familyAccessModule = buildFamilyAccessModule(dependencies.familyAccess);
+  const identityModule = buildIdentityModule(dependencies.identity);
+
+  // capa de composición: el workflow conoce ambos contextos, ninguno de los dos se conoce entre sí
+  const registerWorkflow = new RegisterUserWithPersonalFamilyWorkflow(
+    identityModule.useCases.registerUser,
+    familyAccessModule.useCases.createFamily,
+  );
+  registerIdentityRoutes(app, { registerWorkflow });
+
   familyAccessModule.registerRoutes(app, authenticate(dependencies.jwtService));
 
   return app;

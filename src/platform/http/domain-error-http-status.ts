@@ -4,6 +4,7 @@ import type { DomainError } from "../../shared-kernel/errors/domain-error.js";
 const SUFFIX_RULES: Array<{ suffix: string; status: number }> = [
   { suffix: "_NOT_FOUND", status: 404 },
   { suffix: "ALREADY_MEMBER", status: 409 },
+  { suffix: "ALREADY_REGISTERED", status: 409 },
   { suffix: "HAS_ASSOCIATED_ITEMS", status: 409 },
   { suffix: "DUPLICATE_", status: 409 },
   { suffix: "INSUFFICIENT_ROLE", status: 403 },
