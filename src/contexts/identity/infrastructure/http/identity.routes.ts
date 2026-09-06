@@ -1,11 +1,16 @@
 // /src/contexts/identity/infrastructure/http/identity.routes.ts
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { RegisterUserWithPersonalFamilyWorkflow } from "../../../../platform/workflows/register-user-with-personal-family.workflow.js";
+import type { ChangePasswordUseCase } from "../../application/commands/change-password.usecase.js";
 import type { LoginUseCase } from "../../application/commands/login.usecase.js";
+import type { GetUserProfileQuery } from "../../application/queries/get-user-profile.query.js";
 
 interface IdentityRoutesDependencies {
   registerWorkflow: RegisterUserWithPersonalFamilyWorkflow;
   loginUseCase: LoginUseCase;
+  getUserProfileQuery: GetUserProfileQuery;
+  changePasswordUseCase: ChangePasswordUseCase;
+  authenticate: preHandlerHookHandler;
 }
 
 function registerIdentityRoutes(app: FastifyInstance, deps: IdentityRoutesDependencies): void {
@@ -70,6 +75,47 @@ function registerIdentityRoutes(app: FastifyInstance, deps: IdentityRoutesDepend
         accessToken: result.tokens.accessToken,
         refreshToken: result.tokens.refreshToken,
       });
+    },
+  );
+
+  app.get("/me/profile", { preHandler: deps.authenticate }, async (request, reply) => {
+    const profile = await deps.getUserProfileQuery.execute({ userId: request.userId });
+
+    return reply.code(200).send({
+      email: profile.email,
+      displayName: profile.displayName,
+      createdAt: profile.createdAt.toISOString(),
+    });
+  });
+
+  app.patch(
+    "/me/password",
+    {
+      preHandler: deps.authenticate,
+      schema: {
+        body: {
+          type: "object",
+          required: ["currentPassword", "newPassword"],
+          properties: {
+            currentPassword: { type: "string", minLength: 1 },
+            newPassword: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { currentPassword, newPassword } = request.body as {
+        currentPassword: string;
+        newPassword: string;
+      };
+
+      await deps.changePasswordUseCase.execute({
+        userId: request.userId,
+        currentPassword,
+        newPassword,
+      });
+
+      return reply.code(204).send();
     },
   );
 }
