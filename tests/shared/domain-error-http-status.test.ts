@@ -27,6 +27,7 @@ describe("resolveHttpStatus", () => {
   test("errores de autenticación devuelven 401", () => {
     assert.equal(resolveHttpStatus({ code: "AUTH.INVALID_REFRESH_TOKEN" }), 401);
     assert.equal(resolveHttpStatus({ code: "AUTH.POSSIBLE_TOKEN_THEFT" }), 401);
+    assert.equal(resolveHttpStatus({ code: "IDENTITY.INVALID_CREDENTIALS" }), 401);
   });
 
   test("cualquier otro error de dominio devuelve 400 por defecto", () => {

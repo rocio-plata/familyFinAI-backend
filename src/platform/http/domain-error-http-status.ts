@@ -13,6 +13,7 @@ const SUFFIX_RULES: Array<{ suffix: string; status: number }> = [
 const PREFIX_RULES: Array<{ prefix: string; status: number }> = [
   { prefix: "AUTH.INVALID_REFRESH_TOKEN", status: 401 },
   { prefix: "AUTH.POSSIBLE_TOKEN_THEFT", status: 401 },
+  { prefix: "IDENTITY.INVALID_CREDENTIALS", status: 401 },
 ];
 
 const DEFAULT_STATUS = 400;
