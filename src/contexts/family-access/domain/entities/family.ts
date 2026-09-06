@@ -122,6 +122,12 @@ class Family {
     this._members.push(Member.create(userId, role));
   }
 
+  setMemberDisplayOrder(userId: UserId, order: number): void {
+    const member = this.findMembership(userId);
+    if (!member) throw new MemberNotFoundError(userId);
+    member.setDisplayOrder(order);
+  }
+
   pullDomainEvents(): DomainEvent[] {
     const events = this.domainEvents;
     this.domainEvents = [];
