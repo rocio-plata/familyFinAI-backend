@@ -11,7 +11,8 @@ import { Role } from "../../../../src/contexts/family-access/domain/value-object
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
-import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
+import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
+import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";
 import { FakeUserDirectory } from "../doubles/fake-user-directory.js";
 import { InMemoryFamilyRepository } from "../doubles/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "../doubles/in-memory-invitation.repository.js";
@@ -31,12 +32,12 @@ describe("POST /families/:familyId/invitations", () => {
 
     app = buildApp({
       jwtService,
-      familyAccess: {
+      identity: buildTestIdentityDependencies(),
+      familyAccess: buildTestFamilyAccessDependencies({
         familyRepository,
         invitationRepository,
         userDirectory,
-        eventBus: new FakeEventBus(),
-      },
+      }),
     });
   });
 

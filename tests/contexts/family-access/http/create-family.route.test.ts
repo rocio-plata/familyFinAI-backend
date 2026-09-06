@@ -6,8 +6,8 @@ import type { FastifyInstance } from "fastify";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
-import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
-import { InMemoryFamilyRepository } from "../doubles/in-memory-family.repository.js";
+import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
+import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";
 
 describe("POST /families", () => {
   let app: FastifyInstance;
@@ -22,10 +22,8 @@ describe("POST /families", () => {
 
     app = buildApp({
       jwtService,
-      familyAccess: {
-        familyRepository: new InMemoryFamilyRepository(),
-        eventBus: new FakeEventBus(),
-      },
+      identity: buildTestIdentityDependencies(),
+      familyAccess: buildTestFamilyAccessDependencies(),
     });
   });
 
