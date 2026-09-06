@@ -1,4 +1,4 @@
-// platform/app.ts
+// /src/platform/app.ts
 import Fastify, { type FastifyInstance } from "fastify";
 import {
   buildFamilyAccessModule,

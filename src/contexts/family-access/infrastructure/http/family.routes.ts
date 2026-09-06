@@ -1,4 +1,4 @@
-// /src/contexts/family-access/infrastructure/http/family.routes.ts (ruta nueva agregada)
+// /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
