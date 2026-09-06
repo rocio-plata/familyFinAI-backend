@@ -2,19 +2,21 @@
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { AcceptInvitationUseCase } from "../../application/commands/accept-invitation.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
+import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
 import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
+import { Role } from "../../domain/value-objects/role.js";
+import { UserId } from "../../domain/value-objects/user-id.js";
 
 interface FamilyRoutesDependencies {
   authenticate: preHandlerHookHandler;
-  requireFamilyMembership: (
-    minRole?: import("../../domain/value-objects/role.js").Role,
-  ) => preHandlerHookHandler;
+  requireFamilyMembership: (minRole?: Role) => preHandlerHookHandler;
   createFamilyUseCase: CreateFamilyUseCase;
   acceptInvitationUseCase: AcceptInvitationUseCase;
   revokeInvitationUseCase: RevokeInvitationUseCase;
+  removeMemberUseCase: RemoveMemberUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
 }
 
@@ -113,6 +115,34 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
       await deps.revokeInvitationUseCase.execute({
         invitationId: InvitationId.of(invitationId),
         revokedBy: request.userId,
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.delete(
+    "/families/:familyId/members/:memberId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "memberId"],
+          properties: {
+            familyId: { type: "string" },
+            memberId: { type: "string" },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, memberId } = request.params as { familyId: string; memberId: string };
+
+      await deps.removeMemberUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        memberId: UserId.of(memberId),
+        removedBy: request.userId,
       });
 
       return reply.code(204).send();
