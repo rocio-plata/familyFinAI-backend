@@ -43,4 +43,17 @@ describe("Member", () => {
       assert.ok(member.role.isOwner());
     });
   });
+
+  describe("displayOrder", () => {
+    it("nace en null (usa el orden natural por joinedAt)", () => {
+      const member = Member.createOwner(userId);
+      assert.equal(member.displayOrder, null);
+    });
+
+    it("setDisplayOrder() asigna un override explícito", () => {
+      const member = Member.createOwner(userId);
+      member.setDisplayOrder(2);
+      assert.equal(member.displayOrder, 2);
+    });
+  });
 });

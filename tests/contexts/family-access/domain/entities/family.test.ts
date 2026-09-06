@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
 import { CannotRemoveLastOwnerError } from "../../../../../src/contexts/family-access/domain/errors/cannot-remove-last-owner.error.js";
 import { InsufficientRoleError } from "../../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { MemberNotFoundError } from "../../../../../src/contexts/family-access/domain/errors/member-not-found.error.js";
 import { MemberRoleChanged } from "../../../../../src/contexts/family-access/domain/events/member-role-changed.event.js";
 import { EmailAddress } from "../../../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
@@ -135,6 +136,25 @@ describe("Family", () => {
       const events = family.pullDomainEvents();
       assert.equal(events.length, 1);
       assert.ok(events[0] instanceof MemberRoleChanged);
+    });
+  });
+
+  describe("setMemberDisplayOrder()", () => {
+    it("asigna el displayOrder al miembro indicado", () => {
+      const ownerId = UserId.generate();
+      const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+
+      family.setMemberDisplayOrder(ownerId, 3);
+
+      assert.equal(family.findMembership(ownerId)?.displayOrder, 3);
+    });
+
+    it("lanza MemberNotFoundError si el usuario no es miembro de la familia", () => {
+      const ownerId = UserId.generate();
+      const outsiderId = UserId.generate();
+      const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+
+      assert.throws(() => family.setMemberDisplayOrder(outsiderId, 0), MemberNotFoundError);
     });
   });
 });
