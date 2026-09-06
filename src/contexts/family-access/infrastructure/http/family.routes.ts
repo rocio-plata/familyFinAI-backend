@@ -2,6 +2,7 @@
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { AcceptInvitationUseCase } from "../../application/commands/accept-invitation.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
+import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
@@ -13,6 +14,7 @@ interface FamilyRoutesDependencies {
   ) => preHandlerHookHandler;
   createFamilyUseCase: CreateFamilyUseCase;
   acceptInvitationUseCase: AcceptInvitationUseCase;
+  revokeInvitationUseCase: RevokeInvitationUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
 }
 
@@ -87,6 +89,30 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
       await deps.acceptInvitationUseCase.execute({
         invitationId: InvitationId.of(invitationId),
         acceptingUserId: request.userId,
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.delete(
+    "/invitations/:invitationId",
+    {
+      preHandler: [deps.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          required: ["invitationId"],
+          properties: { invitationId: { type: "string" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { invitationId } = request.params as { invitationId: string };
+
+      await deps.revokeInvitationUseCase.execute({
+        invitationId: InvitationId.of(invitationId),
+        revokedBy: request.userId,
       });
 
       return reply.code(204).send();

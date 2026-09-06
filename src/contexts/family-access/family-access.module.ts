@@ -69,6 +69,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
           requireFamilyMembership(useCases.getFamilyMembership, minRole),
         createFamilyUseCase: useCases.createFamily,
         acceptInvitationUseCase: useCases.acceptInvitation,
+        revokeInvitationUseCase: useCases.revokeInvitation,
         getFamilyMembersQuery: useCases.getFamilyMembers,
       });
     },
