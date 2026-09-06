@@ -38,7 +38,10 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
     identityModule.useCases.registerUser,
     familyAccessModule.useCases.createFamily,
   );
-  registerIdentityRoutes(app, { registerWorkflow });
+  registerIdentityRoutes(app, {
+    registerWorkflow,
+    loginUseCase: identityModule.useCases.login,
+  });
 
   familyAccessModule.registerRoutes(app, authenticate(dependencies.jwtService));
 
