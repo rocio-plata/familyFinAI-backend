@@ -1,0 +1,23 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { PasswordHash } from "../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
+
+describe("PasswordHash", () => {
+  it("fromPlainText delega el hasheo en la función recibida", () => {
+    const hash = PasswordHash.fromPlainText("supersecreta", (plainText) => `hashed:${plainText}`);
+    assert.equal(hash.toString(), "hashed:supersecreta");
+  });
+
+  it("fromStoredHash reconstruye sin volver a hashear", () => {
+    const hash = PasswordHash.fromStoredHash("salt:digest");
+    assert.equal(hash.toString(), "salt:digest");
+  });
+
+  it("equals() compara por valor", () => {
+    const a = PasswordHash.fromStoredHash("salt:digest");
+    const b = PasswordHash.fromStoredHash("salt:digest");
+    const c = PasswordHash.fromStoredHash("otra:cosa");
+    assert.ok(a.equals(b));
+    assert.ok(!a.equals(c));
+  });
+});
