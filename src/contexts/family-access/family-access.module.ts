@@ -74,6 +74,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         changeMemberRoleUseCase: useCases.changeMemberRole,
         changeDefaultCurrencyUseCase: useCases.changeDefaultCurrency,
         getFamilyMembersQuery: useCases.getFamilyMembers,
+        getFamilyMembershipQuery: useCases.getFamilyMembership,
       });
     },
   };

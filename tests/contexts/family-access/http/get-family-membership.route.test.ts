@@ -1,0 +1,115 @@
+// tests/contexts/family-access/http/get-family-membership.route.test.ts
+import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
+import type { FastifyInstance } from "fastify";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { buildApp } from "../../../../src/platform/app.js";
+import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
+import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
+import { FakeUserDirectory } from "../doubles/fake-user-directory.js";
+import { InMemoryFamilyRepository } from "../doubles/in-memory-family.repository.js";
+import { InMemoryInvitationRepository } from "../doubles/in-memory-invitation.repository.js";
+
+describe("GET /families/:familyId/members/me", () => {
+  let app: FastifyInstance;
+  let familyRepository: InMemoryFamilyRepository;
+  let jwtService: FakeJwtService;
+
+  beforeEach(() => {
+    familyRepository = new InMemoryFamilyRepository();
+    jwtService = new FakeJwtService();
+
+    app = buildApp({
+      jwtService,
+      familyAccess: {
+        familyRepository,
+        invitationRepository: new InMemoryInvitationRepository(),
+        userDirectory: new FakeUserDirectory(),
+        eventBus: new FakeEventBus(),
+      },
+    });
+  });
+
+  test("devuelve la membresía propia cuando el Owner pertenece a la familia", async () => {
+    const ownerId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    await familyRepository.save(family);
+    const token = await jwtService.sign(ownerId);
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${family.id.toString()}/members/me`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.body);
+    assert.equal(body.userId, ownerId.toString());
+    assert.equal(body.familyId, family.id.toString());
+    assert.equal(body.role, "OWNER");
+    assert.ok(body.joinedAt);
+  });
+
+  test("devuelve la membresía propia cuando quien pregunta es Member", async () => {
+    const ownerId = UserId.generate();
+    const memberId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    family.addMemberFromInvitationData(memberId, Role.member());
+    await familyRepository.save(family);
+    const token = await jwtService.sign(memberId);
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${family.id.toString()}/members/me`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.body);
+    assert.equal(body.role, "MEMBER");
+  });
+
+  test("rechaza sin token de autenticación", async () => {
+    const family = Family.create(FamilyName.of("Familia Pérez"), UserId.generate());
+    await familyRepository.save(family);
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${family.id.toString()}/members/me`,
+    });
+
+    assert.equal(response.statusCode, 401);
+  });
+
+  test("rechaza con 403 si el usuario no pertenece a la familia", async () => {
+    const ownerId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    await familyRepository.save(family);
+    const outsiderId = UserId.generate();
+    const token = await jwtService.sign(outsiderId);
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${family.id.toString()}/members/me`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 403);
+  });
+
+  test("rechaza con 403 si la familia no existe (mismo status que 'no soy miembro')", async () => {
+    const token = await jwtService.sign(UserId.generate());
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${FamilyId.generate().toString()}/members/me`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 403);
+  });
+});
