@@ -245,6 +245,17 @@ Toda ruta que opere sobre datos de una familia debe pasar por ambos middlewares.
 
 ---
 
+## Validación HTTP
+
+- Declarar schemas de Fastify para cada entrada de la ruta que aplique: `body`, `params` y `querystring`.
+- Los schemas deben expresar los campos requeridos, tipos y restricciones de formato básicas, como `minLength`.
+- Mantener la coerción de tipos predeterminada de Fastify. Los valores compatibles pueden convertirse al tipo declarado por el schema; documentar y probar ese comportamiento cuando forme parte del contrato.
+- Los errores de validación del schema se manejan de forma centralizada en `registerErrorHandler` y responden `400` con `{ error: "HTTP.INVALID_REQUEST_BODY", message }`.
+- Los handlers HTTP no deben crear `DomainError` para validar el formato de la solicitud; los errores de dominio se reservan para reglas de negocio.
+- Los tests de rutas deben comprobar el caso exitoso, autenticación cuando aplique, entradas inválidas y el cuerpo de error. Incluir casos de coerción admitida cuando sean relevantes.
+
+---
+
 ## Errores de dominio
 
 - Todos los errores de dominio extienden `DomainError` (de `src/shared-kernel/errors/domain-error.ts`).

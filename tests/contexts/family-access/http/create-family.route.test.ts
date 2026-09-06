@@ -63,5 +63,35 @@ describe("POST /families", () => {
     });
 
     assert.equal(response.statusCode, 400);
+    const body = JSON.parse(response.body);
+    assert.equal(body.error, "HTTP.INVALID_REQUEST_BODY");
+    assert.equal(typeof body.message, "string");
+  });
+
+  test("rechaza un body sin el nombre con 400", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/families",
+      headers: { authorization: `Bearer ${token}` },
+      payload: {},
+    });
+
+    assert.equal(response.statusCode, 400);
+    const body = JSON.parse(response.body);
+    assert.equal(body.error, "HTTP.INVALID_REQUEST_BODY");
+    assert.equal(typeof body.message, "string");
+  });
+
+  test("coacciona un nombre numérico y crea la familia", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/families",
+      headers: { authorization: `Bearer ${token}` },
+      payload: { name: 123 },
+    });
+
+    assert.equal(response.statusCode, 201);
+    const body = JSON.parse(response.body);
+    assert.equal(body.name, "123");
   });
 });

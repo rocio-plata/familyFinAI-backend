@@ -1,6 +1,5 @@
 // /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
-import { DomainError } from "../../../../shared-kernel/errors/domain-error.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 
 interface FamilyRoutesDependencies {
@@ -9,29 +8,30 @@ interface FamilyRoutesDependencies {
 }
 
 function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependencies): void {
-  app.post("/families", { preHandler: [deps.authenticate] }, async (request, reply) => {
-    const body = request.body as { name?: unknown };
+  app.post(
+    "/families",
+    {
+      preHandler: [deps.authenticate],
+      schema: {
+        body: {
+          type: "object",
+          required: ["name"],
+          properties: { name: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { name } = request.body as { name: string }; // ya validado por el schema
 
-    if (typeof body.name !== "string") {
-      throw new (class extends DomainError {
-        readonly code = "FAMILY_ACCESS.INVALID_REQUEST_BODY";
-        constructor() {
-          super("El campo 'name' es requerido");
-        }
-      })();
-    }
+      const family = await deps.createFamilyUseCase.execute({ name, createdBy: request.userId });
 
-    const family = await deps.createFamilyUseCase.execute({
-      name: body.name,
-      createdBy: request.userId,
-    });
-
-    return reply.code(201).send({
-      id: family.id.toString(),
-      name: family.name.toString(),
-      defaultCurrency: family.defaultCurrency.toString(),
-    });
-  });
+      return reply.code(201).send({
+        id: family.id.toString(),
+        name: family.name.toString(),
+        defaultCurrency: family.defaultCurrency.toString(),
+      });
+    },
+  );
 }
 
 export type { FamilyRoutesDependencies };

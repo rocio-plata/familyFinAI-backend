@@ -24,12 +24,17 @@ No existe todavía una ruta que implemente la cadena completa `authenticate` + `
 ## 3. Pasos para implementar un endpoint nuevo
 
 1. Antes de escribir código, solicitar el nombre de la rama y crearla.
-2. Definir el comportamiento y escribir primero el test HTTP que falla; si hay reglas nuevas de dominio, escribir también sus pruebas unitarias.
-3. Crear o reutilizar el caso de uso o query y sus puertos, Value Objects y errores de dominio, sin incorporar Fastify al dominio ni a la aplicación.
-4. Implementar la ruta `<recurso>.routes.ts` con parsing mínimo, llamada al caso de uso, serialización y código HTTP.
-5. Si el recurso pertenece a una familia, encadenar `authenticate` y `requireFamilyMembership`, usando `request.familyContext`.
-6. Registrar dependencias y rutas en `src/platform/app.ts`.
-7. Ejecutar `npm test`, `npm run build` y `npm run lint`; corregir cualquier fallo antes de entregar.
+2. Definir el contrato HTTP antes de implementar: método, URL, parámetros, query string, body, autenticación, respuestas exitosas y errores.
+3. Escribir primero los tests HTTP que fallan. Si se agregan reglas de negocio, escribir también los tests unitarios del dominio o caso de uso.
+4. Crear o reutilizar el caso de uso o query y sus puertos, Value Objects y errores de dominio, sin incorporar Fastify al dominio ni a la aplicación.
+5. En la ruta `<recurso>.routes.ts`, declarar schemas de Fastify para cada entrada HTTP que corresponda (`params`, `querystring` y/o `body`). El schema debe expresar campos requeridos, tipos y límites básicos como `minLength`.
+6. Conservar la coerción de tipos predeterminada de Fastify. Los valores compatibles pueden convertirse al tipo declarado por el schema; el contrato y sus pruebas deben documentar ese comportamiento. Por ejemplo, `name: 123` se convierte en `"123"` para un campo `string`.
+7. Dejar el handler delgado: tomar los datos ya validados, llamar al caso de uso y serializar la respuesta. No crear `DomainError` anónimos para errores de formato del request.
+8. Los errores de schema son tratados por `registerErrorHandler` y deben responder `400` con `{ error: "HTTP.INVALID_REQUEST_BODY", message }`. Los errores de dominio continúan usando su código y el status resuelto por `resolveHttpStatus`.
+9. Si el recurso pertenece a una familia, encadenar `authenticate` y `requireFamilyMembership`, usando `request.familyContext`.
+10. Registrar dependencias y rutas en `src/platform/app.ts`.
+11. Probar el contrato completo con `app.inject`: éxito, falta de autenticación cuando aplique, entradas inválidas y cuerpo de error; incluir casos de coerción admitida cuando formen parte del contrato.
+12. Ejecutar `npm test`, `npm run build` y `npm run lint`; corregir cualquier fallo antes de entregar.
 
 ## 4. Inconsistencias detectadas
 
@@ -37,6 +42,6 @@ No existe todavía una ruta que implemente la cadena completa `authenticate` + `
 - Hay un query bajo `src/contexts/family-access/application/commands/get-family-membership.query.ts`, duplicado además en la carpeta correcta `application/queries/`. Esto contradice la separación de commands y queries.
 - La guía indica preferir `type` salvo que se necesite `implements`, pero varios DTOs y comandos usan `interface` sin esa necesidad, por ejemplo `CreateFamilyCommand`.
 - **Resuelto:** los 132 archivos TypeScript bajo `src/` ahora comienzan con un comentario uniforme que identifica su ruta, con el formato `// /src/ruta/al/archivo.ts`.
-- `POST /families` declara un `DomainError` anónimo para un body inválido. La guía pide errores específicos y ubicados en `domain/errors`.
+- **Resuelto:** `POST /families` valida el body mediante el schema de Fastify, por lo que ya no declara un `DomainError` anónimo en la ruta. El manejador global transforma los errores de validación HTTP en una respuesta `400` con el código `HTTP.INVALID_REQUEST_BODY`.
 - La arquitectura documenta Budgeting, Reporting, AI Assistance, adaptadores Drizzle y `platform/db`, pero el repositorio solo materializa Family Access y Financial Tracking. El servidor usa `InMemoryFamilyRepository`, no PostgreSQL/Neon; parece un avance parcial, también descrito como pendiente en la documentación.
 - La documentación menciona `financial-item.routes.ts` como ejemplo de middleware, pero ese archivo no existe actualmente.

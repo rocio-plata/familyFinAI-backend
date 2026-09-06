@@ -10,6 +10,10 @@ function registerErrorHandler(app: FastifyInstance): void {
       return reply.code(status).send({ error: error.code, message: error.message });
     }
 
+    if ("validation" in error && error.validation) {
+      return reply.code(400).send({ error: "HTTP.INVALID_REQUEST_BODY", message: error.message });
+    }
+
     request.log.error(error);
     return reply
       .code(500)
