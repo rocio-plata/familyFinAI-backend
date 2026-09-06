@@ -1,3 +1,4 @@
+// tests/contexts/identity/domain/entities/user.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { EmailAddress } from "../../../../../src/contexts/family-access/domain/value-objects/email-address.js";
@@ -37,14 +38,24 @@ describe("User", () => {
   });
 
   describe("verifyPassword()", () => {
-    it("retorna true cuando el hash coincide", () => {
+    it("retorna true cuando la función de verificación confirma el match", () => {
       const user = registerUser();
-      assert.ok(user.verifyPassword(PasswordHash.fromStoredHash("salt:digest")));
+      assert.ok(user.verifyPassword("cualquier-texto", () => true));
     });
 
-    it("retorna false cuando el hash no coincide", () => {
+    it("retorna false cuando la función de verificación no confirma el match", () => {
       const user = registerUser();
-      assert.ok(!user.verifyPassword(PasswordHash.fromStoredHash("otra:cosa")));
+      assert.ok(!user.verifyPassword("cualquier-texto", () => false));
+    });
+
+    it("le pasa el texto plano y el hash almacenado a la función de verificación", () => {
+      const user = registerUser();
+      let received: [string, string] | null = null;
+      user.verifyPassword("supersecreta", (plainText, storedHash) => {
+        received = [plainText, storedHash];
+        return true;
+      });
+      assert.deepEqual(received, ["supersecreta", "salt:digest"]);
     });
   });
 
@@ -52,7 +63,9 @@ describe("User", () => {
     it("actualiza el hash de contraseña", () => {
       const user = registerUser();
       user.changePassword(PasswordHash.fromStoredHash("nueva:cosa"));
-      assert.ok(user.verifyPassword(PasswordHash.fromStoredHash("nueva:cosa")));
+      assert.ok(
+        user.verifyPassword("cualquier-texto", (_p, storedHash) => storedHash === "nueva:cosa"),
+      );
     });
   });
 

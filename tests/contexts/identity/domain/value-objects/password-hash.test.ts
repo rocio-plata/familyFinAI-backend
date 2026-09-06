@@ -1,4 +1,3 @@
-// tests/contexts/identity/domain/value-objects/password-hash.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { WeakPasswordError } from "../../../../../src/contexts/identity/domain/errors/weak-password.error.js";
@@ -28,5 +27,14 @@ describe("PasswordHash", () => {
     const c = PasswordHash.fromStoredHash("otra:cosa");
     assert.ok(a.equals(b));
     assert.ok(!a.equals(c));
+  });
+
+  it("matches() delega la verificación en la función recibida", () => {
+    const hash = PasswordHash.fromStoredHash("salt:digest");
+    const verifyOk = (plainText: string, storedHash: string) =>
+      plainText === "supersecreta" && storedHash === "salt:digest";
+
+    assert.ok(hash.matches("supersecreta", verifyOk));
+    assert.ok(!hash.matches("otra-contraseña", verifyOk));
   });
 });

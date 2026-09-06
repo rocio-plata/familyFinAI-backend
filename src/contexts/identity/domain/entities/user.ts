@@ -42,8 +42,11 @@ class User {
     return events;
   }
 
-  verifyPassword(candidateHash: PasswordHash): boolean {
-    return this._passwordHash.equals(candidateHash);
+  verifyPassword(
+    plainText: string,
+    verify: (plainText: string, storedHash: string) => boolean,
+  ): boolean {
+    return this._passwordHash.matches(plainText, verify);
   }
 
   changePassword(newPasswordHash: PasswordHash): void {
