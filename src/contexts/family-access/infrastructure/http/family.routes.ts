@@ -1,6 +1,7 @@
 // /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import type { AcceptInvitationUseCase } from "../../application/commands/accept-invitation.usecase.js";
+import type { ChangeDefaultCurrencyUseCase } from "../../application/commands/change-default-currency.usecase.js";
 import type { ChangeMemberRoleUseCase } from "../../application/commands/change-member-role.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
@@ -19,6 +20,7 @@ interface FamilyRoutesDependencies {
   revokeInvitationUseCase: RevokeInvitationUseCase;
   removeMemberUseCase: RemoveMemberUseCase;
   changeMemberRoleUseCase: ChangeMemberRoleUseCase;
+  changeDefaultCurrencyUseCase: ChangeDefaultCurrencyUseCase;
   getFamilyMembersQuery: GetFamilyMembersQuery;
 }
 
@@ -179,6 +181,37 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
         familyId: FamilyId.of(familyId),
         memberId: UserId.of(memberId),
         newRole: newRole === "OWNER" ? Role.owner() : Role.member(),
+        changedBy: request.userId,
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.patch(
+    "/families/:familyId/settings/currency",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string" } },
+        },
+        body: {
+          type: "object",
+          required: ["newCurrency"],
+          properties: { newCurrency: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { newCurrency } = request.body as { newCurrency: string };
+
+      await deps.changeDefaultCurrencyUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        newCurrency,
         changedBy: request.userId,
       });
 
