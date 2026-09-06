@@ -83,14 +83,13 @@ class CreateFinancialItemUseCase {
     };
     const item = FinancialItem.create(props);
 
-    // 6. Publicar eventos
-    const events = item.pullDomainEvents();
-    for (const event of events) {
+    // 6. Persistir
+    await this.itemRepository.save(item);
+
+    // 7. Publicar eventos
+    for (const event of item.pullDomainEvents()) {
       await this.eventBus.publish(event);
     }
-
-    // 7. Persistir
-    await this.itemRepository.save(item);
 
     return item;
   }
