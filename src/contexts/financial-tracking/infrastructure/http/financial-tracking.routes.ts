@@ -5,6 +5,7 @@ import { Role } from "../../../family-access/domain/value-objects/role.js";
 import type { AddTagToCategoryUseCase } from "../../application/commands/add-tag-to-category.usecase.js";
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
 import type { DeleteCategoryUseCase } from "../../application/commands/delete-category.usecase.js";
+import type { DeleteTagUseCase } from "../../application/commands/delete-tag.usecase.js";
 import type { DeprecateCategoryUseCase } from "../../application/commands/deprecate-category.usecase.js";
 import type { DeprecateTagUseCase } from "../../application/commands/deprecate-tag.usecase.js";
 import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
@@ -23,6 +24,7 @@ interface FinancialTrackingRoutesDependencies {
   addTagToCategoryUseCase: AddTagToCategoryUseCase;
   createCategoryUseCase: CreateCategoryUseCase;
   deleteCategoryUseCase: DeleteCategoryUseCase;
+  deleteTagUseCase: DeleteTagUseCase;
   deprecateCategoryUseCase: DeprecateCategoryUseCase;
   deprecateTagUseCase: DeprecateTagUseCase;
   getCategoriesQuery: GetCategoriesQuery;
@@ -157,6 +159,40 @@ function registerFinancialTrackingRoutes(
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
         categoryId: CategoryId.of(categoryId),
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.delete(
+    "/families/:familyId/categories/:categoryId/tags/:tagId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "categoryId", "tagId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            categoryId: { type: "string", minLength: 1 },
+            tagId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, categoryId, tagId } = request.params as {
+        familyId: string;
+        categoryId: string;
+        tagId: string;
+      };
+
+      await deps.deleteTagUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        categoryId: CategoryId.of(categoryId),
+        tagId: TagId.of(tagId),
       });
 
       return reply.code(204).send();
