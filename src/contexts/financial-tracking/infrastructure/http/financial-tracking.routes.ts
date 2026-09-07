@@ -4,6 +4,7 @@ import { FamilyId } from "../../../family-access/domain/value-objects/family-id.
 import { Role } from "../../../family-access/domain/value-objects/role.js";
 import type { AddTagToCategoryUseCase } from "../../application/commands/add-tag-to-category.usecase.js";
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
+import type { DeprecateCategoryUseCase } from "../../application/commands/deprecate-category.usecase.js";
 import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
@@ -19,6 +20,7 @@ interface FinancialTrackingRoutesDependencies {
   requireFamilyMembership: (minRole?: Role) => preHandlerHookHandler;
   addTagToCategoryUseCase: AddTagToCategoryUseCase;
   createCategoryUseCase: CreateCategoryUseCase;
+  deprecateCategoryUseCase: DeprecateCategoryUseCase;
   getCategoriesQuery: GetCategoriesQuery;
   renameCategoryUseCase: RenameCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
@@ -98,6 +100,34 @@ function registerFinancialTrackingRoutes(
         name: category.name.toString(),
         status: category.status,
       });
+    },
+  );
+
+  app.post(
+    "/families/:familyId/categories/:categoryId/deprecate",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "categoryId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            categoryId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
+
+      await deps.deprecateCategoryUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        categoryId: CategoryId.of(categoryId),
+      });
+
+      return reply.code(204).send();
     },
   );
 

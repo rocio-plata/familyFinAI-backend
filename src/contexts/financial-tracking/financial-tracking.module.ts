@@ -5,6 +5,7 @@ import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
+import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
@@ -21,6 +22,7 @@ interface FinancialTrackingModule {
   useCases: {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
+    deprecateCategory: DeprecateCategoryUseCase;
     getCategories: GetCategoriesQuery;
     renameCategory: RenameCategoryUseCase;
     renameTag: RenameTagUseCase;
@@ -40,6 +42,11 @@ function buildFinancialTrackingModule(
       getFamilyMembershipQuery,
       deps.eventBus,
     ),
+    deprecateCategory: new DeprecateCategoryUseCase(
+      deps.categoryRepository,
+      getFamilyMembershipQuery,
+      deps.eventBus,
+    ),
     getCategories: new GetCategoriesQuery(deps.categoryRepository),
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
@@ -53,6 +60,7 @@ function buildFinancialTrackingModule(
         authenticate,
         addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
+        deprecateCategoryUseCase: useCases.deprecateCategory,
         getCategoriesQuery: useCases.getCategories,
         renameCategoryUseCase: useCases.renameCategory,
         renameTagUseCase: useCases.renameTag,
