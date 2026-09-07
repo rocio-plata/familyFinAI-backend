@@ -8,7 +8,9 @@ import { ChangeMemberRoleUseCase } from "./application/commands/change-member-ro
 import { CreateFamilyUseCase } from "./application/commands/create-family.usecase.js";
 import { InviteMemberUseCase } from "./application/commands/invite-member.usecase.js";
 import { RemoveMemberUseCase } from "./application/commands/remove-member.usecase.js";
+import { ReorderMyFamiliesUseCase } from "./application/commands/reorder-my-families.usecase.js";
 import { RevokeInvitationUseCase } from "./application/commands/revoke-invitation.usecase.js";
+import { GetFamiliesForUserQuery } from "./application/queries/get-families-for-user.query.js";
 import { GetFamilyMembersQuery } from "./application/queries/get-family-members.query.js";
 import { GetFamilyMembershipQuery } from "./application/queries/get-family-membership.query.js";
 import type { UserDirectoryPort } from "./domain/ports/user-directory.port.js";
@@ -32,6 +34,8 @@ interface FamilyAccessModule {
     removeMember: RemoveMemberUseCase;
     changeMemberRole: ChangeMemberRoleUseCase;
     changeDefaultCurrency: ChangeDefaultCurrencyUseCase;
+    reorderMyFamilies: ReorderMyFamiliesUseCase;
+    getFamiliesForUser: GetFamiliesForUserQuery;
     getFamilyMembership: GetFamilyMembershipQuery;
     getFamilyMembers: GetFamilyMembersQuery;
   };
@@ -56,6 +60,8 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
     removeMember: new RemoveMemberUseCase(deps.familyRepository, deps.eventBus),
     changeMemberRole: new ChangeMemberRoleUseCase(deps.familyRepository, deps.eventBus),
     changeDefaultCurrency: new ChangeDefaultCurrencyUseCase(deps.familyRepository),
+    reorderMyFamilies: new ReorderMyFamiliesUseCase(deps.familyRepository),
+    getFamiliesForUser: new GetFamiliesForUserQuery(deps.familyRepository),
     getFamilyMembership: new GetFamilyMembershipQuery(deps.familyRepository),
     getFamilyMembers: new GetFamilyMembersQuery(deps.familyRepository),
   };
@@ -74,6 +80,8 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         removeMemberUseCase: useCases.removeMember,
         changeMemberRoleUseCase: useCases.changeMemberRole,
         changeDefaultCurrencyUseCase: useCases.changeDefaultCurrency,
+        reorderMyFamiliesUseCase: useCases.reorderMyFamilies,
+        getFamiliesForUserQuery: useCases.getFamiliesForUser,
         getFamilyMembersQuery: useCases.getFamilyMembers,
         getFamilyMembershipQuery: useCases.getFamilyMembership,
       });
