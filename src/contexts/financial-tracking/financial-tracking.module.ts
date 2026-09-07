@@ -6,6 +6,7 @@ import type { GetFamilyMembershipQuery } from "../family-access/application/quer
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
+import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
 import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial-tracking.routes.js";
@@ -21,6 +22,7 @@ interface FinancialTrackingModule {
     createCategory: CreateCategoryUseCase;
     getCategories: GetCategoriesQuery;
     renameCategory: RenameCategoryUseCase;
+    renameTag: RenameTagUseCase;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -38,6 +40,7 @@ function buildFinancialTrackingModule(
     ),
     getCategories: new GetCategoriesQuery(deps.categoryRepository),
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
+    renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
   };
 
   return {
@@ -49,6 +52,7 @@ function buildFinancialTrackingModule(
         createCategoryUseCase: useCases.createCategory,
         getCategoriesQuery: useCases.getCategories,
         renameCategoryUseCase: useCases.renameCategory,
+        renameTagUseCase: useCases.renameTag,
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(getFamilyMembershipQuery, minRole),
       });
