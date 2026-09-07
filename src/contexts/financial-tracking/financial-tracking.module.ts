@@ -3,6 +3,7 @@ import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { requireFamilyMembership } from "../../platform/auth/require-family-membership.middleware.js";
 import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
+import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
@@ -15,6 +16,7 @@ interface FinancialTrackingModuleDependencies {
 
 interface FinancialTrackingModule {
   useCases: {
+    addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
     getCategories: GetCategoriesQuery;
   };
@@ -26,6 +28,7 @@ function buildFinancialTrackingModule(
   getFamilyMembershipQuery: GetFamilyMembershipQuery,
 ): FinancialTrackingModule {
   const useCases = {
+    addTagToCategory: new AddTagToCategoryUseCase(deps.categoryRepository, deps.eventBus),
     createCategory: new CreateCategoryUseCase(
       deps.categoryRepository,
       getFamilyMembershipQuery,
@@ -39,9 +42,11 @@ function buildFinancialTrackingModule(
     registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void {
       registerFinancialTrackingRoutes(app, {
         authenticate,
+        addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
         getCategoriesQuery: useCases.getCategories,
-        requireFamilyMembership: () => requireFamilyMembership(getFamilyMembershipQuery),
+        requireFamilyMembership: (minRole) =>
+          requireFamilyMembership(getFamilyMembershipQuery, minRole),
       });
     },
   };
