@@ -9,6 +9,7 @@ import {
   type IdentityModuleDependencies,
 } from "../contexts/identity/identity.module.js";
 import { registerIdentityRoutes } from "../contexts/identity/infrastructure/http/identity.routes.js";
+import { buildAuthModule } from "./auth/auth.module.js";
 import { authenticate } from "./auth/authenticate.middleware.js";
 import type { JwtSigner } from "./auth/jwt-signer.js";
 import { registerErrorHandler } from "./http/error-handler.js";
@@ -32,6 +33,11 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
 
   const familyAccessModule = buildFamilyAccessModule(dependencies.familyAccess);
   const identityModule = buildIdentityModule(dependencies.identity);
+  const authenticateRequest = authenticate(dependencies.jwtService);
+  const authModule = buildAuthModule({
+    tokenService: dependencies.identity.tokenService,
+    authenticate: authenticateRequest,
+  });
 
   // capa de composición: el workflow conoce ambos contextos, ninguno de los dos se conoce entre sí
   const registerWorkflow = new RegisterUserWithPersonalFamilyWorkflow(
@@ -44,10 +50,11 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
     getUserProfileQuery: identityModule.useCases.getUserProfile,
     changePasswordUseCase: identityModule.useCases.changePassword,
     updateDisplayNameUseCase: identityModule.useCases.updateDisplayName,
-    authenticate: authenticate(dependencies.jwtService),
+    authenticate: authenticateRequest,
   });
 
-  familyAccessModule.registerRoutes(app, authenticate(dependencies.jwtService));
+  authModule.registerRoutes(app);
+  familyAccessModule.registerRoutes(app, authenticateRequest);
 
   return app;
 }
