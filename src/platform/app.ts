@@ -5,6 +5,10 @@ import {
   type FamilyAccessModuleDependencies,
 } from "../contexts/family-access/family-access.module.js";
 import {
+  buildFinancialTrackingModule,
+  type FinancialTrackingModuleDependencies,
+} from "../contexts/financial-tracking/financial-tracking.module.js";
+import {
   buildIdentityModule,
   type IdentityModuleDependencies,
 } from "../contexts/identity/identity.module.js";
@@ -19,6 +23,7 @@ interface AppDependencies {
   jwtService: JwtSigner;
   familyAccess: FamilyAccessModuleDependencies;
   identity: IdentityModuleDependencies;
+  financialTracking?: FinancialTrackingModuleDependencies;
   logLevel?: string;
 }
 
@@ -33,6 +38,12 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
 
   const familyAccessModule = buildFamilyAccessModule(dependencies.familyAccess);
   const identityModule = buildIdentityModule(dependencies.identity);
+  const financialTrackingModule = dependencies.financialTracking
+    ? buildFinancialTrackingModule(
+        dependencies.financialTracking,
+        familyAccessModule.useCases.getFamilyMembership,
+      )
+    : null;
   const authenticateRequest = authenticate(dependencies.jwtService);
   const authModule = buildAuthModule({
     tokenService: dependencies.identity.tokenService,
@@ -55,6 +66,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
 
   authModule.registerRoutes(app);
   familyAccessModule.registerRoutes(app, authenticateRequest);
+  financialTrackingModule?.registerRoutes(app, authenticateRequest);
 
   return app;
 }

@@ -2,6 +2,7 @@
 import { IdentityUserDirectoryAdapter } from "../contexts/family-access/infrastructure/adapters/identity-user-directory.adapter.js";
 import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
+import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
 import { GetUserIdByEmailQuery } from "../contexts/identity/application/queries/get-user-id-by-email.query.js";
 import {
   hashPassword,
@@ -23,6 +24,7 @@ const logLevel = process.env.LOG_LEVEL ?? "info";
 const jwtService = new JwtService(new TextEncoder().encode(jwtSecret));
 const userRepository = new InMemoryUserRepository();
 const getUserIdByEmailQuery = new GetUserIdByEmailQuery(userRepository);
+const eventBus = new InProcessEventBus();
 
 const app = buildApp({
   jwtService,
@@ -31,14 +33,18 @@ const app = buildApp({
     familyRepository: new InMemoryFamilyRepository(),
     invitationRepository: new InMemoryInvitationRepository(),
     userDirectory: new IdentityUserDirectoryAdapter(getUserIdByEmailQuery),
-    eventBus: new InProcessEventBus(),
+    eventBus,
   },
   identity: {
     userRepository,
     tokenService: new TokenService(jwtService, new InMemoryRefreshTokenRepository()),
-    eventBus: new InProcessEventBus(),
+    eventBus,
     hashPassword,
     verifyPassword,
+  },
+  financialTracking: {
+    categoryRepository: new InMemoryCategoryRepository(),
+    eventBus,
   },
 });
 
