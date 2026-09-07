@@ -10,7 +10,7 @@ Orden lógico para exponer, vía Fastify, los casos de uso ya diseñados (y en s
 - **Identity** (contexto nuevo, upstream de todo): casos de uso implementados y testeados a nivel de aplicación — `RegisterUser`, `Login`, `GetUserProfile`, `UpdateDisplayName`, `ChangePassword`, `GetUserIdByEmail` (query interna, ya integrada vía `IdentityUserDirectoryAdapter`, wireada en `server.ts`, no se expone por HTTP). Existe el workflow de composición `RegisterUserWithPersonalFamilyWorkflow` (`platform/workflows/`), que orquesta `RegisterUser` + `CreateFamily`. `buildIdentityModule()` ✅ implementado. Rutas expuestas: `POST /auth/register` ✅, `POST /auth/login` ✅, `GET /me/profile` ✅, `PATCH /me/display-name` ✅ y `PATCH /me/password` ✅.
 - **`platform/auth`**: `JwtService`, `TokenService` (con rotación y detección de robo) y `RefreshToken` están implementados y expuestos vía `POST /auth/refresh` ✅ y `POST /auth/logout` ✅. Las rutas viven en `auth.module.ts`, que agrupa la composición HTTP transversal de autenticación.
 - **Family & Access**: los 9 casos de uso originales están implementados, testeados y **expuestos por HTTP** (`POST /families`, `GET /families/:familyId/members`, `POST /families/:familyId/invitations`, `POST /invitations/:invitationId/accept`, `DELETE /invitations/:invitationId`, `DELETE /families/:familyId/members/:memberId`, `PATCH /families/:familyId/members/:memberId/role`, `PATCH /families/:familyId/settings/currency`, `GET /families/:familyId/members/me`), todos con TDD completo. Además, ya se implementó la extensión multi-familia a nivel de aplicación (`GetFamiliesForUser`, `ReorderMyFamilies`, `displayOrder` en `Member`) — **sin ruta HTTP todavía**.
-- **Financial Tracking**: casos de uso y entidades/value objects centrales implementados; `POST /families/:familyId/categories` ✅ es el primer endpoint expuesto. **Budgeting, Reporting y AI Assistance**: documentados, con sus entidades/value objects centrales implementados, pero sin rutas HTTP todavía.
+- **Financial Tracking**: casos de uso y entidades/value objects centrales implementados; `POST /families/:familyId/categories` ✅ y `GET /families/:familyId/categories` ✅ son los primeros endpoints expuestos. **Budgeting, Reporting y AI Assistance**: documentados, con sus entidades/value objects centrales implementados, pero sin rutas HTTP todavía.
 - **Persistencia**: todo corre sobre repositorios in-memory. La integración con Postgres/Drizzle está documentada pero no implementada (bloqueada por el patrón `reconstitute()` pendiente).
 
 ---
@@ -79,7 +79,7 @@ Es el contexto **upstream** del resto de los datos de negocio — sin poder invi
 Depende de Fase 2 porque cada request necesita `requireFamilyMembership`. Dentro de la fase, **categorías y tags antes que items**, porque `CreateFinancialItem` valida contra una categoría existente:
 
 1. ~~`POST /families/:familyId/categories` (`CreateCategory`)~~ ✅ — requiere `authenticate`; el caso de uso valida que quien la crea sea Owner.
-2. `GET /families/:familyId/categories` (`GetCategories`).
+2. ~~`GET /families/:familyId/categories` (`GetCategories`)~~ ✅ — requiere `authenticate` y membresía de la familia; admite `includeDeprecated` opcional.
 3. `POST /families/:familyId/categories/:categoryId/tags` (`AddTagToCategory`).
 4. `PATCH /families/:familyId/categories/:categoryId` (`RenameCategory`).
 5. `PATCH /families/:familyId/categories/:categoryId/tags/:tagId` (`RenameTag`).

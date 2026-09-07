@@ -2,12 +2,15 @@
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
+import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
 
 interface FinancialTrackingRoutesDependencies {
   authenticate: preHandlerHookHandler;
+  requireFamilyMembership: () => preHandlerHookHandler;
   createCategoryUseCase: CreateCategoryUseCase;
+  getCategoriesQuery: GetCategoriesQuery;
 }
 
 function registerFinancialTrackingRoutes(
@@ -45,6 +48,46 @@ function registerFinancialTrackingRoutes(
         name: category.name.toString(),
         status: CategoryStatus.Active,
       });
+    },
+  );
+
+  app.get(
+    "/families/:familyId/categories",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+        querystring: {
+          type: "object",
+          properties: { includeDeprecated: { type: "boolean" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { includeDeprecated } = request.query as { includeDeprecated?: boolean };
+      const categories = await deps.getCategoriesQuery.execute({
+        familyId: FamilyId.of(familyId),
+        ...(includeDeprecated === undefined ? {} : { includeDeprecated }),
+      });
+
+      return reply.code(200).send(
+        categories.map((category) => ({
+          id: category.id.toString(),
+          name: category.name.toString(),
+          status: category.status,
+          tags: category.tags.map((tag) => ({
+            id: tag.id.toString(),
+            name: tag.name.toString(),
+            status: tag.status,
+            displayOrder: tag.displayOrder,
+          })),
+        })),
+      );
     },
   );
 }
