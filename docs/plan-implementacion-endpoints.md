@@ -59,7 +59,7 @@ Hasta ahora, obtener un token válido para probar los endpoints de `Family & Acc
 
 ## Fase 2 — Completar `Family & Access`
 
-Es el contexto **upstream** del resto de los datos de negocio — sin poder invitar/gestionar miembros, no tiene sentido avanzar a `Financial Tracking` (que ya requiere autorización por familia en cada request). De los 11 casos de uso totales (9 originales + 2 de la extensión multi-familia), **9 ya están expuestos**; quedan 2 pendientes:
+Es el contexto **upstream** del resto de los datos de negocio — sin poder invitar/gestionar miembros, no tiene sentido avanzar a `Financial Tracking` (que ya requiere autorización por familia en cada request). Los **11 casos de uso** (9 originales + 2 de la extensión multi-familia) ya están expuestos por HTTP:
 
 1. ~~`GET /families/:familyId/members` (`GetFamilyMembers`)~~ ✅
 2. ~~`POST /families/:familyId/invitations` (`InviteMember`)~~ ✅
@@ -69,8 +69,8 @@ Es el contexto **upstream** del resto de los datos de negocio — sin poder invi
 6. ~~`PATCH /families/:familyId/members/:memberId/role` (`ChangeMemberRole`)~~ ✅
 7. ~~`PATCH /families/:familyId/settings/currency` (`ChangeDefaultCurrency`)~~ ✅
 8. ~~`GET /families/:familyId/members/me` (`GetFamilyMembership`)~~ ✅
-9. `GET /me/families` (`GetFamiliesForUser`) — **pendiente**: lista todas las familias del usuario autenticado, ya ordenadas (la primera es la que se abre por defecto). Requiere solo `authenticate` (no `requireFamilyMembership`, ya que no opera sobre una familia específica sino sobre todas las del usuario).
-10. `PUT /me/families/order` (`ReorderMyFamilies`) — **pendiente**: recibe `orderedFamilyIds` completo; mismo criterio de autorización que el punto anterior.
+9. ~~`GET /me/families` (`GetFamiliesForUser`)~~ ✅ — lista todas las familias del usuario autenticado, ya ordenadas. Requiere solo `authenticate` (no `requireFamilyMembership`, ya que no opera sobre una familia específica sino sobre todas las del usuario).
+10. ~~`PUT /me/families/order` (`ReorderMyFamilies`)~~ ✅ — recibe `orderedFamilyIds` completo y valida que coincida exactamente con las familias reales del usuario. Requiere solo `authenticate`.
 
 ---
 

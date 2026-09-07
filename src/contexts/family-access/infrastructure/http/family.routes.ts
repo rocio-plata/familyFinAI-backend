@@ -6,7 +6,9 @@ import type { ChangeMemberRoleUseCase } from "../../application/commands/change-
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
 import type { InviteMemberUseCase } from "../../application/commands/invite-member.usecase.js";
 import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
+import type { ReorderMyFamiliesUseCase } from "../../application/commands/reorder-my-families.usecase.js";
 import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
+import type { GetFamiliesForUserQuery } from "../../application/queries/get-families-for-user.query.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import type { GetFamilyMembershipQuery } from "../../application/queries/get-family-membership.query.js";
 import { EmailAddress } from "../../domain/value-objects/email-address.js";
@@ -25,6 +27,8 @@ interface FamilyRoutesDependencies {
   removeMemberUseCase: RemoveMemberUseCase;
   changeMemberRoleUseCase: ChangeMemberRoleUseCase;
   changeDefaultCurrencyUseCase: ChangeDefaultCurrencyUseCase;
+  reorderMyFamiliesUseCase: ReorderMyFamiliesUseCase;
+  getFamiliesForUserQuery: GetFamiliesForUserQuery;
   getFamilyMembersQuery: GetFamilyMembersQuery;
   getFamilyMembershipQuery: GetFamilyMembershipQuery;
 }
@@ -52,6 +56,47 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
         name: family.name.toString(),
         defaultCurrency: family.defaultCurrency.toString(),
       });
+    },
+  );
+
+  app.get("/me/families", { preHandler: [deps.authenticate] }, async (request, reply) => {
+    const families = await deps.getFamiliesForUserQuery.execute({ userId: request.userId });
+
+    return reply.code(200).send(
+      families.map((family) => ({
+        familyId: family.familyId.toString(),
+        name: family.name,
+        role: family.role.isOwner() ? "OWNER" : "MEMBER",
+      })),
+    );
+  });
+
+  app.put(
+    "/me/families/order",
+    {
+      preHandler: [deps.authenticate],
+      schema: {
+        body: {
+          type: "object",
+          required: ["orderedFamilyIds"],
+          properties: {
+            orderedFamilyIds: {
+              type: "array",
+              items: { type: "string", minLength: 1 },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { orderedFamilyIds } = request.body as { orderedFamilyIds: string[] };
+
+      await deps.reorderMyFamiliesUseCase.execute({
+        userId: request.userId,
+        orderedFamilyIds: orderedFamilyIds.map((familyId) => FamilyId.of(familyId)),
+      });
+
+      return reply.code(204).send();
     },
   );
 
