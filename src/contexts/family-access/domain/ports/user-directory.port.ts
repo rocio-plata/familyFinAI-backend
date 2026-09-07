@@ -1,5 +1,5 @@
 // /src/contexts/family-access/domain/ports/user-directory.port.ts
-import type { EmailAddress } from "../value-objects/email-address.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { UserId } from "../value-objects/user-id.js";
 
 interface UserDirectoryPort {

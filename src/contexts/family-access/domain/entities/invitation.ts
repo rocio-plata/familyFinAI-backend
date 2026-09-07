@@ -1,13 +1,13 @@
 // /src/contexts/family-access/domain/entities/invitation.ts
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { addDays } from "../../../../shared-kernel/domain/util/date.js";
 import { InvitationExpiredError } from "../errors/invitation-expired.error.js";
 import { InvitationNotAcceptedError } from "../errors/invitation-not-accepted.error.js";
 import { InvitationNotPendingError } from "../errors/invitation-not-pending.error.js";
 import { InvitationAccepted } from "../events/invitation-accepted.event.js";
 import { MemberInvited } from "../events/member-invited.event.js";
-import type { EmailAddress } from "../value-objects/email-address.js";
 import type { FamilyId } from "../value-objects/family-id.js";
 import { InvitationId } from "../value-objects/invitation-id.js";
 import { InvitationStatus } from "../value-objects/invitation-status.js";

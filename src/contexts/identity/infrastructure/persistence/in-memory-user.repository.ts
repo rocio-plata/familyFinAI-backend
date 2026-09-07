@@ -1,5 +1,5 @@
 // /src/contexts/identity/infrastructure/persistence/in-memory-user.repository.ts
-import type { EmailAddress } from "../../../family-access/domain/value-objects/email-address.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import type { User } from "../../domain/entities/user.js";
 import type { UserRepository } from "../../domain/repositories/user.repository.js";

@@ -1,13 +1,13 @@
 // tests/contexts/identity/login.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { EmailAddress } from "../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { LoginUseCase } from "../../../src/contexts/identity/application/commands/login.usecase.js";
 import { User } from "../../../src/contexts/identity/domain/entities/user.js";
 import { InvalidCredentialsError } from "../../../src/contexts/identity/domain/errors/invalid-credentials.error.js";
 import { DisplayName } from "../../../src/contexts/identity/domain/value-objects/display-name.js";
 import { PasswordHash } from "../../../src/contexts/identity/domain/value-objects/password-hash.js";
 import { TokenService } from "../../../src/platform/auth/tokens.js";
+import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
 import { FakeJwtService } from "../../platform/auth/doubles/fake-jwt-service.js";
 import { InMemoryRefreshTokenRepository } from "../../platform/auth/doubles/in-memory-refresh-token.repository.js";
 import { InMemoryUserRepository } from "./doubles/in-memory-user.repository.js";

@@ -5,11 +5,11 @@ import { CannotRemoveLastOwnerError } from "../../../../../src/contexts/family-a
 import { InsufficientRoleError } from "../../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
 import { MemberNotFoundError } from "../../../../../src/contexts/family-access/domain/errors/member-not-found.error.js";
 import { MemberRoleChanged } from "../../../../../src/contexts/family-access/domain/events/member-role-changed.event.js";
-import { EmailAddress } from "../../../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { InvitationStatus } from "../../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
 import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
 
 const familyName = FamilyName.of("Los García");
 
