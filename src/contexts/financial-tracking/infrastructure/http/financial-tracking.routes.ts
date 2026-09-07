@@ -14,11 +14,13 @@ import type { DeprecateTagUseCase } from "../../application/commands/deprecate-t
 import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
+import type { UpdateFinancialItemUseCase } from "../../application/commands/update-financial-item.usecase.js";
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import type { GetFinancialItemsQuery } from "../../application/queries/get-financial-items.query.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
+import { FinancialItemId } from "../../domain/value-objects/financial-item-id.js";
 import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 import { Money } from "../../domain/value-objects/money.js";
 import { Note } from "../../domain/value-objects/note.js";
@@ -42,6 +44,7 @@ interface FinancialTrackingRoutesDependencies {
   renameCategoryUseCase: RenameCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
   reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
+  updateFinancialItemUseCase: UpdateFinancialItemUseCase;
   getFamilyDefaultCurrencyQuery: GetFamilyDefaultCurrencyQuery;
 }
 
@@ -215,6 +218,79 @@ function registerFinancialTrackingRoutes(
           createdAt: item.createdAt.toISOString(),
         })),
       );
+    },
+  );
+
+  app.patch(
+    "/families/:familyId/items/:itemId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "itemId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            itemId: { type: "string", minLength: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          minProperties: 1,
+          additionalProperties: false,
+          properties: {
+            amount: { type: "number" },
+            currency: { type: "string", minLength: 1 },
+            occurredOn: { type: "string", format: "date-time" },
+            title: { type: "string", minLength: 1 },
+            note: { type: ["string", "null"] },
+          },
+          dependencies: {
+            amount: ["currency"],
+            currency: ["amount"],
+          },
+          allOf: [
+            { not: { required: ["categoryId"] } },
+            { not: { required: ["tagId"] } },
+            { not: { required: ["type"] } },
+          ],
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, itemId } = request.params as { familyId: string; itemId: string };
+      const { amount, currency, occurredOn, title, note } = request.body as {
+        amount?: number;
+        currency?: string;
+        occurredOn?: string;
+        title?: string;
+        note?: string | null;
+      };
+      const item = await deps.updateFinancialItemUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        itemId: FinancialItemId.of(itemId),
+        ...(amount === undefined || currency === undefined
+          ? {}
+          : { amount: Money.of(amount, Currency.of(currency)) }),
+        ...(occurredOn === undefined
+          ? {}
+          : { occurredOn: TransactionDate.of(new Date(occurredOn)) }),
+        ...(title === undefined ? {} : { title: Title.of(title) }),
+        ...(note === undefined ? {} : { note: note === null ? null : Note.of(note) }),
+      });
+
+      return reply.code(200).send({
+        id: item.id.toString(),
+        type: item.type,
+        amount: item.amount.amount,
+        currency: item.amount.currency.toString(),
+        categoryId: item.categoryAssignment.categoryId.toString(),
+        tagId: item.categoryAssignment.tagId?.toString() ?? null,
+        title: item.title.toString(),
+        note: item.note?.toString() ?? null,
+        occurredOn: item.occurredOn.value.toISOString(),
+        createdAt: item.createdAt.toISOString(),
+      });
     },
   );
 

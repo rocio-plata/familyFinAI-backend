@@ -14,6 +14,7 @@ import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecas
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
+import { UpdateFinancialItemUseCase } from "./application/commands/update-financial-item.usecase.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import { GetFinancialItemsQuery } from "./application/queries/get-financial-items.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
@@ -42,6 +43,7 @@ interface FinancialTrackingModule {
     renameCategory: RenameCategoryUseCase;
     renameTag: RenameTagUseCase;
     reorderCategoryTags: ReorderCategoryTagsUseCase;
+    updateFinancialItem: UpdateFinancialItemUseCase;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -88,6 +90,10 @@ function buildFinancialTrackingModule(
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     reorderCategoryTags: new ReorderCategoryTagsUseCase(deps.categoryRepository),
+    updateFinancialItem: new UpdateFinancialItemUseCase(
+      deps.financialItemRepository,
+      deps.eventBus,
+    ),
   };
 
   return {
@@ -107,6 +113,7 @@ function buildFinancialTrackingModule(
         renameCategoryUseCase: useCases.renameCategory,
         renameTagUseCase: useCases.renameTag,
         reorderCategoryTagsUseCase: useCases.reorderCategoryTags,
+        updateFinancialItemUseCase: useCases.updateFinancialItem,
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(getFamilyMembershipQuery, minRole),
         getFamilyDefaultCurrencyQuery,
