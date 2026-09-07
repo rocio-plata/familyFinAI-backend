@@ -11,6 +11,7 @@ import type { DeleteCategoryUseCase } from "../../application/commands/delete-ca
 import type { DeleteTagUseCase } from "../../application/commands/delete-tag.usecase.js";
 import type { DeprecateCategoryUseCase } from "../../application/commands/deprecate-category.usecase.js";
 import type { DeprecateTagUseCase } from "../../application/commands/deprecate-tag.usecase.js";
+import type { ReclassifyFinancialItemUseCase } from "../../application/commands/reclassify-financial-item.usecase.js";
 import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
@@ -43,6 +44,7 @@ interface FinancialTrackingRoutesDependencies {
   getFinancialItemsQuery: GetFinancialItemsQuery;
   renameCategoryUseCase: RenameCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
+  reclassifyFinancialItemUseCase: ReclassifyFinancialItemUseCase;
   reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
   updateFinancialItemUseCase: UpdateFinancialItemUseCase;
   getFamilyDefaultCurrencyQuery: GetFamilyDefaultCurrencyQuery;
@@ -277,6 +279,58 @@ function registerFinancialTrackingRoutes(
           : { occurredOn: TransactionDate.of(new Date(occurredOn)) }),
         ...(title === undefined ? {} : { title: Title.of(title) }),
         ...(note === undefined ? {} : { note: note === null ? null : Note.of(note) }),
+      });
+
+      return reply.code(200).send({
+        id: item.id.toString(),
+        type: item.type,
+        amount: item.amount.amount,
+        currency: item.amount.currency.toString(),
+        categoryId: item.categoryAssignment.categoryId.toString(),
+        tagId: item.categoryAssignment.tagId?.toString() ?? null,
+        title: item.title.toString(),
+        note: item.note?.toString() ?? null,
+        occurredOn: item.occurredOn.value.toISOString(),
+        createdAt: item.createdAt.toISOString(),
+      });
+    },
+  );
+
+  app.patch(
+    "/families/:familyId/items/:itemId/category",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "itemId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            itemId: { type: "string", minLength: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["newCategoryId"],
+          additionalProperties: false,
+          properties: {
+            newCategoryId: { type: "string", minLength: 1 },
+            newTagId: { type: ["string", "null"], minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, itemId } = request.params as { familyId: string; itemId: string };
+      const { newCategoryId, newTagId } = request.body as {
+        newCategoryId: string;
+        newTagId?: string | null;
+      };
+      const item = await deps.reclassifyFinancialItemUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        itemId: FinancialItemId.of(itemId),
+        newCategoryId: CategoryId.of(newCategoryId),
+        newTagId: newTagId ? TagId.of(newTagId) : null,
       });
 
       return reply.code(200).send({

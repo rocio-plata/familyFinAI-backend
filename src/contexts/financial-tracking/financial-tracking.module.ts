@@ -11,6 +11,7 @@ import { DeleteCategoryUseCase } from "./application/commands/delete-category.us
 import { DeleteTagUseCase } from "./application/commands/delete-tag.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
 import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
+import { ReclassifyFinancialItemUseCase } from "./application/commands/reclassify-financial-item.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
@@ -42,6 +43,7 @@ interface FinancialTrackingModule {
     getFinancialItems: GetFinancialItemsQuery;
     renameCategory: RenameCategoryUseCase;
     renameTag: RenameTagUseCase;
+    reclassifyFinancialItem: ReclassifyFinancialItemUseCase;
     reorderCategoryTags: ReorderCategoryTagsUseCase;
     updateFinancialItem: UpdateFinancialItemUseCase;
   };
@@ -89,6 +91,11 @@ function buildFinancialTrackingModule(
     getFinancialItems: new GetFinancialItemsQuery(deps.financialItemRepository),
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
+    reclassifyFinancialItem: new ReclassifyFinancialItemUseCase(
+      deps.financialItemRepository,
+      deps.categoryRepository,
+      deps.eventBus,
+    ),
     reorderCategoryTags: new ReorderCategoryTagsUseCase(deps.categoryRepository),
     updateFinancialItem: new UpdateFinancialItemUseCase(
       deps.financialItemRepository,
@@ -112,6 +119,7 @@ function buildFinancialTrackingModule(
         getFinancialItemsQuery: useCases.getFinancialItems,
         renameCategoryUseCase: useCases.renameCategory,
         renameTagUseCase: useCases.renameTag,
+        reclassifyFinancialItemUseCase: useCases.reclassifyFinancialItem,
         reorderCategoryTagsUseCase: useCases.reorderCategoryTags,
         updateFinancialItemUseCase: useCases.updateFinancialItem,
         requireFamilyMembership: (minRole) =>
