@@ -6,6 +6,7 @@ import type { GetFamilyMembershipQuery } from "../family-access/application/quer
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
+import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
@@ -23,6 +24,7 @@ interface FinancialTrackingModule {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
     deprecateCategory: DeprecateCategoryUseCase;
+    deprecateTag: DeprecateTagUseCase;
     getCategories: GetCategoriesQuery;
     renameCategory: RenameCategoryUseCase;
     renameTag: RenameTagUseCase;
@@ -47,6 +49,11 @@ function buildFinancialTrackingModule(
       getFamilyMembershipQuery,
       deps.eventBus,
     ),
+    deprecateTag: new DeprecateTagUseCase(
+      deps.categoryRepository,
+      getFamilyMembershipQuery,
+      deps.eventBus,
+    ),
     getCategories: new GetCategoriesQuery(deps.categoryRepository),
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
@@ -61,6 +68,7 @@ function buildFinancialTrackingModule(
         addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
         deprecateCategoryUseCase: useCases.deprecateCategory,
+        deprecateTagUseCase: useCases.deprecateTag,
         getCategoriesQuery: useCases.getCategories,
         renameCategoryUseCase: useCases.renameCategory,
         renameTagUseCase: useCases.renameTag,
