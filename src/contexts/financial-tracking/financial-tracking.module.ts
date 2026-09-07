@@ -2,9 +2,11 @@
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { requireFamilyMembership } from "../../platform/auth/require-family-membership.middleware.js";
 import type { EventBus } from "../../platform/events/event-bus.js";
+import type { GetFamilyDefaultCurrencyQuery } from "../family-access/application/queries/get-family-default-currency.query.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
+import { CreateFinancialItemUseCase } from "./application/commands/create-financial-item.usecase.js";
 import { DeleteCategoryUseCase } from "./application/commands/delete-category.usecase.js";
 import { DeleteTagUseCase } from "./application/commands/delete-tag.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
@@ -29,6 +31,7 @@ interface FinancialTrackingModule {
   useCases: {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
+    createFinancialItem: CreateFinancialItemUseCase;
     deleteCategory: DeleteCategoryUseCase;
     deleteTag: DeleteTagUseCase;
     deprecateCategory: DeprecateCategoryUseCase;
@@ -44,12 +47,18 @@ interface FinancialTrackingModule {
 function buildFinancialTrackingModule(
   deps: FinancialTrackingModuleDependencies,
   getFamilyMembershipQuery: GetFamilyMembershipQuery,
+  getFamilyDefaultCurrencyQuery: GetFamilyDefaultCurrencyQuery,
 ): FinancialTrackingModule {
   const useCases = {
     addTagToCategory: new AddTagToCategoryUseCase(deps.categoryRepository, deps.eventBus),
     createCategory: new CreateCategoryUseCase(
       deps.categoryRepository,
       getFamilyMembershipQuery,
+      deps.eventBus,
+    ),
+    createFinancialItem: new CreateFinancialItemUseCase(
+      deps.financialItemRepository,
+      deps.categoryRepository,
       deps.eventBus,
     ),
     deleteCategory: new DeleteCategoryUseCase(
@@ -85,6 +94,7 @@ function buildFinancialTrackingModule(
         authenticate,
         addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
+        createFinancialItemUseCase: useCases.createFinancialItem,
         deleteCategoryUseCase: useCases.deleteCategory,
         deleteTagUseCase: useCases.deleteTag,
         deprecateCategoryUseCase: useCases.deprecateCategory,
@@ -95,6 +105,7 @@ function buildFinancialTrackingModule(
         reorderCategoryTagsUseCase: useCases.reorderCategoryTags,
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(getFamilyMembershipQuery, minRole),
+        getFamilyDefaultCurrencyQuery,
       });
     },
   };

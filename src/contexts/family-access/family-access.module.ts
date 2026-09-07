@@ -11,6 +11,7 @@ import { RemoveMemberUseCase } from "./application/commands/remove-member.usecas
 import { ReorderMyFamiliesUseCase } from "./application/commands/reorder-my-families.usecase.js";
 import { RevokeInvitationUseCase } from "./application/commands/revoke-invitation.usecase.js";
 import { GetFamiliesForUserQuery } from "./application/queries/get-families-for-user.query.js";
+import { GetFamilyDefaultCurrencyQuery } from "./application/queries/get-family-default-currency.query.js";
 import { GetFamilyMembersQuery } from "./application/queries/get-family-members.query.js";
 import { GetFamilyMembershipQuery } from "./application/queries/get-family-membership.query.js";
 import type { UserDirectoryPort } from "./domain/ports/user-directory.port.js";
@@ -36,6 +37,7 @@ interface FamilyAccessModule {
     changeDefaultCurrency: ChangeDefaultCurrencyUseCase;
     reorderMyFamilies: ReorderMyFamiliesUseCase;
     getFamiliesForUser: GetFamiliesForUserQuery;
+    getFamilyDefaultCurrency: GetFamilyDefaultCurrencyQuery;
     getFamilyMembership: GetFamilyMembershipQuery;
     getFamilyMembers: GetFamilyMembersQuery;
   };
@@ -62,6 +64,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
     changeDefaultCurrency: new ChangeDefaultCurrencyUseCase(deps.familyRepository),
     reorderMyFamilies: new ReorderMyFamiliesUseCase(deps.familyRepository),
     getFamiliesForUser: new GetFamiliesForUserQuery(deps.familyRepository),
+    getFamilyDefaultCurrency: new GetFamilyDefaultCurrencyQuery(deps.familyRepository),
     getFamilyMembership: new GetFamilyMembershipQuery(deps.familyRepository),
     getFamilyMembers: new GetFamilyMembersQuery(deps.familyRepository),
   };

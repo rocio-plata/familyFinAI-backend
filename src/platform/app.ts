@@ -42,6 +42,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
     ? buildFinancialTrackingModule(
         dependencies.financialTracking,
         familyAccessModule.useCases.getFamilyMembership,
+        familyAccessModule.useCases.getFamilyDefaultCurrency,
       )
     : null;
   const authenticateRequest = authenticate(dependencies.jwtService);
