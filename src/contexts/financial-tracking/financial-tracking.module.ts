@@ -6,6 +6,7 @@ import type { GetFamilyMembershipQuery } from "../family-access/application/quer
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { DeleteCategoryUseCase } from "./application/commands/delete-category.usecase.js";
+import { DeleteTagUseCase } from "./application/commands/delete-tag.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
 import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
@@ -15,6 +16,7 @@ import { GetCategoriesQuery } from "./application/queries/get-categories.query.j
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
 import type { FinancialItemRepository } from "./domain/repositories/financial-item.repository.js";
 import { CategoryDeletionService } from "./domain/services/category-deletion.service.js";
+import { TagDeletionService } from "./domain/services/tag-deletion.service.js";
 import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial-tracking.routes.js";
 
 interface FinancialTrackingModuleDependencies {
@@ -28,6 +30,7 @@ interface FinancialTrackingModule {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
     deleteCategory: DeleteCategoryUseCase;
+    deleteTag: DeleteTagUseCase;
     deprecateCategory: DeprecateCategoryUseCase;
     deprecateTag: DeprecateTagUseCase;
     getCategories: GetCategoriesQuery;
@@ -54,6 +57,11 @@ function buildFinancialTrackingModule(
       new CategoryDeletionService(deps.financialItemRepository),
       getFamilyMembershipQuery,
     ),
+    deleteTag: new DeleteTagUseCase(
+      deps.categoryRepository,
+      new TagDeletionService(deps.financialItemRepository),
+      getFamilyMembershipQuery,
+    ),
     deprecateCategory: new DeprecateCategoryUseCase(
       deps.categoryRepository,
       getFamilyMembershipQuery,
@@ -78,6 +86,7 @@ function buildFinancialTrackingModule(
         addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
         deleteCategoryUseCase: useCases.deleteCategory,
+        deleteTagUseCase: useCases.deleteTag,
         deprecateCategoryUseCase: useCases.deprecateCategory,
         deprecateTagUseCase: useCases.deprecateTag,
         getCategoriesQuery: useCases.getCategories,
