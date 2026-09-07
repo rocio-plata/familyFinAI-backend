@@ -8,6 +8,7 @@ import type { AddTagToCategoryUseCase } from "../../application/commands/add-tag
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
 import type { CreateFinancialItemUseCase } from "../../application/commands/create-financial-item.usecase.js";
 import type { DeleteCategoryUseCase } from "../../application/commands/delete-category.usecase.js";
+import type { DeleteFinancialItemUseCase } from "../../application/commands/delete-financial-item.usecase.js";
 import type { DeleteTagUseCase } from "../../application/commands/delete-tag.usecase.js";
 import type { DeprecateCategoryUseCase } from "../../application/commands/deprecate-category.usecase.js";
 import type { DeprecateTagUseCase } from "../../application/commands/deprecate-tag.usecase.js";
@@ -37,6 +38,7 @@ interface FinancialTrackingRoutesDependencies {
   createCategoryUseCase: CreateCategoryUseCase;
   createFinancialItemUseCase: CreateFinancialItemUseCase;
   deleteCategoryUseCase: DeleteCategoryUseCase;
+  deleteFinancialItemUseCase: DeleteFinancialItemUseCase;
   deleteTagUseCase: DeleteTagUseCase;
   deprecateCategoryUseCase: DeprecateCategoryUseCase;
   deprecateTagUseCase: DeprecateTagUseCase;
@@ -345,6 +347,33 @@ function registerFinancialTrackingRoutes(
         occurredOn: item.occurredOn.value.toISOString(),
         createdAt: item.createdAt.toISOString(),
       });
+    },
+  );
+
+  app.delete(
+    "/families/:familyId/items/:itemId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "itemId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            itemId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, itemId } = request.params as { familyId: string; itemId: string };
+
+      await deps.deleteFinancialItemUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        itemId: FinancialItemId.of(itemId),
+      });
+
+      return reply.code(204).send();
     },
   );
 
