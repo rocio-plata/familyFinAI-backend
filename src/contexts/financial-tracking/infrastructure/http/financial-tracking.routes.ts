@@ -15,6 +15,7 @@ import type { RenameCategoryUseCase } from "../../application/commands/rename-ca
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
+import type { GetFinancialItemsQuery } from "../../application/queries/get-financial-items.query.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
@@ -37,6 +38,7 @@ interface FinancialTrackingRoutesDependencies {
   deprecateCategoryUseCase: DeprecateCategoryUseCase;
   deprecateTagUseCase: DeprecateTagUseCase;
   getCategoriesQuery: GetCategoriesQuery;
+  getFinancialItemsQuery: GetFinancialItemsQuery;
   renameCategoryUseCase: RenameCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
   reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
@@ -149,6 +151,70 @@ function registerFinancialTrackingRoutes(
         note: item.note?.toString() ?? null,
         occurredOn: item.occurredOn.value.toISOString(),
       });
+    },
+  );
+
+  app.get(
+    "/families/:familyId/items",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+        querystring: {
+          type: "object",
+          properties: {
+            from: { type: "string", format: "date-time" },
+            to: { type: "string", format: "date-time" },
+            categoryId: { type: "string", minLength: 1 },
+            tagId: { type: "string", minLength: 1 },
+            type: { type: "string", enum: ["EXPENSE", "INCOME"] },
+          },
+          dependencies: {
+            from: ["to"],
+            to: ["from"],
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { from, to, categoryId, tagId, type } = request.query as {
+        from?: string;
+        to?: string;
+        categoryId?: string;
+        tagId?: string;
+        type?: "EXPENSE" | "INCOME";
+      };
+      const items = await deps.getFinancialItemsQuery.execute({
+        familyId: FamilyId.of(familyId),
+        ...(from && to ? { period: { from: new Date(from), to: new Date(to) } } : {}),
+        ...(categoryId ? { categoryId: CategoryId.of(categoryId) } : {}),
+        ...(tagId ? { tagId: TagId.of(tagId) } : {}),
+        ...(type
+          ? { type: type === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense }
+          : {}),
+      });
+
+      return reply.code(200).send(
+        items.map((item) => ({
+          id: item.id.toString(),
+          familyId: item.familyId.toString(),
+          recordedBy: item.recordedBy.toString(),
+          type: item.type,
+          amount: item.amount.amount,
+          currency: item.amount.currency.toString(),
+          categoryId: item.categoryId.toString(),
+          tagId: item.tagId?.toString() ?? null,
+          title: item.title.toString(),
+          note: item.note?.toString() ?? null,
+          occurredOn: item.occurredOn.toISOString(),
+          createdAt: item.createdAt.toISOString(),
+        })),
+      );
     },
   );
 
