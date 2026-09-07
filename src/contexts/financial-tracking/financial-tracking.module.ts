@@ -15,6 +15,7 @@ import { RenameCategoryUseCase } from "./application/commands/rename-category.us
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
+import { GetFinancialItemsQuery } from "./application/queries/get-financial-items.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
 import type { FinancialItemRepository } from "./domain/repositories/financial-item.repository.js";
 import { CategoryDeletionService } from "./domain/services/category-deletion.service.js";
@@ -37,6 +38,7 @@ interface FinancialTrackingModule {
     deprecateCategory: DeprecateCategoryUseCase;
     deprecateTag: DeprecateTagUseCase;
     getCategories: GetCategoriesQuery;
+    getFinancialItems: GetFinancialItemsQuery;
     renameCategory: RenameCategoryUseCase;
     renameTag: RenameTagUseCase;
     reorderCategoryTags: ReorderCategoryTagsUseCase;
@@ -82,6 +84,7 @@ function buildFinancialTrackingModule(
       deps.eventBus,
     ),
     getCategories: new GetCategoriesQuery(deps.categoryRepository),
+    getFinancialItems: new GetFinancialItemsQuery(deps.financialItemRepository),
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     reorderCategoryTags: new ReorderCategoryTagsUseCase(deps.categoryRepository),
@@ -100,6 +103,7 @@ function buildFinancialTrackingModule(
         deprecateCategoryUseCase: useCases.deprecateCategory,
         deprecateTagUseCase: useCases.deprecateTag,
         getCategoriesQuery: useCases.getCategories,
+        getFinancialItemsQuery: useCases.getFinancialItems,
         renameCategoryUseCase: useCases.renameCategory,
         renameTagUseCase: useCases.renameTag,
         reorderCategoryTagsUseCase: useCases.reorderCategoryTags,
