@@ -6,6 +6,7 @@ import type { AddTagToCategoryUseCase } from "../../application/commands/add-tag
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
 import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
+import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
@@ -21,6 +22,7 @@ interface FinancialTrackingRoutesDependencies {
   getCategoriesQuery: GetCategoriesQuery;
   renameCategoryUseCase: RenameCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
+  reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
 }
 
 function registerFinancialTrackingRoutes(
@@ -143,6 +145,45 @@ function registerFinancialTrackingRoutes(
         status: tag.status,
         displayOrder: tag.displayOrder,
       });
+    },
+  );
+
+  app.put(
+    "/families/:familyId/categories/:categoryId/tags/order",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "categoryId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            categoryId: { type: "string", minLength: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["orderedTagIds"],
+          properties: {
+            orderedTagIds: {
+              type: "array",
+              items: { type: "string", minLength: 1 },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
+      const { orderedTagIds } = request.body as { orderedTagIds: string[] };
+
+      await deps.reorderCategoryTagsUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        categoryId: CategoryId.of(categoryId),
+        orderedTagIds: orderedTagIds.map((tagId) => TagId.of(tagId)),
+      });
+
+      return reply.code(204).send();
     },
   );
 
