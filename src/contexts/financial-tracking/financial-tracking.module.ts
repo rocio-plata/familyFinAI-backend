@@ -5,6 +5,7 @@ import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
+import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
 import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial-tracking.routes.js";
@@ -19,6 +20,7 @@ interface FinancialTrackingModule {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
     getCategories: GetCategoriesQuery;
+    renameCategory: RenameCategoryUseCase;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -35,6 +37,7 @@ function buildFinancialTrackingModule(
       deps.eventBus,
     ),
     getCategories: new GetCategoriesQuery(deps.categoryRepository),
+    renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
   };
 
   return {
@@ -45,6 +48,7 @@ function buildFinancialTrackingModule(
         addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
         getCategoriesQuery: useCases.getCategories,
+        renameCategoryUseCase: useCases.renameCategory,
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(getFamilyMembershipQuery, minRole),
       });

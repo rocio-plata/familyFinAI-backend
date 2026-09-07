@@ -4,6 +4,7 @@ import { FamilyId } from "../../../family-access/domain/value-objects/family-id.
 import { Role } from "../../../family-access/domain/value-objects/role.js";
 import type { AddTagToCategoryUseCase } from "../../application/commands/add-tag-to-category.usecase.js";
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
+import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
@@ -16,6 +17,7 @@ interface FinancialTrackingRoutesDependencies {
   addTagToCategoryUseCase: AddTagToCategoryUseCase;
   createCategoryUseCase: CreateCategoryUseCase;
   getCategoriesQuery: GetCategoriesQuery;
+  renameCategoryUseCase: RenameCategoryUseCase;
 }
 
 function registerFinancialTrackingRoutes(
@@ -52,6 +54,44 @@ function registerFinancialTrackingRoutes(
         id: category.id.toString(),
         name: category.name.toString(),
         status: CategoryStatus.Active,
+      });
+    },
+  );
+
+  app.patch(
+    "/families/:familyId/categories/:categoryId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "categoryId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            categoryId: { type: "string", minLength: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["name"],
+          properties: { name: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
+      const { name } = request.body as { name: string };
+      const category = await deps.renameCategoryUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        categoryId: CategoryId.of(categoryId),
+        newName: CategoryName.of(name),
+      });
+
+      return reply.code(200).send({
+        id: category.id.toString(),
+        name: category.name.toString(),
+        status: category.status,
       });
     },
   );
