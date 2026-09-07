@@ -3,6 +3,7 @@ import { IdentityUserDirectoryAdapter } from "../contexts/family-access/infrastr
 import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
 import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
+import { InMemoryFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.js";
 import { GetUserIdByEmailQuery } from "../contexts/identity/application/queries/get-user-id-by-email.query.js";
 import {
   hashPassword,
@@ -44,6 +45,7 @@ const app = buildApp({
   },
   financialTracking: {
     categoryRepository: new InMemoryCategoryRepository(),
+    financialItemRepository: new InMemoryFinancialItemRepository(),
     eventBus,
   },
 });

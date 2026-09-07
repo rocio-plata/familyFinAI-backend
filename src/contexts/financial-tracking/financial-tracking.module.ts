@@ -5,6 +5,7 @@ import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
+import { DeleteCategoryUseCase } from "./application/commands/delete-category.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
 import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
@@ -12,10 +13,13 @@ import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
+import type { FinancialItemRepository } from "./domain/repositories/financial-item.repository.js";
+import { CategoryDeletionService } from "./domain/services/category-deletion.service.js";
 import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial-tracking.routes.js";
 
 interface FinancialTrackingModuleDependencies {
   categoryRepository: CategoryRepository;
+  financialItemRepository: FinancialItemRepository;
   eventBus: EventBus;
 }
 
@@ -23,6 +27,7 @@ interface FinancialTrackingModule {
   useCases: {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
+    deleteCategory: DeleteCategoryUseCase;
     deprecateCategory: DeprecateCategoryUseCase;
     deprecateTag: DeprecateTagUseCase;
     getCategories: GetCategoriesQuery;
@@ -43,6 +48,11 @@ function buildFinancialTrackingModule(
       deps.categoryRepository,
       getFamilyMembershipQuery,
       deps.eventBus,
+    ),
+    deleteCategory: new DeleteCategoryUseCase(
+      deps.categoryRepository,
+      new CategoryDeletionService(deps.financialItemRepository),
+      getFamilyMembershipQuery,
     ),
     deprecateCategory: new DeprecateCategoryUseCase(
       deps.categoryRepository,
@@ -67,6 +77,7 @@ function buildFinancialTrackingModule(
         authenticate,
         addTagToCategoryUseCase: useCases.addTagToCategory,
         createCategoryUseCase: useCases.createCategory,
+        deleteCategoryUseCase: useCases.deleteCategory,
         deprecateCategoryUseCase: useCases.deprecateCategory,
         deprecateTagUseCase: useCases.deprecateTag,
         getCategoriesQuery: useCases.getCategories,
