@@ -8,11 +8,11 @@ import { AlreadyMemberError } from "../../../src/contexts/family-access/domain/e
 import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
 import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
 import { MemberInvited } from "../../../src/contexts/family-access/domain/events/member-invited.event.js";
-import { EmailAddress } from "../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { FakeUserDirectory } from "./doubles/fake-user-directory.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";

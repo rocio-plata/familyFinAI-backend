@@ -1,6 +1,7 @@
 // /src/contexts/family-access/application/commands/invite-member.usecase.ts
 
 import type { EventBus } from "../../../../platform/events/event-bus.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { Invitation } from "../../domain/entities/invitation.js";
 import { AlreadyMemberError } from "../../domain/errors/already-member.error.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
@@ -8,7 +9,6 @@ import { InsufficientRoleError } from "../../domain/errors/insufficient-role.err
 import type { UserDirectoryPort } from "../../domain/ports/user-directory.port.js";
 import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
 import type { InvitationRepository } from "../../domain/repositories/invitation.repository.js";
-import type { EmailAddress } from "../../domain/value-objects/email-address.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
 import type { Role } from "../../domain/value-objects/role.js";
 import type { UserId } from "../../domain/value-objects/user-id.js";

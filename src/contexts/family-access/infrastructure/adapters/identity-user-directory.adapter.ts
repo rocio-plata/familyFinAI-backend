@@ -1,8 +1,8 @@
 // /src/contexts/family-access/infrastructure/adapters/identity-user-directory.adapter.ts
 
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { GetUserIdByEmailQuery } from "../../../identity/application/queries/get-user-id-by-email.query.js";
 import type { UserDirectoryPort } from "../../domain/ports/user-directory.port.js";
-import type { EmailAddress } from "../../domain/value-objects/email-address.js";
 import type { UserId } from "../../domain/value-objects/user-id.js";
 
 class IdentityUserDirectoryAdapter implements UserDirectoryPort {

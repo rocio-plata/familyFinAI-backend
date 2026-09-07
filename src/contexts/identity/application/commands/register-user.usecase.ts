@@ -2,7 +2,7 @@
 
 import type { TokenPair, TokenService } from "../../../../platform/auth/tokens.js";
 import type { EventBus } from "../../../../platform/events/event-bus.js";
-import { EmailAddress } from "../../../family-access/domain/value-objects/email-address.js";
+import { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { User } from "../../domain/entities/user.js";
 import { EmailAlreadyRegisteredError } from "../../domain/errors/email-already-registered.error.js";
 import type { UserRepository } from "../../domain/repositories/user.repository.js";

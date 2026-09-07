@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { Invitation } from "../../../../../src/contexts/family-access/domain/entities/invitation.js";
-import { EmailAddress } from "../../../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { InvitationStatus } from "../../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
 import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
 
 describe("Invitation", () => {
   const familyId = FamilyId.generate();

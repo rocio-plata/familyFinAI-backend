@@ -1,6 +1,6 @@
 // /src/contexts/identity/domain/entities/user.ts
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
-import type { EmailAddress } from "../../../family-access/domain/value-objects/email-address.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { UserRegistered } from "../events/user-registered.event.js";
 import type { DisplayName } from "../value-objects/display-name.js";

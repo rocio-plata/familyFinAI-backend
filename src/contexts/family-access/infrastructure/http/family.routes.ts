@@ -1,5 +1,6 @@
 // /src/contexts/family-access/infrastructure/http/family.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
+import { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { AcceptInvitationUseCase } from "../../application/commands/accept-invitation.usecase.js";
 import type { ChangeDefaultCurrencyUseCase } from "../../application/commands/change-default-currency.usecase.js";
 import type { ChangeMemberRoleUseCase } from "../../application/commands/change-member-role.usecase.js";
@@ -11,7 +12,6 @@ import type { RevokeInvitationUseCase } from "../../application/commands/revoke-
 import type { GetFamiliesForUserQuery } from "../../application/queries/get-families-for-user.query.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import type { GetFamilyMembershipQuery } from "../../application/queries/get-family-membership.query.js";
-import { EmailAddress } from "../../domain/value-objects/email-address.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
 import { Role } from "../../domain/value-objects/role.js";

@@ -7,11 +7,11 @@ import { Family } from "../../../src/contexts/family-access/domain/entities/fami
 import { InvitationNotFoundError } from "../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
 import { InvitationNotPendingError } from "../../../src/contexts/family-access/domain/errors/invitation-not-pending.error.js";
 import { InvitationAccepted } from "../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
-import { EmailAddress } from "../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { InvitationId } from "../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "./doubles/in-memory-invitation.repository.js";

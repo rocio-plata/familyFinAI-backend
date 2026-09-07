@@ -1,13 +1,13 @@
 // /src/contexts/family-access/domain/entities/family.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { CannotRemoveLastOwnerError } from "../errors/cannot-remove-last-owner.error.js";
 import { InsufficientRoleError } from "../errors/insufficient-role.error.js";
 import { MemberNotFoundError } from "../errors/member-not-found.error.js";
 import { FamilyCreated } from "../events/family-created.event.js";
 import { MemberRemoved } from "../events/member-removed.event.js";
 import { MemberRoleChanged } from "../events/member-role-changed.event.js";
-import type { EmailAddress } from "../value-objects/email-address.js";
 import { FamilyId } from "../value-objects/family-id.js";
 import type { FamilyName } from "../value-objects/family-name.js";
 import type { Role } from "../value-objects/role.js";

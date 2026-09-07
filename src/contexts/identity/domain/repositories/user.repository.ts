@@ -1,5 +1,5 @@
 // /src/contexts/identity/domain/repositories/user.repository.ts
-import type { EmailAddress } from "../../../family-access/domain/value-objects/email-address.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import type { User } from "../entities/user.js";
 

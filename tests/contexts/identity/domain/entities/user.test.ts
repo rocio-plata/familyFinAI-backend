@@ -1,11 +1,11 @@
 // tests/contexts/identity/domain/entities/user.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { EmailAddress } from "../../../../../src/contexts/family-access/domain/value-objects/email-address.js";
 import { User } from "../../../../../src/contexts/identity/domain/entities/user.js";
 import { UserRegistered } from "../../../../../src/contexts/identity/domain/events/user-registered.event.js";
 import { DisplayName } from "../../../../../src/contexts/identity/domain/value-objects/display-name.js";
 import { PasswordHash } from "../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
+import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
 
 function registerUser() {
   return User.register(

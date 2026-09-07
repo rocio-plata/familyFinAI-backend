@@ -34,7 +34,7 @@ Antes de escalar a docenas de endpoints, resolver esto evita repetir el mismo pr
 1. ~~**Helper de registro de dependencias por contexto**: ya resuelto para `Family & Access` (`buildFamilyAccessModule()`). Falta el análogo `buildIdentityModule()` antes de exponer las rutas de la Fase 1.~~ ✅ `buildIdentityModule()` implementado.
 2. **`requireFamilyMembership` conectado de verdad**: ✅ confirmado end-to-end con los endpoints de `Family & Access` (Fase 2).
 3. **Confirmar el criterio de permisos pendiente**: varios documentos de casos de uso (`Financial Tracking`, `Budgeting`) dejaron abierto si las acciones requieren `Owner` o cualquier `Member`. Antes de exponer esos endpoints, conviene resolverlo — cambia qué `minRole` se pasa a `requireFamilyMembership` en cada ruta. `Financial Tracking` ya quedó resuelto en su documento de casos de uso; `Budgeting` sigue pendiente de diseño.
-4. **`EmailAddress` movida a `shared-kernel`**: pendiente identificado en `identity-y-multi-familia.md` — hoy `Identity` reutiliza el VO de `family-access` en lugar de tenerlo en `shared-kernel`. No bloquea nada por ahora (ambos contextos ya lo comparten funcionalmente), pero conviene resolverlo antes de que un tercer contexto necesite `EmailAddress`.
+4. ~~**`EmailAddress` movida a `shared-kernel`**~~ ✅: `EmailAddress` e `InvalidEmailError` ahora viven en `shared-kernel` y son consumidos por `Family & Access` e `Identity`.
 
 ---
 
