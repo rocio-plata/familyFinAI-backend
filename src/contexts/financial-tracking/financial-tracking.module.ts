@@ -8,6 +8,7 @@ import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-categ
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { CreateFinancialItemUseCase } from "./application/commands/create-financial-item.usecase.js";
 import { DeleteCategoryUseCase } from "./application/commands/delete-category.usecase.js";
+import { DeleteFinancialItemUseCase } from "./application/commands/delete-financial-item.usecase.js";
 import { DeleteTagUseCase } from "./application/commands/delete-tag.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
 import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
@@ -36,6 +37,7 @@ interface FinancialTrackingModule {
     createCategory: CreateCategoryUseCase;
     createFinancialItem: CreateFinancialItemUseCase;
     deleteCategory: DeleteCategoryUseCase;
+    deleteFinancialItem: DeleteFinancialItemUseCase;
     deleteTag: DeleteTagUseCase;
     deprecateCategory: DeprecateCategoryUseCase;
     deprecateTag: DeprecateTagUseCase;
@@ -71,6 +73,10 @@ function buildFinancialTrackingModule(
       deps.categoryRepository,
       new CategoryDeletionService(deps.financialItemRepository),
       getFamilyMembershipQuery,
+    ),
+    deleteFinancialItem: new DeleteFinancialItemUseCase(
+      deps.financialItemRepository,
+      deps.eventBus,
     ),
     deleteTag: new DeleteTagUseCase(
       deps.categoryRepository,
@@ -112,6 +118,7 @@ function buildFinancialTrackingModule(
         createCategoryUseCase: useCases.createCategory,
         createFinancialItemUseCase: useCases.createFinancialItem,
         deleteCategoryUseCase: useCases.deleteCategory,
+        deleteFinancialItemUseCase: useCases.deleteFinancialItem,
         deleteTagUseCase: useCases.deleteTag,
         deprecateCategoryUseCase: useCases.deprecateCategory,
         deprecateTagUseCase: useCases.deprecateTag,
