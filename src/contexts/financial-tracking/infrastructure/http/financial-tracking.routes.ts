@@ -111,7 +111,10 @@ function registerFinancialTrackingRoutes(
             tagId: { type: "string", minLength: 1 },
             title: { type: "string", minLength: 1 },
             note: { type: "string" },
-            occurredOn: { type: "string", format: "date-time" },
+            occurredOn: {
+              type: "string",
+              oneOf: [{ format: "date-time" }, { format: "date" }],
+            },
           },
         },
       },
@@ -174,8 +177,14 @@ function registerFinancialTrackingRoutes(
         querystring: {
           type: "object",
           properties: {
-            from: { type: "string", format: "date-time" },
-            to: { type: "string", format: "date-time" },
+            from: {
+              type: "string",
+              oneOf: [{ format: "date-time" }, { format: "date" }],
+            },
+            to: {
+              type: "string",
+              oneOf: [{ format: "date-time" }, { format: "date" }],
+            },
             categoryId: { type: "string", minLength: 1 },
             tagId: { type: "string", minLength: 1 },
             type: { type: "string", enum: ["EXPENSE", "INCOME"] },
@@ -245,7 +254,10 @@ function registerFinancialTrackingRoutes(
           properties: {
             amount: { type: "number" },
             currency: { type: "string", minLength: 1 },
-            occurredOn: { type: "string", format: "date-time" },
+            occurredOn: {
+              type: "string",
+              oneOf: [{ format: "date-time" }, { format: "date" }],
+            },
             title: { type: "string", minLength: 1 },
             note: { type: ["string", "null"] },
           },

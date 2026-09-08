@@ -104,6 +104,25 @@ describe("POST /families/:familyId/items", () => {
     assert.equal(body.tagId, null);
   });
 
+  test("acepta fecha solo en formato YYYY-MM-DD", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: memberAuthorization },
+      payload: {
+        amount: 25000,
+        categoryId,
+        title: "Compra semanal",
+        occurredOn: "2026-09-01",
+      },
+    });
+
+    assert.equal(response.statusCode, 201);
+    const body = JSON.parse(response.body);
+    assert.equal(body.title, "Compra semanal");
+    assert.equal(body.occurredOn, "2026-09-01T00:00:00.000Z");
+  });
+
   test("rechaza a quien no pertenece a la familia", async () => {
     const jwtService = new FakeJwtService();
     const outsiderAuthorization = `Bearer ${await jwtService.sign(UserId.generate())}`;
