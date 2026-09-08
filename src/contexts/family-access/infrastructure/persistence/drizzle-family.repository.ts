@@ -2,6 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../../../../platform/db/connection.js";
+import type { TransactionClient } from "../../../../platform/db/unit-of-work.js";
 import type { Family } from "../../domain/entities/family.js";
 import { Family as FamilyEntity } from "../../domain/entities/family.js";
 import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
@@ -10,9 +11,9 @@ import type { UserId } from "../../domain/value-objects/user-id.js";
 import { families, members } from "./schema.js";
 
 class DrizzleFamilyRepository implements FamilyRepository {
-  async save(family: Family): Promise<void> {
-    await db.transaction(async (tx) => {
-      await tx
+  async save(family: Family, tx?: TransactionClient): Promise<void> {
+    const saveFamily = async (client: TransactionClient): Promise<void> => {
+      await client
         .insert(families)
         .values({
           id: family.id.toString(),
@@ -29,10 +30,10 @@ class DrizzleFamilyRepository implements FamilyRepository {
           },
         });
 
-      await tx.delete(members).where(eq(members.familyId, family.id.toString()));
+      await client.delete(members).where(eq(members.familyId, family.id.toString()));
 
       if (family.members.length > 0) {
-        await tx.insert(members).values(
+        await client.insert(members).values(
           family.members.map((member) => ({
             familyId: family.id.toString(),
             userId: member.userId.toString(),
@@ -42,11 +43,19 @@ class DrizzleFamilyRepository implements FamilyRepository {
           })),
         );
       }
-    });
+    };
+
+    if (tx) {
+      await saveFamily(tx);
+      return;
+    }
+
+    await db.transaction(saveFamily);
   }
 
-  async findById(id: FamilyId): Promise<Family | null> {
-    const familyRows = await db
+  async findById(id: FamilyId, tx?: TransactionClient): Promise<Family | null> {
+    const client = tx ?? db;
+    const familyRows = await client
       .select()
       .from(families)
       .where(eq(families.id, id.toString()))
@@ -54,13 +63,17 @@ class DrizzleFamilyRepository implements FamilyRepository {
     const familyRow = familyRows[0];
     if (!familyRow) return null;
 
-    const memberRows = await db.select().from(members).where(eq(members.familyId, id.toString()));
+    const memberRows = await client
+      .select()
+      .from(members)
+      .where(eq(members.familyId, id.toString()));
 
     return this.toDomain(familyRow, memberRows);
   }
 
-  async findAllByMemberUserId(userId: UserId): Promise<Family[]> {
-    const rows = await db
+  async findAllByMemberUserId(userId: UserId, tx?: TransactionClient): Promise<Family[]> {
+    const client = tx ?? db;
+    const rows = await client
       .select({ family: families })
       .from(families)
       .innerJoin(members, eq(members.familyId, families.id))
@@ -68,7 +81,7 @@ class DrizzleFamilyRepository implements FamilyRepository {
 
     const familiesById = new Map(rows.map(({ family }) => [family.id, family]));
     const reconstitutedFamilies = await Promise.all(
-      [...familiesById.keys()].map((familyId) => this.findById(FamilyId.of(familyId))),
+      [...familiesById.keys()].map((familyId) => this.findById(FamilyId.of(familyId), tx)),
     );
 
     return reconstitutedFamilies.filter((family): family is Family => family !== null);

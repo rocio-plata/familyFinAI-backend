@@ -1,5 +1,7 @@
 // /src/contexts/family-access/application/commands/accept-invitation.usecase.ts
 
+import type { UnitOfWork } from "../../../../platform/db/unit-of-work.js";
+import { DirectUnitOfWork } from "../../../../platform/db/unit-of-work.js";
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
 import { InvitationNotFoundError } from "../../domain/errors/invitation-not-found.error.js";
@@ -18,24 +20,27 @@ class AcceptInvitationUseCase {
     private readonly familyRepository: FamilyRepository,
     private readonly invitationRepository: InvitationRepository,
     private readonly eventBus: EventBus,
+    private readonly unitOfWork: UnitOfWork = new DirectUnitOfWork(),
   ) {}
 
   async execute(command: AcceptInvitationCommand): Promise<void> {
-    const invitation = await this.invitationRepository.findById(command.invitationId);
-    if (!invitation) throw new InvitationNotFoundError(command.invitationId);
+    const invitationEvents = await this.unitOfWork.run(async (tx) => {
+      const invitation = await this.invitationRepository.findById(command.invitationId, tx);
+      if (!invitation) throw new InvitationNotFoundError(command.invitationId);
 
-    invitation.accept(command.acceptingUserId);
-    await this.invitationRepository.save(invitation);
+      invitation.accept(command.acceptingUserId);
 
-    const family = await this.familyRepository.findById(invitation.familyId);
-    if (!family) throw new FamilyNotFoundError(invitation.familyId);
+      const family = await this.familyRepository.findById(invitation.familyId, tx);
+      if (!family) throw new FamilyNotFoundError(invitation.familyId);
 
-    family.addMemberFromInvitationData(command.acceptingUserId, invitation.role);
-    // TODO: envolver ambos save() en una transacción de BD (Unit of Work) al conectar Drizzle/Postgres.
-    // Si falla este segundo save, queda inconsistencia: invitación Accepted sin miembro agregado.
-    await this.familyRepository.save(family);
+      family.addMemberFromInvitationData(command.acceptingUserId, invitation.role);
+      await this.invitationRepository.save(invitation, tx);
+      await this.familyRepository.save(family, tx);
 
-    for (const event of invitation.pullDomainEvents()) {
+      return invitation.pullDomainEvents();
+    });
+
+    for (const event of invitationEvents) {
       await this.eventBus.publish(event);
     }
   }
