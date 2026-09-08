@@ -4,6 +4,8 @@ import { DrizzleFamilyRepository } from "../contexts/family-access/infrastructur
 import { DrizzleInvitationRepository } from "../contexts/family-access/infrastructure/persistence/drizzle-invitation.repository.js";
 import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
+import { DrizzleCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-category.repository.js";
+import { DrizzleFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-financial-item.repository.js";
 import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
 import { InMemoryFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.js";
 import { GetUserIdByEmailQuery } from "../contexts/identity/application/queries/get-user-id-by-email.query.js";
@@ -43,6 +45,12 @@ const familyRepository = usePostgres
 const invitationRepository = usePostgres
   ? new DrizzleInvitationRepository()
   : new InMemoryInvitationRepository();
+const categoryRepository = usePostgres
+  ? new DrizzleCategoryRepository()
+  : new InMemoryCategoryRepository();
+const financialItemRepository = usePostgres
+  ? new DrizzleFinancialItemRepository()
+  : new InMemoryFinancialItemRepository();
 const unitOfWork = usePostgres ? new DrizzleUnitOfWork() : new DirectUnitOfWork();
 
 const app = buildApp({
@@ -63,8 +71,8 @@ const app = buildApp({
     verifyPassword,
   },
   financialTracking: {
-    categoryRepository: new InMemoryCategoryRepository(),
-    financialItemRepository: new InMemoryFinancialItemRepository(),
+    categoryRepository,
+    financialItemRepository,
     eventBus,
   },
 });
