@@ -8,6 +8,20 @@
       "when": 1788828137626,
       "tag": "0000_secret_cable",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788832188714,
+      "tag": "0001_empty_arachne",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788833023317,
+      "tag": "0002_friendly_blue_marvel",
+      "breakpoints": true
     }
   ]
 }

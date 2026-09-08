@@ -1,7 +1,7 @@
 // /src/contexts/financial-tracking/domain/entities/category.ts
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
-import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { InvalidTagOrderError } from "../errors/invalid-tag-order.error.js";
 import { TagNotFoundError } from "../errors/tag-not-found.error.js";
 import { CategoryCreated } from "../events/category-created.event.js";
@@ -10,11 +10,27 @@ import { CategoryReactivated } from "../events/category-reactivated.event.js";
 import { TagCreated } from "../events/tag-created.event.js";
 import { TagDeprecated } from "../events/tag-deprecated.event.js";
 import { CategoryId } from "../value-objects/category-id.js";
-import type { CategoryName } from "../value-objects/category-name.js";
+import { CategoryName } from "../value-objects/category-name.js";
 import { CategoryStatus } from "../value-objects/category-status.js";
 import type { TagId } from "../value-objects/tag-id.js";
 import type { TagName } from "../value-objects/tag-name.js";
+import type { TagStatus } from "../value-objects/tag-status.js";
 import { Tag } from "./tag.js";
+
+interface ReconstituteCategoryTagProps {
+  id: string;
+  name: string;
+  displayOrder: number;
+  status: TagStatus;
+}
+
+interface ReconstituteCategoryProps {
+  id: string;
+  familyId: string;
+  name: string;
+  status: CategoryStatus;
+  tags: ReconstituteCategoryTagProps[];
+}
 
 class Category {
   private domainEvents: DomainEvent[] = [];
@@ -49,6 +65,16 @@ class Category {
       new CategoryCreated(category.id, category.familyId.toString(), category.name.toString()),
     );
     return category;
+  }
+
+  static reconstitute(props: ReconstituteCategoryProps): Category {
+    return new Category(
+      CategoryId.of(props.id),
+      FamilyId.of(props.familyId),
+      CategoryName.of(props.name),
+      props.status,
+      props.tags.map((tag) => Tag.reconstitute(tag)),
+    );
   }
 
   pullDomainEvents(): DomainEvent[] {
@@ -117,4 +143,5 @@ class Category {
   }
 }
 
+export type { ReconstituteCategoryProps, ReconstituteCategoryTagProps };
 export { Category };
