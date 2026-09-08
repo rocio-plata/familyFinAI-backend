@@ -4,6 +4,7 @@ import { requireFamilyMembership } from "../../platform/auth/require-family-memb
 import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyDefaultCurrencyQuery } from "../family-access/application/queries/get-family-default-currency.query.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
+import type { FamilyCreated } from "../family-access/domain/events/family-created.event.js";
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { CreateFinancialItemUseCase } from "./application/commands/create-financial-item.usecase.js";
@@ -17,6 +18,7 @@ import { RenameCategoryUseCase } from "./application/commands/rename-category.us
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
 import { UpdateFinancialItemUseCase } from "./application/commands/update-financial-item.usecase.js";
+import { CreateDefaultCategoriesOnFamilyCreatedEventHandler } from "./application/event-handlers/create-default-categories-on-family-created.event-handler.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import { GetFinancialItemsQuery } from "./application/queries/get-financial-items.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
@@ -108,6 +110,14 @@ function buildFinancialTrackingModule(
       deps.eventBus,
     ),
   };
+
+  const createDefaultCategoriesHandler = new CreateDefaultCategoriesOnFamilyCreatedEventHandler(
+    deps.categoryRepository,
+    deps.eventBus,
+  );
+  deps.eventBus.subscribe<FamilyCreated>("family-access.family-created", (event) =>
+    createDefaultCategoriesHandler.handle(event),
+  );
 
   return {
     useCases,

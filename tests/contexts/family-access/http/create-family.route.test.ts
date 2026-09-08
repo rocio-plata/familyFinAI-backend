@@ -6,6 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
+import { buildTestFinancialTrackingDependencies } from "../../financial-tracking/build-test-financial-tracking-dependencies.js";
 import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
 import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";
 
@@ -24,6 +25,7 @@ describe("POST /families", () => {
       jwtService,
       identity: buildTestIdentityDependencies(),
       familyAccess: buildTestFamilyAccessDependencies(),
+      financialTracking: buildTestFinancialTrackingDependencies(),
     });
   });
 
@@ -40,6 +42,44 @@ describe("POST /families", () => {
     assert.equal(body.name, "Familia Pérez");
     assert.equal(body.defaultCurrency, "CLP");
     assert.ok(body.id);
+  });
+
+  test("crea automáticamente las 9 categorías por defecto al crear una familia", async () => {
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/families",
+      headers: { authorization: `Bearer ${token}` },
+      payload: { name: "Familia Gómez" },
+    });
+
+    assert.equal(createResponse.statusCode, 201);
+    const family = JSON.parse(createResponse.body);
+
+    const categoriesResponse = await app.inject({
+      method: "GET",
+      url: `/families/${family.id}/categories`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(categoriesResponse.statusCode, 200);
+    const categories = JSON.parse(categoriesResponse.body);
+    assert.equal(categories.length, 9);
+
+    const names = categories.map((c: { name: string }) => c.name);
+    const expected = [
+      "Comestibles",
+      "Salud",
+      "Restaurantes",
+      "Servicios",
+      "Compras",
+      "Regalos",
+      "Familia",
+      "Tiempo Libre",
+      "Transporte",
+    ];
+    for (const exp of expected) {
+      assert.ok(names.includes(exp), `Categoría por defecto ausente: ${exp}`);
+    }
   });
 
   test("rechaza sin token de autenticación", async () => {
