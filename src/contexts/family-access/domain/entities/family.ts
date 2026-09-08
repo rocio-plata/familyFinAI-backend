@@ -170,7 +170,6 @@ class Family {
     );
     // sin push a domainEvents — a diferencia de create(), reconstitute() nunca dispara FamilyCreated
   }
-
 }
 
 export { Family };

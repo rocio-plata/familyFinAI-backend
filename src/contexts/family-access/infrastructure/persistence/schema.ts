@@ -1,7 +1,20 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum, integer, primaryKey } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role_type", ["OWNER", "MEMBER"]);
-export const invitationStatusEnum = pgEnum("invitation_status", ["PENDING", "ACCEPTED", "EXPIRED", "REVOKED"]);
+export const invitationStatusEnum = pgEnum("invitation_status", [
+  "PENDING",
+  "ACCEPTED",
+  "EXPIRED",
+  "REVOKED",
+]);
 
 export const families = pgTable("families", {
   id: uuid("id").primaryKey(),

@@ -53,5 +53,5 @@ class Member {
   }
 }
 
-export { Member };
 export type { ReconstituteMemberProps };
+export { Member };

@@ -1,12 +1,10 @@
 // tests/contexts/family-access/family.reconstitute.test.ts
-import { test, describe } from "node:test";
+
 import assert from "node:assert/strict";
+import { describe, test } from "node:test";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
 import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { Currency } from "../../../src/shared-kernel/domain/currency.js";
 
 describe("Family.reconstitute", () => {
   test("reconstruye el agregado con el estado exacto que se le pasa", () => {
