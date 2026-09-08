@@ -9,11 +9,27 @@ import { FamilyCreated } from "../events/family-created.event.js";
 import { MemberRemoved } from "../events/member-removed.event.js";
 import { MemberRoleChanged } from "../events/member-role-changed.event.js";
 import { FamilyId } from "../value-objects/family-id.js";
-import type { FamilyName } from "../value-objects/family-name.js";
-import type { Role } from "../value-objects/role.js";
-import type { UserId } from "../value-objects/user-id.js";
+import { FamilyName } from "../value-objects/family-name.js";
+import { Role } from "../value-objects/role.js";
+import { UserId } from "../value-objects/user-id.js";
 import { Invitation } from "./invitation.js";
 import { Member } from "./member.js";
+
+interface ReconstituteFamilyMemberProps {
+  userId: string;
+  role: "OWNER" | "MEMBER";
+  joinedAt: Date;
+  displayOrder: number | null;
+}
+
+interface ReconstituteFamilyProps {
+  id: string;
+  name: string;
+  defaultCurrency: string;
+  createdBy: string;
+  createdAt: Date;
+  members: ReconstituteFamilyMemberProps[];
+}
 
 class Family {
   private domainEvents: DomainEvent[] = [];
@@ -132,6 +148,27 @@ class Family {
     const events = this.domainEvents;
     this.domainEvents = [];
     return events;
+  }
+
+  static reconstitute(props: ReconstituteFamilyProps): Family {
+    const members = props.members.map((m) =>
+      Member.reconstitute({
+        userId: UserId.of(m.userId),
+        role: m.role === "OWNER" ? Role.owner() : Role.member(),
+        joinedAt: m.joinedAt,
+        displayOrder: m.displayOrder,
+      }),
+    );
+
+    return new Family(
+      FamilyId.of(props.id),
+      FamilyName.of(props.name),
+      members,
+      Currency.of(props.defaultCurrency),
+      UserId.of(props.createdBy),
+      props.createdAt,
+    );
+    // sin push a domainEvents — a diferencia de create(), reconstitute() nunca dispara FamilyCreated
   }
 }
 

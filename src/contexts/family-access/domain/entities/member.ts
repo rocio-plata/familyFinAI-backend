@@ -3,6 +3,13 @@
 import { Role } from "../value-objects/role.js";
 import type { UserId } from "../value-objects/user-id.js";
 
+interface ReconstituteMemberProps {
+  userId: UserId;
+  role: Role;
+  joinedAt: Date;
+  displayOrder: number | null;
+}
+
 class Member {
   private constructor(
     private readonly _userId: UserId,
@@ -40,6 +47,11 @@ class Member {
   setDisplayOrder(order: number): void {
     this._displayOrder = order;
   }
+
+  static reconstitute(props: ReconstituteMemberProps): Member {
+    return new Member(props.userId, props.role, props.joinedAt, props.displayOrder);
+  }
 }
 
+export type { ReconstituteMemberProps };
 export { Member };

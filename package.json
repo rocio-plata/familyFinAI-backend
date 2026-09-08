@@ -10,7 +10,16 @@
     "lint:fix": "biome check --write src tests",
     "build": "tsc",
     "start": "node dist/platform/server.js",
-    "test": "node --import tsx/esm --test 'tests/**/*.test.ts'"
+    "test": "node --import tsx/esm --test 'tests/**/*.test.ts'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:up": "docker-compose up -d db",
+    "db:down": "docker-compose down",
+    "db:wait": "node --env-file=.env --import tsx scripts/wait-for-db.ts",
+    "db:init": "npm run db:up && npm run db:wait && npm run db:migrate",
+    "db:reset": "docker-compose down -v && npm run db:up && npm run db:wait && npm run db:migrate",
+    "db:setup": "node --env-file=.env --import tsx scripts/setup-db.ts"
   },
   "repository": {
     "type": "git",
@@ -34,7 +43,7 @@
     "@biomejs/biome": "2.5.11",
     "@types/node": "^26.4.0",
     "@types/pg": "^8.23.1",
-    "drizzle-kit": "^0.18.1",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }

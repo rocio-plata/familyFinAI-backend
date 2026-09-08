@@ -1,0 +1,23 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: familyfin-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: familyfin
+      POSTGRES_PASSWORD: familyfin_dev_password
+      POSTGRES_DB: familyfin
+    ports:
+      - "5432:5432"
+    volumes:
+      - familyfin_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U familyfin -d familyfin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  familyfin_db_data:
