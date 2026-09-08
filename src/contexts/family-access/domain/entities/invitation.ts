@@ -1,18 +1,28 @@
 // /src/contexts/family-access/domain/entities/invitation.ts
 
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
-import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
+import { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { addDays } from "../../../../shared-kernel/domain/util/date.js";
 import { InvitationExpiredError } from "../errors/invitation-expired.error.js";
 import { InvitationNotAcceptedError } from "../errors/invitation-not-accepted.error.js";
 import { InvitationNotPendingError } from "../errors/invitation-not-pending.error.js";
 import { InvitationAccepted } from "../events/invitation-accepted.event.js";
 import { MemberInvited } from "../events/member-invited.event.js";
-import type { FamilyId } from "../value-objects/family-id.js";
+import { FamilyId } from "../value-objects/family-id.js";
 import { InvitationId } from "../value-objects/invitation-id.js";
 import { InvitationStatus } from "../value-objects/invitation-status.js";
-import type { Role } from "../value-objects/role.js";
-import type { UserId } from "../value-objects/user-id.js";
+import { Role } from "../value-objects/role.js";
+import { UserId } from "../value-objects/user-id.js";
+
+interface ReconstituteInvitationProps {
+  id: string;
+  familyId: string;
+  invitedEmail: string;
+  role: "OWNER" | "MEMBER";
+  status: InvitationStatus;
+  expiresAt: Date;
+  invitedUserId: string | null;
+}
 
 class Invitation {
   private domainEvents: DomainEvent[] = [];
@@ -64,6 +74,18 @@ class Invitation {
     return invitation;
   }
 
+  static reconstitute(props: ReconstituteInvitationProps): Invitation {
+    return new Invitation(
+      InvitationId.of(props.id),
+      FamilyId.of(props.familyId),
+      EmailAddress.of(props.invitedEmail),
+      props.role === "OWNER" ? Role.owner() : Role.member(),
+      props.status,
+      props.expiresAt,
+      props.invitedUserId ? UserId.of(props.invitedUserId) : null,
+    );
+  }
+
   accept(acceptingUserId: UserId): void {
     if (this._status !== InvitationStatus.Pending) throw new InvitationNotPendingError(this._id);
     if (this._expiresAt < new Date()) throw new InvitationExpiredError(this._id);
@@ -89,4 +111,5 @@ class Invitation {
   }
 }
 
+export type { ReconstituteInvitationProps };
 export { Invitation };
