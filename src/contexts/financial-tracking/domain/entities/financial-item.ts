@@ -1,17 +1,20 @@
 // /src/contexts/financial-tracking/domain/entities/financial-item.ts
+import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
-import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
-import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
+import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { ItemAmountChanged } from "../events/item-amount-changed.event.js";
 import { ItemReclassified } from "../events/item-reclassified.event.js";
 import { ItemRecorded } from "../events/item-recorded.event.js";
-import type { CategoryAssignment } from "../value-objects/category-assignment.js";
+import { CategoryAssignment } from "../value-objects/category-assignment.js";
+import { CategoryId } from "../value-objects/category-id.js";
 import { FinancialItemId } from "../value-objects/financial-item-id.js";
 import { FinancialItemType } from "../value-objects/financial-item-type.js";
-import type { Money } from "../value-objects/money.js";
-import type { Note } from "../value-objects/note.js";
-import type { Title } from "../value-objects/title.js";
-import type { TransactionDate } from "../value-objects/transaction-date.js";
+import { Money } from "../value-objects/money.js";
+import { Note } from "../value-objects/note.js";
+import { TagId } from "../value-objects/tag-id.js";
+import { Title } from "../value-objects/title.js";
+import { TransactionDate } from "../value-objects/transaction-date.js";
 
 interface CreateFinancialItemProps {
   familyId: FamilyId;
@@ -22,6 +25,21 @@ interface CreateFinancialItemProps {
   title: Title;
   note?: Note;
   occurredOn: TransactionDate;
+}
+
+interface ReconstituteFinancialItemProps {
+  id: string;
+  familyId: string;
+  recordedBy: string;
+  type: FinancialItemType;
+  amount: number;
+  currency: string;
+  categoryId: string;
+  tagId: string | null;
+  title: string;
+  note: string | null;
+  occurredOn: Date;
+  createdAt: Date;
 }
 
 class FinancialItem {
@@ -98,6 +116,24 @@ class FinancialItem {
     return item;
   }
 
+  static reconstitute(props: ReconstituteFinancialItemProps): FinancialItem {
+    return new FinancialItem(
+      FinancialItemId.of(props.id),
+      FamilyId.of(props.familyId),
+      UserId.of(props.recordedBy),
+      props.type,
+      Money.of(props.amount, Currency.of(props.currency)),
+      CategoryAssignment.of(
+        CategoryId.of(props.categoryId),
+        props.tagId ? TagId.of(props.tagId) : null,
+      ),
+      Title.of(props.title),
+      props.note === null ? null : Note.of(props.note),
+      TransactionDate.of(props.occurredOn),
+      props.createdAt,
+    );
+  }
+
   reclassify(newCategory: CategoryAssignment): void {
     const previousCategory = this._category;
     this._category = newCategory;
@@ -146,5 +182,5 @@ class FinancialItem {
   }
 }
 
-export type { CreateFinancialItemProps };
+export type { CreateFinancialItemProps, ReconstituteFinancialItemProps };
 export { FinancialItem };

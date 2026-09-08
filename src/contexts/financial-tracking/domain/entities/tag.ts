@@ -1,8 +1,15 @@
 // /src/contexts/financial-tracking/domain/entities/tag.ts
 
 import { TagId } from "../value-objects/tag-id.js";
-import type { TagName } from "../value-objects/tag-name.js";
+import { TagName } from "../value-objects/tag-name.js";
 import { TagStatus } from "../value-objects/tag-status.js";
+
+interface ReconstituteTagProps {
+  id: string;
+  name: string;
+  displayOrder: number;
+  status: TagStatus;
+}
 
 class Tag {
   private constructor(
@@ -29,6 +36,10 @@ class Tag {
     return new Tag(TagId.generate(), name, displayOrder, TagStatus.Active);
   }
 
+  static reconstitute(props: ReconstituteTagProps): Tag {
+    return new Tag(TagId.of(props.id), TagName.of(props.name), props.displayOrder, props.status);
+  }
+
   rename(newName: TagName): void {
     this._name = newName;
   }
@@ -42,4 +53,5 @@ class Tag {
   }
 }
 
+export type { ReconstituteTagProps };
 export { Tag };
