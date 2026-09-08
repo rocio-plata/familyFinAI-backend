@@ -11,6 +11,7 @@ import { FamilyName } from "../../../src/contexts/family-access/domain/value-obj
 import { InvitationId } from "../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
 import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import type { UnitOfWork } from "../../../src/platform/db/unit-of-work.js";
 import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
@@ -22,6 +23,7 @@ describe("AcceptInvitationUseCase", () => {
   let invitationRepository: InMemoryInvitationRepository;
   let eventBus: FakeEventBus;
   let useCase: AcceptInvitationUseCase;
+  let unitOfWork: TrackingUnitOfWork;
   let ownerId: UserId;
   let family: Family;
 
@@ -29,7 +31,13 @@ describe("AcceptInvitationUseCase", () => {
     familyRepository = new InMemoryFamilyRepository();
     invitationRepository = new InMemoryInvitationRepository();
     eventBus = new FakeEventBus();
-    useCase = new AcceptInvitationUseCase(familyRepository, invitationRepository, eventBus);
+    unitOfWork = new TrackingUnitOfWork();
+    useCase = new AcceptInvitationUseCase(
+      familyRepository,
+      invitationRepository,
+      eventBus,
+      unitOfWork,
+    );
 
     ownerId = UserId.generate();
     family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
@@ -109,4 +117,33 @@ describe("AcceptInvitationUseCase", () => {
     assert.equal(eventBus.publishedEvents.length, 1);
     assert.ok(eventBus.publishedEvents[0] instanceof InvitationAccepted);
   });
+
+  test("ejecuta la aceptación dentro de la Unit of Work", async () => {
+    const invitation = createPendingInvitation(
+      family,
+      EmailAddress.of("nuevo@ejemplo.com"),
+      Role.member(),
+    );
+    await invitationRepository.save(invitation);
+
+    await useCase.execute({
+      invitationId: invitation.id,
+      acceptingUserId: UserId.generate(),
+    });
+
+    assert.equal(unitOfWork.runCalls, 1);
+    assert.equal(unitOfWork.completed, true);
+  });
 });
+
+class TrackingUnitOfWork implements UnitOfWork {
+  runCalls = 0;
+  completed = false;
+
+  async run<T>(work: Parameters<UnitOfWork["run"]>[0]): Promise<T> {
+    this.runCalls += 1;
+    const result = await work();
+    this.completed = true;
+    return result;
+  }
+}

@@ -2,6 +2,7 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "../../../../platform/db/connection.js";
+import type { TransactionClient } from "../../../../platform/db/unit-of-work.js";
 import { Invitation } from "../../domain/entities/invitation.js";
 import type { InvitationRepository } from "../../domain/repositories/invitation.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
@@ -12,8 +13,9 @@ import { invitations } from "./schema.js";
 type InvitationRow = typeof invitations.$inferSelect;
 
 class DrizzleInvitationRepository implements InvitationRepository {
-  async save(invitation: Invitation): Promise<void> {
-    await db
+  async save(invitation: Invitation, tx?: TransactionClient): Promise<void> {
+    const client = tx ?? db;
+    await client
       .insert(invitations)
       .values({
         id: invitation.id.toString(),
@@ -33,8 +35,9 @@ class DrizzleInvitationRepository implements InvitationRepository {
       });
   }
 
-  async findById(id: InvitationId): Promise<Invitation | null> {
-    const rows = await db
+  async findById(id: InvitationId, tx?: TransactionClient): Promise<Invitation | null> {
+    const client = tx ?? db;
+    const rows = await client
       .select()
       .from(invitations)
       .where(eq(invitations.id, id.toString()))
@@ -43,8 +46,9 @@ class DrizzleInvitationRepository implements InvitationRepository {
     return row ? this.toDomain(row) : null;
   }
 
-  async findByFamilyId(familyId: FamilyId): Promise<Invitation[]> {
-    const rows = await db
+  async findByFamilyId(familyId: FamilyId, tx?: TransactionClient): Promise<Invitation[]> {
+    const client = tx ?? db;
+    const rows = await client
       .select()
       .from(invitations)
       .where(eq(invitations.familyId, familyId.toString()));

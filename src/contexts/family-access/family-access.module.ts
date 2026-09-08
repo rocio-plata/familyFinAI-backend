@@ -1,6 +1,7 @@
 // /src/contexts/family-access/family-access.module.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { requireFamilyMembership } from "../../platform/auth/require-family-membership.middleware.js";
+import type { UnitOfWork } from "../../platform/db/unit-of-work.js";
 import type { EventBus } from "../../platform/events/event-bus.js";
 import { AcceptInvitationUseCase } from "./application/commands/accept-invitation.usecase.js";
 import { ChangeDefaultCurrencyUseCase } from "./application/commands/change-default-currency.usecase.js";
@@ -24,6 +25,7 @@ interface FamilyAccessModuleDependencies {
   invitationRepository: InvitationRepository;
   userDirectory: UserDirectoryPort;
   eventBus: EventBus;
+  unitOfWork?: UnitOfWork;
 }
 
 interface FamilyAccessModule {
@@ -57,6 +59,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
       deps.familyRepository,
       deps.invitationRepository,
       deps.eventBus,
+      deps.unitOfWork,
     ),
     revokeInvitation: new RevokeInvitationUseCase(deps.familyRepository, deps.invitationRepository),
     removeMember: new RemoveMemberUseCase(deps.familyRepository, deps.eventBus),
