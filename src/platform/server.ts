@@ -13,9 +13,11 @@ import {
   hashPassword,
   verifyPassword,
 } from "../contexts/identity/infrastructure/password-hasher.js";
+import { DrizzleUserRepository } from "../contexts/identity/infrastructure/persistence/drizzle-user.repository.js";
 import { InMemoryUserRepository } from "../contexts/identity/infrastructure/persistence/in-memory-user.repository.js";
 import { buildApp } from "./app.js";
 import { JwtService } from "./auth/jwt.js";
+import { DrizzleRefreshTokenRepository } from "./auth/persistence/drizzle-refresh-token.repository.js";
 import { InMemoryRefreshTokenRepository } from "./auth/persistence/in-memory-refresh-token.repository.js";
 import { TokenService } from "./auth/tokens.js";
 import { DirectUnitOfWork, DrizzleUnitOfWork } from "./db/unit-of-work.js";
@@ -36,7 +38,7 @@ const jwtSecret = process.env.JWT_SECRET ?? "dev-only-insecure-secret";
 const logLevel = process.env.LOG_LEVEL ?? "info";
 
 const jwtService = new JwtService(new TextEncoder().encode(jwtSecret));
-const userRepository = new InMemoryUserRepository();
+const userRepository = usePostgres ? new DrizzleUserRepository() : new InMemoryUserRepository();
 const getUserIdByEmailQuery = new GetUserIdByEmailQuery(userRepository);
 const eventBus = new InProcessEventBus();
 const familyRepository = usePostgres
@@ -51,6 +53,9 @@ const categoryRepository = usePostgres
 const financialItemRepository = usePostgres
   ? new DrizzleFinancialItemRepository()
   : new InMemoryFinancialItemRepository();
+const refreshTokenRepository = usePostgres
+  ? new DrizzleRefreshTokenRepository()
+  : new InMemoryRefreshTokenRepository();
 const unitOfWork = usePostgres ? new DrizzleUnitOfWork() : new DirectUnitOfWork();
 
 const app = buildApp({
@@ -65,7 +70,7 @@ const app = buildApp({
   },
   identity: {
     userRepository,
-    tokenService: new TokenService(jwtService, new InMemoryRefreshTokenRepository()),
+    tokenService: new TokenService(jwtService, refreshTokenRepository),
     eventBus,
     hashPassword,
     verifyPassword,

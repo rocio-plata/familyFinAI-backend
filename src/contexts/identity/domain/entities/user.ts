@@ -1,10 +1,18 @@
 // /src/contexts/identity/domain/entities/user.ts
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
-import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
+import { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { UserRegistered } from "../events/user-registered.event.js";
-import type { DisplayName } from "../value-objects/display-name.js";
-import type { PasswordHash } from "../value-objects/password-hash.js";
+import { DisplayName } from "../value-objects/display-name.js";
+import { PasswordHash } from "../value-objects/password-hash.js";
+
+interface ReconstituteUserProps {
+  id: string;
+  email: string;
+  passwordHash: string;
+  displayName: string;
+  createdAt: Date;
+}
 
 class User {
   private domainEvents: DomainEvent[] = [];
@@ -28,6 +36,9 @@ class User {
   }
   get createdAt(): Date {
     return this._createdAt;
+  }
+  get passwordHashValue(): string {
+    return this._passwordHash.toString();
   }
 
   static register(email: EmailAddress, passwordHash: PasswordHash, displayName: DisplayName): User {
@@ -56,6 +67,18 @@ class User {
   updateDisplayName(newName: DisplayName): void {
     this._displayName = newName;
   }
+
+  static reconstitute(props: ReconstituteUserProps): User {
+    return new User(
+      UserId.of(props.id),
+      EmailAddress.of(props.email),
+      PasswordHash.fromStoredHash(props.passwordHash),
+      DisplayName.of(props.displayName),
+      props.createdAt,
+    );
+    // sin push a domainEvents — reconstitute() nunca dispara UserRegistered
+  }
 }
 
+export type { ReconstituteUserProps };
 export { User };
