@@ -6,6 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
+import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
 import { buildTestFinancialTrackingDependencies } from "../../financial-tracking/build-test-financial-tracking-dependencies.js";
 import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
 import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";
@@ -21,11 +22,13 @@ describe("POST /families", () => {
     userId = UserId.generate();
     token = await jwtService.sign(userId);
 
+    const eventBus = new FakeEventBus();
+
     app = buildApp({
       jwtService,
-      identity: buildTestIdentityDependencies(),
-      familyAccess: buildTestFamilyAccessDependencies(),
-      financialTracking: buildTestFinancialTrackingDependencies(),
+      identity: buildTestIdentityDependencies({ eventBus }),
+      familyAccess: buildTestFamilyAccessDependencies({ eventBus }),
+      financialTracking: buildTestFinancialTrackingDependencies({ eventBus }),
     });
   });
 
