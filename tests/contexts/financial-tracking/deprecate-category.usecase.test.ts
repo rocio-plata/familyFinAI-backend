@@ -15,6 +15,7 @@ import { CategoryDeprecated } from "../../../src/contexts/financial-tracking/dom
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
@@ -47,7 +48,11 @@ describe("DeprecateCategoryUseCase", () => {
     familyId = family.id;
     await familyRepository.save(family);
 
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.pullDomainEvents();
     categoryRepository.add(category);
   });

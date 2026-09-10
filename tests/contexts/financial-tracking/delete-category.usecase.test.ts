@@ -17,6 +17,7 @@ import { CategoryDeletionService } from "../../../src/contexts/financial-trackin
 import { CategoryAssignment } from "../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Title } from "../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
@@ -52,7 +53,11 @@ describe("DeleteCategoryUseCase", () => {
     familyId = family.id;
     await familyRepository.save(family);
 
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.pullDomainEvents();
     categoryRepository.add(category);
   });

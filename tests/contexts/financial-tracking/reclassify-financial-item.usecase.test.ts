@@ -6,6 +6,7 @@ import { UserId } from "../../../src/contexts/family-access/domain/value-objects
 import { ReclassifyFinancialItemUseCase } from "../../../src/contexts/financial-tracking/application/commands/reclassify-financial-item.usecase.js";
 import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { FinancialItem } from "../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import { CannotReclassifyAcrossTypesError } from "../../../src/contexts/financial-tracking/domain/errors/cannot-reclassify-across-types.error.js";
 import { CategoryNotActiveError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-active.error.js";
 import { CategoryNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
 import { FinancialItemNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/financial-item-not-found.error.js";
@@ -16,6 +17,7 @@ import { CategoryAssignment } from "../../../src/contexts/financial-tracking/dom
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemId } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { Title } from "../../../src/contexts/financial-tracking/domain/value-objects/title.js";
@@ -43,24 +45,35 @@ describe("ReclassifyFinancialItemUseCase", () => {
     familyId = FamilyId.generate();
     userId = UserId.generate();
 
-    originalCategory = Category.create(familyId, CategoryName.of("Alimentación"));
+    originalCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     categoryRepository.add(originalCategory);
 
-    existingItem = FinancialItem.create({
-      familyId,
-      recordedBy: userId,
-      amount: Money.of(5000, "CLP"),
-      category: CategoryAssignment.of(originalCategory.id),
-      title: Title.of("Compra de alimentos"),
-      occurredOn: TransactionDate.of(new Date("2026-08-01")),
-    });
+    existingItem = FinancialItem.create(
+      {
+        familyId,
+        recordedBy: userId,
+        amount: Money.of(5000, "CLP"),
+        category: CategoryAssignment.of(originalCategory.id),
+        title: Title.of("Compra de alimentos"),
+        occurredOn: TransactionDate.of(new Date("2026-08-01")),
+      },
+      FinancialItemType.Expense,
+    );
     existingItem.pullDomainEvents();
 
     itemRepository.save(existingItem);
   });
 
   test("reclasifica el item a una nueva categoría activa", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(newCategory);
 
     const updated = await useCase.execute({
@@ -74,7 +87,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("reclasifica el item con un tag válido de la nueva categoría", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     newCategory.addTag(TagName.of("Bencina"));
     categoryRepository.add(newCategory);
     const tagId = newCategory.tags[0]?.id;
@@ -91,7 +108,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("dispara ItemReclassified", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(newCategory);
 
     await useCase.execute({
@@ -106,7 +127,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("persiste la reclasificación", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(newCategory);
 
     await useCase.execute({
@@ -122,7 +147,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("rechaza si el item no existe", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(newCategory);
 
     await assert.rejects(
@@ -139,7 +168,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
 
   test("rechaza si el item no pertenece a la familia", async () => {
     const otherFamilyId = FamilyId.generate();
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(newCategory);
 
     await assert.rejects(
@@ -168,7 +201,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("rechaza si la nueva categoría está deprecada", async () => {
-    const deprecatedCategory = Category.create(familyId, CategoryName.of("Vieja"));
+    const deprecatedCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Vieja"),
+    );
     deprecatedCategory.deprecate();
     categoryRepository.add(deprecatedCategory);
 
@@ -185,10 +222,18 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("rechaza si el tag no pertenece a la nueva categoría", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(newCategory);
 
-    const otherCategory = Category.create(familyId, CategoryName.of("Ocio"));
+    const otherCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Ocio"),
+    );
     otherCategory.addTag(TagName.of("Cine"));
     const foreignTagId = otherCategory.tags[0]?.id;
     assert.ok(foreignTagId);
@@ -206,7 +251,11 @@ describe("ReclassifyFinancialItemUseCase", () => {
   });
 
   test("rechaza si el tag está deprecado", async () => {
-    const newCategory = Category.create(familyId, CategoryName.of("Transporte"));
+    const newCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     newCategory.addTag(TagName.of("Bencina"));
     const tag = newCategory.tags[0];
     assert.ok(tag);
@@ -222,6 +271,26 @@ describe("ReclassifyFinancialItemUseCase", () => {
           newTagId: tag.id,
         }),
       TagNotActiveError,
+    );
+  });
+
+  test("rechaza si la nueva categoría es de un type distinto al del item", async () => {
+    const incomeCategory = Category.create(
+      familyId,
+      FinancialItemType.Income,
+      CategoryName.of("Sueldo"),
+    );
+    categoryRepository.add(incomeCategory);
+
+    await assert.rejects(
+      () =>
+        useCase.execute({
+          familyId,
+          itemId: existingItem.id,
+          newCategoryId: incomeCategory.id,
+          newTagId: null,
+        }),
+      CannotReclassifyAcrossTypesError,
     );
   });
 });

@@ -15,6 +15,7 @@ import { InsufficientRoleError } from "../../../src/contexts/financial-tracking/
 import { TagNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/tag-not-found.error.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagId } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
@@ -46,7 +47,11 @@ describe("RenameTagUseCase", () => {
     familyId = family.id;
     await familyRepository.save(family);
 
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.addTag(TagName.of("Supermercado"));
     category.pullDomainEvents();
     tagId = category.tags[0].id;

@@ -8,6 +8,7 @@ import { Role } from "../../../../src/contexts/family-access/domain/value-object
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
@@ -35,13 +36,28 @@ describe("GET /families/:familyId/categories", () => {
     familyId = family.id.toString();
     memberAuthorization = `Bearer ${await jwtService.sign(memberId)}`;
 
-    const activeCategory = Category.create(family.id, CategoryName.of("Alimentación"));
+    const activeCategory = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     activeCategory.addTag(TagName.of("Verdulería"));
     categoryRepository.add(activeCategory);
 
-    const deprecatedCategory = Category.create(family.id, CategoryName.of("Transporte"));
+    const deprecatedCategory = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     deprecatedCategory.deprecate();
     categoryRepository.add(deprecatedCategory);
+
+    const incomeCategory = Category.create(
+      family.id,
+      FinancialItemType.Income,
+      CategoryName.of("Sueldo"),
+    );
+    categoryRepository.add(incomeCategory);
 
     app = buildApp({
       jwtService,
@@ -60,10 +76,11 @@ describe("GET /families/:familyId/categories", () => {
 
     assert.equal(response.statusCode, 200);
     const body = JSON.parse(response.body);
-    assert.equal(body.length, 1);
-    assert.equal(body[0].name, "Alimentación");
-    assert.equal(body[0].status, "ACTIVE");
-    assert.equal(body[0].tags[0].name, "Verdulería");
+    assert.equal(body.length, 2);
+    const alimentacion = body.find((c: { name: string }) => c.name === "Alimentación");
+    assert.equal(alimentacion.type, "EXPENSE");
+    assert.equal(alimentacion.status, "ACTIVE");
+    assert.equal(alimentacion.tags[0].name, "Verdulería");
   });
 
   test("incluye categorías deprecadas cuando includeDeprecated es true", async () => {
@@ -74,7 +91,21 @@ describe("GET /families/:familyId/categories", () => {
     });
 
     assert.equal(response.statusCode, 200);
-    assert.equal(JSON.parse(response.body).length, 2);
+    assert.equal(JSON.parse(response.body).length, 3);
+  });
+
+  test("filtra por type cuando se especifica en el query", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${familyId}/categories?type=INCOME`,
+      headers: { authorization: memberAuthorization },
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.body);
+    assert.equal(body.length, 1);
+    assert.equal(body[0].name, "Sueldo");
+    assert.equal(body[0].type, "INCOME");
   });
 
   test("rechaza a quien no pertenece a la familia", async () => {

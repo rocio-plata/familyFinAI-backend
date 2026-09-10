@@ -1,0 +1,1 @@
+ALTER TABLE "categories" ADD COLUMN "type" "financial_item_type" NOT NULL;

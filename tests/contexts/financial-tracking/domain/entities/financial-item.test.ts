@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { FinancialItem } from "../../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import { CannotReclassifyAcrossTypesError } from "../../../../../src/contexts/financial-tracking/domain/errors/cannot-reclassify-across-types.error.js";
 import { CategoryAssignment } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -29,57 +30,80 @@ describe("FinancialItem", () => {
 
   describe("create()", () => {
     it("crea un FinancialItem con id generado", () => {
-      const item = FinancialItem.create(makeProps());
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
       assert.ok(item.id);
     });
 
-    it("el tipo por defecto es Expense", () => {
-      assert.equal(FinancialItem.create(makeProps()).type, FinancialItemType.Expense);
+    it("asigna el resolvedType recibido como tipo del item", () => {
+      assert.equal(
+        FinancialItem.create(makeProps(), FinancialItemType.Expense).type,
+        FinancialItemType.Expense,
+      );
     });
 
-    it("acepta tipo explícito Income", () => {
-      const item = FinancialItem.create({ ...makeProps(), type: FinancialItemType.Income });
+    it("acepta resolvedType Income", () => {
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Income);
       assert.equal(item.type, FinancialItemType.Income);
     });
 
     it("la nota es null por defecto", () => {
-      assert.equal(FinancialItem.create(makeProps()).note, null);
+      assert.equal(FinancialItem.create(makeProps(), FinancialItemType.Expense).note, null);
     });
 
     it("acepta nota opcional", () => {
-      const item = FinancialItem.create({ ...makeProps(), note: Note.of("Con tarjeta") });
+      const item = FinancialItem.create(
+        { ...makeProps(), note: Note.of("Con tarjeta") },
+        FinancialItemType.Expense,
+      );
       assert.ok(item.note !== null);
     });
 
     it("registra la fecha de creación", () => {
       const before = new Date();
-      const item = FinancialItem.create(makeProps());
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
       assert.ok(item.createdAt >= before);
     });
   });
 
   describe("reclassify()", () => {
-    it("actualiza la asignación de categoría", () => {
-      const item = FinancialItem.create(makeProps());
+    it("actualiza la asignación de categoría cuando el tipo coincide", () => {
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
       const newCategory = CategoryAssignment.of(CategoryId.generate());
-      item.reclassify(newCategory);
+      item.reclassify(newCategory, FinancialItemType.Expense);
       assert.ok(item.categoryAssignment.equals(newCategory));
     });
 
     it("dispara ItemReclassified", () => {
-      const item = FinancialItem.create(makeProps());
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
       item.pullDomainEvents();
       const newCategory = CategoryAssignment.of(CategoryId.generate());
-      item.reclassify(newCategory);
+      item.reclassify(newCategory, FinancialItemType.Expense);
       const events = item.pullDomainEvents();
       assert.equal(events.length, 1);
       assert.equal(events[0]?.eventName, "financial-tracking.item-reclassified");
+    });
+
+    it("lanza CannotReclassifyAcrossTypesError si la nueva categoría es de otro tipo", () => {
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
+      const newCategory = CategoryAssignment.of(CategoryId.generate());
+      assert.throws(
+        () => item.reclassify(newCategory, FinancialItemType.Income),
+        CannotReclassifyAcrossTypesError,
+      );
+    });
+
+    it("no modifica la categoría cuando el tipo no coincide", () => {
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
+      const originalCategory = item.categoryAssignment;
+      const newCategory = CategoryAssignment.of(CategoryId.generate());
+      assert.throws(() => item.reclassify(newCategory, FinancialItemType.Income));
+      assert.ok(item.categoryAssignment.equals(originalCategory));
     });
   });
 
   describe("updateAmount()", () => {
     it("actualiza el monto", () => {
-      const item = FinancialItem.create(makeProps());
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
       const newAmount = Money.of(20_000, clp);
       item.updateAmount(newAmount);
       assert.ok(item.amount.isGreaterThan(Money.of(15_000, clp)));

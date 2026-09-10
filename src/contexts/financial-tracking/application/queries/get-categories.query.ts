@@ -4,12 +4,14 @@ import type { CategoryRepository } from "../../domain/repositories/category.repo
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import type { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
+import type { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 import type { TagId } from "../../domain/value-objects/tag-id.js";
 import type { TagName } from "../../domain/value-objects/tag-name.js";
 import type { TagStatus } from "../../domain/value-objects/tag-status.js";
 
 interface GetCategoriesInput {
   familyId: FamilyId;
+  type?: FinancialItemType;
   includeDeprecated?: boolean;
 }
 
@@ -22,6 +24,7 @@ interface TagDTO {
 
 interface CategoryDTO {
   id: CategoryId;
+  type: FinancialItemType;
   name: CategoryName;
   status: CategoryStatus;
   tags: TagDTO[];
@@ -36,8 +39,10 @@ class GetCategoriesQuery {
 
     return categories
       .filter((category) => includeDeprecated || category.status === CategoryStatus.Active)
+      .filter((category) => !input.type || category.type === input.type)
       .map((category) => ({
         id: category.id,
+        type: category.type,
         name: category.name,
         status: category.status,
         tags: [...category.tags]

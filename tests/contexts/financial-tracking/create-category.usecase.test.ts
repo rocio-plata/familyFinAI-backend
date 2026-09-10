@@ -13,6 +13,7 @@ import { DuplicateCategoryNameError } from "../../../src/contexts/financial-trac
 import { InsufficientRoleError } from "../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
 import { CategoryCreated } from "../../../src/contexts/financial-tracking/domain/events/category-created.event.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
@@ -49,6 +50,7 @@ describe("CreateCategoryUseCase", () => {
     const category = await useCase.execute({
       familyId,
       requestedBy: ownerId,
+      type: FinancialItemType.Expense,
       name: CategoryName.of("Alimentación"),
     });
 
@@ -56,10 +58,22 @@ describe("CreateCategoryUseCase", () => {
     assert.equal(category.name.toString(), "Alimentación");
   });
 
+  test("asigna el type recibido a la categoría creada", async () => {
+    const category = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Income,
+      name: CategoryName.of("Sueldo"),
+    });
+
+    assert.equal(category.type, FinancialItemType.Income);
+  });
+
   test("persiste la categoría creada", async () => {
     const category = await useCase.execute({
       familyId,
       requestedBy: ownerId,
+      type: FinancialItemType.Expense,
       name: CategoryName.of("Alimentación"),
     });
 
@@ -71,6 +85,7 @@ describe("CreateCategoryUseCase", () => {
     await useCase.execute({
       familyId,
       requestedBy: ownerId,
+      type: FinancialItemType.Expense,
       name: CategoryName.of("Alimentación"),
     });
 
@@ -79,7 +94,11 @@ describe("CreateCategoryUseCase", () => {
   });
 
   test("rechaza un nombre duplicado (case-insensitive) en la misma familia", async () => {
-    const existing = Category.create(familyId, CategoryName.of("Alimentación"));
+    const existing = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     categoryRepository.add(existing);
 
     await assert.rejects(
@@ -87,6 +106,7 @@ describe("CreateCategoryUseCase", () => {
         useCase.execute({
           familyId,
           requestedBy: ownerId,
+          type: FinancialItemType.Expense,
           name: CategoryName.of("alimentación"),
         }),
       DuplicateCategoryNameError,
@@ -98,19 +118,28 @@ describe("CreateCategoryUseCase", () => {
     const otherFamily = Family.create(FamilyName.of("Familia González"), otherOwnerId);
     otherFamily.pullDomainEvents();
     await familyRepository.save(otherFamily);
-    const existing = Category.create(otherFamily.id, CategoryName.of("Alimentación"));
+    const existing = Category.create(
+      otherFamily.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     categoryRepository.add(existing);
 
     const category = await useCase.execute({
       familyId,
       requestedBy: ownerId,
+      type: FinancialItemType.Expense,
       name: CategoryName.of("Alimentación"),
     });
     assert.ok(category.id);
   });
 
   test("rechaza el mismo nombre si la categoría existente está deprecada", async () => {
-    const deprecated = Category.create(familyId, CategoryName.of("Alimentación"));
+    const deprecated = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     deprecated.deprecate();
     categoryRepository.add(deprecated);
 
@@ -119,6 +148,7 @@ describe("CreateCategoryUseCase", () => {
         useCase.execute({
           familyId,
           requestedBy: ownerId,
+          type: FinancialItemType.Expense,
           name: CategoryName.of("Alimentación"),
         }),
       DuplicateCategoryNameError,
@@ -131,6 +161,7 @@ describe("CreateCategoryUseCase", () => {
         useCase.execute({
           familyId,
           requestedBy: memberId,
+          type: FinancialItemType.Expense,
           name: CategoryName.of("Alimentación"),
         }),
       InsufficientRoleError,
@@ -143,6 +174,7 @@ describe("CreateCategoryUseCase", () => {
         useCase.execute({
           familyId,
           requestedBy: UserId.generate(),
+          type: FinancialItemType.Expense,
           name: CategoryName.of("Alimentación"),
         }),
       InsufficientRoleError,

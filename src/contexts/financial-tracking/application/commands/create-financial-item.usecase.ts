@@ -15,7 +15,6 @@ import type { FinancialItemRepository } from "../../domain/repositories/financia
 import { CategoryAssignment } from "../../domain/value-objects/category-assignment.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
-import type { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 import type { Money } from "../../domain/value-objects/money.js";
 import type { Note } from "../../domain/value-objects/note.js";
 import type { TagId } from "../../domain/value-objects/tag-id.js";
@@ -26,7 +25,6 @@ import type { TransactionDate } from "../../domain/value-objects/transaction-dat
 interface CreateFinancialItemInput {
   familyId: FamilyId;
   recordedBy: UserId;
-  type?: FinancialItemType;
   amount: Money;
   categoryId: CategoryId;
   tagId: TagId | null;
@@ -78,10 +76,9 @@ class CreateFinancialItemUseCase {
       category: categoryAssignment,
       title: input.title,
       occurredOn: input.occurredOn,
-      ...(input.type && { type: input.type }),
       ...(input.note && { note: input.note }),
     };
-    const item = FinancialItem.create(props);
+    const item = FinancialItem.create(props, category.type);
 
     // 6. Persistir
     await this.itemRepository.save(item);

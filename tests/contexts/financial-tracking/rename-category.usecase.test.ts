@@ -14,6 +14,7 @@ import { DuplicateCategoryNameError } from "../../../src/contexts/financial-trac
 import { InsufficientRoleError } from "../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
 
@@ -42,7 +43,11 @@ describe("RenameCategoryUseCase", () => {
     familyId = family.id;
     await familyRepository.save(family);
 
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.pullDomainEvents();
     categoryRepository.add(category);
   });
@@ -101,7 +106,11 @@ describe("RenameCategoryUseCase", () => {
   });
 
   test("rechaza si otra categoría de la familia ya tiene ese nombre", async () => {
-    const other = Category.create(familyId, CategoryName.of("Transporte"));
+    const other = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     categoryRepository.add(other);
 
     await assert.rejects(
@@ -128,7 +137,11 @@ describe("RenameCategoryUseCase", () => {
   });
 
   test("rechaza si otra categoría deprecada de la familia ya tiene ese nombre", async () => {
-    const deprecated = Category.create(familyId, CategoryName.of("Transporte"));
+    const deprecated = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     deprecated.deprecate();
     categoryRepository.add(deprecated);
 

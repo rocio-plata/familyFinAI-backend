@@ -35,26 +35,30 @@ describe("GetFinancialItemsQuery", () => {
     otherCategoryId = CategoryId.generate();
     tagId = TagId.generate();
 
-    expenseItem = FinancialItem.create({
-      familyId,
-      recordedBy,
-      type: FinancialItemType.Expense,
-      amount: Money.of(5000, "CLP"),
-      category: CategoryAssignment.of(categoryId, tagId),
-      title: Title.of("Compra en el supermercado"),
-      occurredOn: TransactionDate.of(new Date("2026-08-01")),
-    });
+    expenseItem = FinancialItem.create(
+      {
+        familyId,
+        recordedBy,
+        amount: Money.of(5000, "CLP"),
+        category: CategoryAssignment.of(categoryId, tagId),
+        title: Title.of("Compra en el supermercado"),
+        occurredOn: TransactionDate.of(new Date("2026-08-01")),
+      },
+      FinancialItemType.Expense,
+    );
     await repository.save(expenseItem);
 
-    incomeItem = FinancialItem.create({
-      familyId,
-      recordedBy,
-      type: FinancialItemType.Income,
-      amount: Money.of(500000, "CLP"),
-      category: CategoryAssignment.of(otherCategoryId),
-      title: Title.of("Sueldo"),
-      occurredOn: TransactionDate.of(new Date("2026-08-15")),
-    });
+    incomeItem = FinancialItem.create(
+      {
+        familyId,
+        recordedBy,
+        amount: Money.of(500000, "CLP"),
+        category: CategoryAssignment.of(otherCategoryId),
+        title: Title.of("Sueldo"),
+        occurredOn: TransactionDate.of(new Date("2026-08-15")),
+      },
+      FinancialItemType.Income,
+    );
     await repository.save(incomeItem);
   });
 

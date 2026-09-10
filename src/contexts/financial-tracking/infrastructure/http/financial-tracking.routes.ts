@@ -68,22 +68,27 @@ function registerFinancialTrackingRoutes(
         },
         body: {
           type: "object",
-          required: ["name"],
-          properties: { name: { type: "string", minLength: 1 } },
+          required: ["type", "name"],
+          properties: {
+            type: { type: "string", enum: ["EXPENSE", "INCOME"] },
+            name: { type: "string", minLength: 1 },
+          },
         },
       },
     },
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
-      const { name } = request.body as { name: string };
+      const { type, name } = request.body as { type: "EXPENSE" | "INCOME"; name: string };
       const category = await deps.createCategoryUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
+        type: type === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense,
         name: CategoryName.of(name),
       });
 
       return reply.code(201).send({
         id: category.id.toString(),
+        type: category.type,
         name: category.name.toString(),
         status: CategoryStatus.Active,
       });
@@ -104,7 +109,6 @@ function registerFinancialTrackingRoutes(
           type: "object",
           required: ["amount", "categoryId", "title", "occurredOn"],
           properties: {
-            type: { type: "string", enum: ["EXPENSE", "INCOME"] },
             amount: { type: "number" },
             currency: { type: "string", minLength: 1 },
             categoryId: { type: "string", minLength: 1 },
@@ -121,17 +125,15 @@ function registerFinancialTrackingRoutes(
     },
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
-      const { type, amount, currency, categoryId, tagId, title, note, occurredOn } =
-        request.body as {
-          type?: "EXPENSE" | "INCOME";
-          amount: number;
-          currency?: string;
-          categoryId: string;
-          tagId?: string;
-          title: string;
-          note?: string;
-          occurredOn: string;
-        };
+      const { amount, currency, categoryId, tagId, title, note, occurredOn } = request.body as {
+        amount: number;
+        currency?: string;
+        categoryId: string;
+        tagId?: string;
+        title: string;
+        note?: string;
+        occurredOn: string;
+      };
       const parsedFamilyId = FamilyId.of(familyId);
       const resolvedCurrency = currency
         ? Currency.of(currency)
@@ -144,9 +146,6 @@ function registerFinancialTrackingRoutes(
         tagId: tagId ? TagId.of(tagId) : null,
         title: Title.of(title),
         occurredOn: TransactionDate.of(new Date(occurredOn)),
-        ...(type
-          ? { type: type === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense }
-          : {}),
         ...(note === undefined ? {} : { note: Note.of(note) }),
       });
 
@@ -649,21 +648,31 @@ function registerFinancialTrackingRoutes(
         },
         querystring: {
           type: "object",
-          properties: { includeDeprecated: { type: "boolean" } },
+          properties: {
+            type: { type: "string", enum: ["EXPENSE", "INCOME"] },
+            includeDeprecated: { type: "boolean" },
+          },
         },
       },
     },
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
-      const { includeDeprecated } = request.query as { includeDeprecated?: boolean };
+      const { type, includeDeprecated } = request.query as {
+        type?: "EXPENSE" | "INCOME";
+        includeDeprecated?: boolean;
+      };
       const categories = await deps.getCategoriesQuery.execute({
         familyId: FamilyId.of(familyId),
+        ...(type
+          ? { type: type === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense }
+          : {}),
         ...(includeDeprecated === undefined ? {} : { includeDeprecated }),
       });
 
       return reply.code(200).send(
         categories.map((category) => ({
           id: category.id.toString(),
+          type: category.type,
           name: category.name.toString(),
           status: category.status,
           tags: category.tags.map((tag) => ({

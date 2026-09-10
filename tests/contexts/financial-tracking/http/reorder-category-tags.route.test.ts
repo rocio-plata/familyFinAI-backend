@@ -8,6 +8,7 @@ import { Role } from "../../../../src/contexts/family-access/domain/value-object
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
@@ -37,7 +38,11 @@ describe("PUT /families/:familyId/categories/:categoryId/tags/order", () => {
     family.pullDomainEvents();
     await familyRepository.save(family);
 
-    const category = Category.create(family.id, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.addTag(TagName.of("Supermercado"));
     category.addTag(TagName.of("Farmacia"));
     category.pullDomainEvents();

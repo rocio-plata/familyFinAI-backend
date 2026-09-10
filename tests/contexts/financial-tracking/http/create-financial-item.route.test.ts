@@ -8,6 +8,7 @@ import { Role } from "../../../../src/contexts/family-access/domain/value-object
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
@@ -23,6 +24,7 @@ describe("POST /families/:familyId/items", () => {
   let familyId: string;
   let categoryId: string;
   let tagId: string;
+  let incomeCategoryId: string;
   let memberAuthorization: string;
 
   beforeEach(async () => {
@@ -37,14 +39,27 @@ describe("POST /families/:familyId/items", () => {
     family.pullDomainEvents();
     await familyRepository.save(family);
 
-    const category = Category.create(family.id, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.addTag(TagName.of("Supermercado"));
     category.pullDomainEvents();
     categoryRepository.add(category);
 
+    const incomeCategory = Category.create(
+      family.id,
+      FinancialItemType.Income,
+      CategoryName.of("Sueldo"),
+    );
+    incomeCategory.pullDomainEvents();
+    categoryRepository.add(incomeCategory);
+
     familyId = family.id.toString();
     categoryId = category.id.toString();
     tagId = category.tags[0].id.toString();
+    incomeCategoryId = incomeCategory.id.toString();
     memberAuthorization = `Bearer ${await jwtService.sign(memberId)}`;
     app = buildApp({
       jwtService,
@@ -82,16 +97,15 @@ describe("POST /families/:familyId/items", () => {
     assert.equal(body.occurredOn, "2026-08-01T12:00:00.000Z");
   });
 
-  test("permite indicar una moneda y tipo de movimiento explícitos", async () => {
+  test("hereda el type Income de la categoría al indicar una moneda explícita", async () => {
     const response = await app.inject({
       method: "POST",
       url: `/families/${familyId}/items`,
       headers: { authorization: memberAuthorization },
       payload: {
-        type: "INCOME",
         amount: 1000,
         currency: "CLP",
-        categoryId,
+        categoryId: incomeCategoryId,
         title: "Pago recibido",
         occurredOn: "2026-08-02T12:00:00.000Z",
       },

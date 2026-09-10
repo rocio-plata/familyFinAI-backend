@@ -6,6 +6,7 @@ import { FamilyId } from "../../../../src/contexts/family-access/domain/value-ob
 import { CreateDefaultCategoriesOnFamilyCreatedEventHandler } from "../../../../src/contexts/financial-tracking/application/event-handlers/create-default-categories-on-family-created.event-handler.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { InMemoryCategoryRepository } from "../doubles/in-memory-category.repository.js";
 
 describe("CreateDefaultCategoriesOnFamilyCreatedEventHandler", () => {
@@ -46,7 +47,11 @@ describe("CreateDefaultCategoriesOnFamilyCreatedEventHandler", () => {
 
   test("no duplica categorías si alguna ya existe para la familia", async () => {
     const familyId = FamilyId.generate();
-    const existingCategory = Category.create(familyId, CategoryName.of("Comestibles"));
+    const existingCategory = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Comestibles"),
+    );
     await categoryRepository.save(existingCategory);
 
     const event = new FamilyCreated(familyId);

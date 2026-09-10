@@ -45,12 +45,13 @@ describe("POST /families/:familyId/categories", () => {
       method: "POST",
       url: `/families/${familyId}/categories`,
       headers: { authorization: ownerAuthorization },
-      payload: { name: "Alimentación" },
+      payload: { type: "EXPENSE", name: "Alimentación" },
     });
 
     assert.equal(response.statusCode, 201);
     const body = JSON.parse(response.body);
     assert.ok(body.id);
+    assert.equal(body.type, "EXPENSE");
     assert.equal(body.name, "Alimentación");
     assert.equal(body.status, "ACTIVE");
   });
@@ -60,7 +61,7 @@ describe("POST /families/:familyId/categories", () => {
       method: "POST",
       url: `/families/${familyId}/categories`,
       headers: { authorization: memberAuthorization },
-      payload: { name: "Alimentación" },
+      payload: { type: "EXPENSE", name: "Alimentación" },
     });
 
     assert.equal(response.statusCode, 403);
@@ -71,7 +72,7 @@ describe("POST /families/:familyId/categories", () => {
       method: "POST",
       url: `/families/${familyId}/categories`,
       headers: { authorization: ownerAuthorization },
-      payload: { name: "Alimentación" },
+      payload: { type: "EXPENSE", name: "Alimentación" },
     });
     assert.equal(firstResponse.statusCode, 201);
 
@@ -79,7 +80,7 @@ describe("POST /families/:familyId/categories", () => {
       method: "POST",
       url: `/families/${familyId}/categories`,
       headers: { authorization: ownerAuthorization },
-      payload: { name: "alimentación" },
+      payload: { type: "EXPENSE", name: "alimentación" },
     });
 
     assert.equal(response.statusCode, 409);
@@ -91,7 +92,19 @@ describe("POST /families/:familyId/categories", () => {
       method: "POST",
       url: `/families/${familyId}/categories`,
       headers: { authorization: ownerAuthorization },
-      payload: {},
+      payload: { type: "EXPENSE" },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
+  });
+
+  test("rechaza un body sin type", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/categories`,
+      headers: { authorization: ownerAuthorization },
+      payload: { name: "Alimentación" },
     });
 
     assert.equal(response.statusCode, 400);
