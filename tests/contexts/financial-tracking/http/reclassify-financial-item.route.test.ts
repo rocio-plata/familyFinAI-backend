@@ -10,6 +10,7 @@ import { Category } from "../../../../src/contexts/financial-tracking/domain/ent
 import { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
 import { CategoryAssignment } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { Title } from "../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
@@ -44,22 +45,33 @@ describe("PATCH /families/:familyId/items/:itemId/category", () => {
     family.pullDomainEvents();
     await familyRepository.save(family);
 
-    const originCategory = Category.create(family.id, CategoryName.of("Alimentación"));
-    const destinationCategory = Category.create(family.id, CategoryName.of("Transporte"));
+    const originCategory = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    const destinationCategory = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     destinationCategory.addTag(TagName.of("Bencina"));
     originCategory.pullDomainEvents();
     destinationCategory.pullDomainEvents();
     categoryRepository.add(originCategory);
     categoryRepository.add(destinationCategory);
 
-    const item = FinancialItem.create({
-      familyId: family.id,
-      recordedBy: ownerId,
-      amount: Money.of(5000, Currency.default()),
-      category: CategoryAssignment.of(originCategory.id),
-      title: Title.of("Compra semanal"),
-      occurredOn: TransactionDate.of(new Date("2026-08-01T12:00:00.000Z")),
-    });
+    const item = FinancialItem.create(
+      {
+        familyId: family.id,
+        recordedBy: ownerId,
+        amount: Money.of(5000, Currency.default()),
+        category: CategoryAssignment.of(originCategory.id),
+        title: Title.of("Compra semanal"),
+        occurredOn: TransactionDate.of(new Date("2026-08-01T12:00:00.000Z")),
+      },
+      FinancialItemType.Expense,
+    );
     item.pullDomainEvents();
     await financialItemRepository.save(item);
 

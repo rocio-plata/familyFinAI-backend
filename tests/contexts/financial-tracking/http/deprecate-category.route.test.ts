@@ -8,6 +8,7 @@ import { Role } from "../../../../src/contexts/family-access/domain/value-object
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestFamilyAccessDependencies } from "../../family-access/build-test-family-access-dependencies.js";
@@ -34,7 +35,11 @@ describe("POST /families/:familyId/categories/:categoryId/deprecate", () => {
     family.pullDomainEvents();
     await familyRepository.save(family);
 
-    const category = Category.create(family.id, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.pullDomainEvents();
     categoryRepository.add(category);
 

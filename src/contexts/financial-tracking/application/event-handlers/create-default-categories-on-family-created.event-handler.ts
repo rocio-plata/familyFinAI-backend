@@ -5,6 +5,7 @@ import type { FamilyCreated } from "../../../family-access/domain/events/family-
 import { Category } from "../../domain/entities/category.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 
 class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
   private static readonly DEFAULT_CATEGORY_NAMES = [
@@ -32,7 +33,7 @@ class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
       const exists = familyCategories.some((cat) => cat.name.equals(categoryName));
 
       if (!exists) {
-        const category = Category.create(event.familyId, categoryName);
+        const category = Category.create(event.familyId, FinancialItemType.Expense, categoryName);
         await this.categoryRepository.save(category);
 
         if (this.eventBus) {

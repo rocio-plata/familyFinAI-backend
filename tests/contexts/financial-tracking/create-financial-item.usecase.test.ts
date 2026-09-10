@@ -47,7 +47,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("registra un gasto con todos los campos obligatorios", async () => {
-    const category = Category.create(familyId, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     categoryRepository.add(category);
 
     const amount = Money.of(5000, Currency.default());
@@ -76,7 +80,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("registra un gasto con tag", async () => {
-    const category = Category.create(familyId, CategoryName.of("Transporte"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     const tagName = TagName.of("Taxi");
     category.addTag(tagName);
     const tag = category.tags[0];
@@ -102,7 +110,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("dispara el evento ItemRecorded al crear el item", async () => {
-    const category = Category.create(familyId, CategoryName.of("Servicios"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Servicios"),
+    );
     categoryRepository.add(category);
 
     const amount = Money.of(50000, Currency.default());
@@ -135,7 +147,11 @@ describe("CreateFinancialItemUseCase", () => {
       categoryRepository,
       orderRecordingEventBus,
     );
-    const category = Category.create(familyId, CategoryName.of("Servicios"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Servicios"),
+    );
     categoryRepository.add(category);
 
     await orderRecordingUseCase.execute({
@@ -190,7 +206,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("rechaza categoría deprecada", async () => {
-    const category = Category.create(familyId, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.deprecate();
     categoryRepository.add(category);
 
@@ -211,7 +231,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("rechaza tag no encontrado en la categoría", async () => {
-    const category = Category.create(familyId, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     categoryRepository.add(category);
     const nonExistentTagId = TagId.generate();
 
@@ -232,7 +256,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("rechaza tag deprecado", async () => {
-    const category = Category.create(familyId, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     const tagName = TagName.of("Frutas");
     category.addTag(tagName);
     const tag = category.tags[0];
@@ -256,8 +284,16 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("rechaza tag que no pertenece a la categoría", async () => {
-    const category1 = Category.create(familyId, CategoryName.of("Alimentación"));
-    const category2 = Category.create(familyId, CategoryName.of("Transporte"));
+    const category1 = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    const category2 = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
     const tagName = TagName.of("Taxi");
     category2.addTag(tagName);
     const tagFromCategory2 = category2.tags[0];
@@ -280,8 +316,12 @@ describe("CreateFinancialItemUseCase", () => {
     );
   });
 
-  test("registra un ingreso si se especifica el tipo", async () => {
-    const category = Category.create(familyId, CategoryName.of("Ingresos"));
+  test("hereda el type Income de la categoría", async () => {
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Income,
+      CategoryName.of("Ingresos"),
+    );
     categoryRepository.add(category);
 
     const amount = Money.of(1000000, Currency.default());
@@ -291,7 +331,6 @@ describe("CreateFinancialItemUseCase", () => {
     const item = await useCase.execute({
       familyId,
       recordedBy,
-      type: FinancialItemType.Income,
       categoryId: category.id,
       tagId: null,
       amount,
@@ -304,7 +343,11 @@ describe("CreateFinancialItemUseCase", () => {
   });
 
   test("persiste el item en el repositorio", async () => {
-    const category = Category.create(familyId, CategoryName.of("Alimentación"));
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     categoryRepository.add(category);
 
     const amount = Money.of(5000, Currency.default());

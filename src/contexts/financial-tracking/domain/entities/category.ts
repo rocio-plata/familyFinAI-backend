@@ -12,6 +12,7 @@ import { TagDeprecated } from "../events/tag-deprecated.event.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import { CategoryName } from "../value-objects/category-name.js";
 import { CategoryStatus } from "../value-objects/category-status.js";
+import type { FinancialItemType } from "../value-objects/financial-item-type.js";
 import type { TagId } from "../value-objects/tag-id.js";
 import type { TagName } from "../value-objects/tag-name.js";
 import type { TagStatus } from "../value-objects/tag-status.js";
@@ -27,6 +28,7 @@ interface ReconstituteCategoryTagProps {
 interface ReconstituteCategoryProps {
   id: string;
   familyId: string;
+  type: FinancialItemType;
   name: string;
   status: CategoryStatus;
   tags: ReconstituteCategoryTagProps[];
@@ -38,6 +40,7 @@ class Category {
   private constructor(
     private readonly _id: CategoryId,
     private readonly _familyId: FamilyId,
+    private readonly _type: FinancialItemType,
     private _name: CategoryName,
     private _status: CategoryStatus,
     private _tags: Tag[],
@@ -49,6 +52,9 @@ class Category {
   get familyId(): FamilyId {
     return this._familyId;
   }
+  get type(): FinancialItemType {
+    return this._type;
+  }
   get name(): CategoryName {
     return this._name;
   }
@@ -59,8 +65,15 @@ class Category {
     return this._tags;
   } // readonly array — evita que muten la lista desde fuera
 
-  static create(familyId: FamilyId, name: CategoryName): Category {
-    const category = new Category(CategoryId.generate(), familyId, name, CategoryStatus.Active, []);
+  static create(familyId: FamilyId, type: FinancialItemType, name: CategoryName): Category {
+    const category = new Category(
+      CategoryId.generate(),
+      familyId,
+      type,
+      name,
+      CategoryStatus.Active,
+      [],
+    );
     category.domainEvents.push(
       new CategoryCreated(category.id, category.familyId.toString(), category.name.toString()),
     );
@@ -71,6 +84,7 @@ class Category {
     return new Category(
       CategoryId.of(props.id),
       FamilyId.of(props.familyId),
+      props.type,
       CategoryName.of(props.name),
       props.status,
       props.tags.map((tag) => Tag.reconstitute(tag)),

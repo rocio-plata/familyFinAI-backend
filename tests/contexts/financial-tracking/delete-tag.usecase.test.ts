@@ -18,6 +18,7 @@ import { TagDeletionService } from "../../../src/contexts/financial-tracking/dom
 import { CategoryAssignment } from "../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { TagId } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
@@ -56,7 +57,11 @@ describe("DeleteTagUseCase", () => {
     familyId = family.id;
     await familyRepository.save(family);
 
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.addTag(TagName.of("Supermercado"));
     category.pullDomainEvents();
     tagId = category.tags[0].id;

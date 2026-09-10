@@ -22,6 +22,13 @@
       "when": 1788833023317,
       "tag": "0002_friendly_blue_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789078783010,
+      "tag": "0003_kind_kat_farrell",
+      "breakpoints": true
     }
   ]
 }

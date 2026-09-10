@@ -15,6 +15,7 @@ import { TagNotFoundError } from "../../../src/contexts/financial-tracking/domai
 import { TagDeprecated } from "../../../src/contexts/financial-tracking/domain/events/tag-deprecated.event.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagId } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { TagStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-status.js";
@@ -51,7 +52,11 @@ describe("DeprecateTagUseCase", () => {
     familyId = family.id;
     await familyRepository.save(family);
 
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.addTag(TagName.of("Supermercado"));
     category.pullDomainEvents();
     tagId = category.tags[0].id;

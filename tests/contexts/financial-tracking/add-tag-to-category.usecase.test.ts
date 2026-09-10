@@ -10,6 +10,7 @@ import { DuplicateTagNameError } from "../../../src/contexts/financial-tracking/
 import { TagCreated } from "../../../src/contexts/financial-tracking/domain/events/tag-created.event.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
@@ -27,7 +28,11 @@ describe("AddTagToCategoryUseCase", () => {
     useCase = new AddTagToCategoryUseCase(categoryRepository, eventBus);
 
     familyId = FamilyId.generate();
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.pullDomainEvents();
     categoryRepository.add(category);
   });

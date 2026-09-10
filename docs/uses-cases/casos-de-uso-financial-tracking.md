@@ -16,16 +16,17 @@ Registra un nuevo gasto o ingreso.
 
 - **Actor**: un `Member` de la familia (cualquier rol — según la especificación original, todos los miembros pueden registrar movimientos).
 - **Precondiciones**: la familia existe; la categoría indicada existe, pertenece a la familia y está `Active` (no `Deprecated`); si se indica tag, pertenece a esa categoría.
-- **Entrada**: `familyId`, `recordedBy` (UserId, del token), `type` (opcional, default `Expense`), `amount`, `currency` (opcional, default `family.defaultCurrency`), `categoryId`, `tagId` (opcional), `title`, `note` (opcional), `occurredOn`.
+- **Entrada**: `familyId`, `recordedBy` (UserId, del token), `amount`, `currency` (opcional, default `family.defaultCurrency`), `categoryId`, `tagId` (opcional), `title`, `note` (opcional), `occurredOn`.
 - **Flujo principal**:
   1. Se valida cada campo como su Value Object correspondiente (`Money`, `Title`, `Note`, `TransactionDate`).
   2. Se busca la `Category` por `categoryId`; se valida que pertenezca a la familia y esté `Active`.
   3. Si hay `tagId`, se valida que el tag exista dentro de esa categoría y esté `Active`.
   4. Se construye `CategoryAssignment` con ambos.
-  5. Se invoca `FinancialItem.create(props)`.
+  5. Se invoca `FinancialItem.create(props, category.type)` — el tipo del item ya **no** es un dato de entrada: se hereda siempre de `category.type`, resuelto por el caso de uso a partir de la categoría ya buscada en el paso 2.
   6. Se persiste vía `FinancialItemRepository.save()`.
 - **Errores posibles**: `InvalidMoneyError`, `InvalidTitleError`, `InvalidNoteError`, `FutureTransactionDateError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `TagNotFoundError`, `TagNotActiveError`, `TagDoesNotBelongToCategoryError`.
 - **Eventos disparados**: `ItemRecorded`.
+- **Nota de diseño (reajuste tipo-categoría)**: el tipo (`Expense`/`Income`) pasó a ser una propiedad inmutable de `Category`, no un dato que el usuario elija al registrar un movimiento — evita inconsistencias como un item `Income` con categoría `"Supermercado"`. Ver `plan-ajuste-tipo-categoria.md` para el detalle completo del rediseño.
 
 ---
 
@@ -56,10 +57,11 @@ Cambia la categoría y/o tag de un movimiento.
 - **Flujo principal**:
   1. Se busca el `FinancialItem`.
   2. Se valida la nueva categoría/tag (mismas reglas que en `CreateFinancialItem`, pasos 2–4).
-  3. Se invoca `item.reclassify(newCategoryAssignment)`.
+  3. Se invoca `item.reclassify(newCategoryAssignment, newCategory.type)` — la entidad valida que `newCategory.type` coincida con el tipo actual del item antes de aplicar el cambio.
   4. Se persiste.
-- **Errores posibles**: `FinancialItemNotFoundError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `TagNotFoundError`, `TagNotActiveError`, `TagDoesNotBelongToCategoryError`.
+- **Errores posibles**: `FinancialItemNotFoundError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `TagNotFoundError`, `TagNotActiveError`, `TagDoesNotBelongToCategoryError`, `CannotReclassifyAcrossTypesError`.
 - **Eventos disparados**: `ItemReclassified`.
+- **Nota de diseño (reajuste tipo-categoría)**: no se puede reclasificar un item hacia una categoría de tipo distinto (mover un gasto a una categoría de ingreso) — cambiaría el tipo del item de forma implícita. Se rechaza con `CannotReclassifyAcrossTypesError`.
 
 ---
 
@@ -87,16 +89,17 @@ Crea una categoría nueva para la familia.
 
 - **Actor**: únicamente el `Owner` de la familia. Decisión tomada para mantener la taxonomía de categorías bajo control administrativo — evita que cualquier miembro modifique una estructura compartida por toda la familia.
 - **Precondiciones**: la familia existe; quien solicita es `Owner` de esa familia; no existe ya una categoría con el mismo nombre en la familia, sin importar su estado (`Active` o `Deprecated` — comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
-- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `name`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `type` (`Expense` | `Income`, obligatorio), `name`.
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` en la familia (`GetFamilyMembershipQuery`, de `Family & Access`) y se valida que su rol sea `Owner`.
   2. Se valida `name` como `CategoryName`.
   3. Se verifica que no exista otra categoría con el mismo nombre en la familia, sea `Active` o `Deprecated`.
-  4. Se invoca `Category.create(familyId, name)`.
+  4. Se invoca `Category.create(familyId, type, name)`.
   5. Se persiste.
 - **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: `CategoryCreated`.
 - **Nota de diseño**: una categoría `Deprecated` con el mismo nombre **bloquea** la creación de una nueva — si se deprecó fue porque no se necesitaba, así que no tiene sentido crear un duplicado. Para volver a usarla, el flujo correcto es `ReactivateCategory` (caso de uso 6), no crear una categoría nueva con el mismo nombre.
+- **Nota de diseño (reajuste tipo-categoría)**: `type` es obligatorio y sin valor por defecto — se fuerza al usuario a elegir explícitamente `Expense` o `Income` al crear la categoría. Una vez creada, `Category.type` es **inmutable**: no existe `changeType()` en la entidad, ya que cambiarlo dejaría inconsistentes los items históricos ya clasificados bajo esa categoría.
 
 ---
 
@@ -257,11 +260,12 @@ Lista y filtra los movimientos financieros de la familia — corresponde a la "C
 Lista las categorías (con sus tags) de la familia — para poblar selectores en la UI y la sección de administración de categorías.
 
 - **Actor**: cualquier `Member` de la familia.
-- **Entrada**: `familyId`, `includeDeprecated` (opcional, default `false`).
+- **Entrada**: `familyId`, `type` (opcional, `Expense` | `Income`), `includeDeprecated` (opcional, default `false`).
 - **Flujo principal**:
   1. Se consulta `CategoryRepository.findByFamilyId()`.
   2. Se filtran las deprecadas si `includeDeprecated` es `false`.
-  3. Se devuelve la lista (cada categoría con sus tags, ya ordenados por `displayOrder`).
+  3. Si se especifica `type`, se filtran solo las categorías de ese tipo — es el filtro que alimenta las pantallas de "categorías de gasto"/"categorías de ingreso".
+  4. Se devuelve la lista (cada categoría con sus tags, ya ordenados por `displayOrder`, y su `type`).
 - **Errores posibles**: ninguno propio.
 
 ---
@@ -282,6 +286,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 | `InvalidTagOrderError` | ReorderCategoryTags | ✅ ya definido |
 | `CategoryHasAssociatedItemsError` | DeleteCategory | ✅ ya definido |
 | `TagHasAssociatedItemsError` | DeleteTag | ✅ ya definido |
+| `CannotReclassifyAcrossTypesError` | ReclassifyFinancialItem | ✅ ya definido (reajuste tipo-categoría) |
 | `InvalidMoneyError`, `InvalidTitleError`, `InvalidNoteError`, `FutureTransactionDateError`, `InvalidCategoryNameError`, `InvalidTagNameError` | CreateFinancialItem y afines | ✅ ya definidos |
 
 ## Pendientes antes de implementar
@@ -294,3 +299,4 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 4. **`AddTagToCategory` sobre categoría deprecada** — **resuelto e implementado**: se rechaza con `CategoryNotActiveError`; una categoría debe reactivarse primero (`ReactivateCategory`) antes de poder agregarle tags nuevos.
 5. **Estrategia de borrado de `FinancialItem`** — **resuelto**: borrado físico. `DeleteFinancialItemUseCase` invoca `FinancialItemRepository.delete()` y publica `ItemDeleted` para que `Budgeting`/`Reporting` reviertan el efecto de `ItemRecorded`.
 6. **Resolución de `Currency` por defecto**: sigue pendiente. `CreateFinancialItemUseCase` recibe un `amount: Money` ya construido (con la moneda ya resuelta) — no consulta `family.defaultCurrency` internamente. La resolución del default (cuando el cliente no especifica moneda) queda diferida a la capa que construya el comando de entrada (previsiblemente la capa HTTP, aún no implementada para este contexto).
+7. **El tipo (`Expense`/`Income`) pertenece a la categoría, no al item** — **resuelto e implementado** (ver `plan-ajuste-tipo-categoria.md`): `Category.type` es un campo inmutable fijado en `CreateCategory`; `FinancialItem.type` se sigue guardando (por rendimiento de lectura) pero ya no es un dato de entrada libre — `CreateFinancialItemUseCase` lo resuelve siempre desde `category.type`. `ReclassifyFinancialItem` rechaza mover un item hacia una categoría de tipo distinto (`CannotReclassifyAcrossTypesError`). `GetCategories` gana el filtro opcional `type` para poblar las pantallas de categorías de gasto/ingreso por separado. Pendientes derivados, aún no implementados: validar en `Budgeting` que solo se presupuesten categorías de tipo `Expense`, y simplificar `CategoryPeriodAggregate` en `Reporting` a un único campo `total` en vez de `totalExpense`/`totalIncome`.

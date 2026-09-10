@@ -8,6 +8,7 @@ import { CategoryNotFoundError } from "../../../src/contexts/financial-tracking/
 import { InvalidTagOrderError } from "../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagId } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
@@ -23,7 +24,11 @@ describe("ReorderCategoryTagsUseCase", () => {
     useCase = new ReorderCategoryTagsUseCase(categoryRepository);
 
     familyId = FamilyId.generate();
-    category = Category.create(familyId, CategoryName.of("Alimentación"));
+    category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
     category.addTag(TagName.of("Supermercado"));
     category.addTag(TagName.of("Farmacia"));
     category.pullDomainEvents();

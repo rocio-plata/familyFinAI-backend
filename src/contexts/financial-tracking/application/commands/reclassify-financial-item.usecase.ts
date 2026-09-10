@@ -65,7 +65,7 @@ class ReclassifyFinancialItemUseCase {
 
     // 5. Reclasificar
     const newCategoryAssignment = CategoryAssignment.of(input.newCategoryId, input.newTagId);
-    item.reclassify(newCategoryAssignment);
+    item.reclassify(newCategoryAssignment, category.type);
 
     // 6. Persistir
     await this.itemRepository.save(item);

@@ -44,26 +44,30 @@ describe("GET /families/:familyId/items", () => {
     expenseCategoryId = CategoryId.generate();
     expenseTagId = TagId.generate();
     await financialItemRepository.save(
-      FinancialItem.create({
-        familyId: family.id,
-        recordedBy: memberId,
-        type: FinancialItemType.Expense,
-        amount: Money.of(5000, Currency.default()),
-        category: CategoryAssignment.of(expenseCategoryId, expenseTagId),
-        title: Title.of("Supermercado"),
-        occurredOn: TransactionDate.of(new Date("2026-08-01T12:00:00.000Z")),
-      }),
+      FinancialItem.create(
+        {
+          familyId: family.id,
+          recordedBy: memberId,
+          amount: Money.of(5000, Currency.default()),
+          category: CategoryAssignment.of(expenseCategoryId, expenseTagId),
+          title: Title.of("Supermercado"),
+          occurredOn: TransactionDate.of(new Date("2026-08-01T12:00:00.000Z")),
+        },
+        FinancialItemType.Expense,
+      ),
     );
     await financialItemRepository.save(
-      FinancialItem.create({
-        familyId: family.id,
-        recordedBy: ownerId,
-        type: FinancialItemType.Income,
-        amount: Money.of(500000, Currency.default()),
-        category: CategoryAssignment.of(CategoryId.generate()),
-        title: Title.of("Sueldo"),
-        occurredOn: TransactionDate.of(new Date("2026-08-15T12:00:00.000Z")),
-      }),
+      FinancialItem.create(
+        {
+          familyId: family.id,
+          recordedBy: ownerId,
+          amount: Money.of(500000, Currency.default()),
+          category: CategoryAssignment.of(CategoryId.generate()),
+          title: Title.of("Sueldo"),
+          occurredOn: TransactionDate.of(new Date("2026-08-15T12:00:00.000Z")),
+        },
+        FinancialItemType.Income,
+      ),
     );
 
     familyId = family.id.toString();

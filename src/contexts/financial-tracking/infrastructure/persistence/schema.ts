@@ -20,6 +20,7 @@ export const categories = pgTable(
   {
     id: uuid("id").primaryKey(),
     familyId: uuid("family_id").notNull(),
+    type: financialItemTypeEnum("type").notNull(),
     name: varchar("name", { length: 50 }).notNull(),
     status: categoryStatusEnum("status").notNull().default("ACTIVE"),
   },

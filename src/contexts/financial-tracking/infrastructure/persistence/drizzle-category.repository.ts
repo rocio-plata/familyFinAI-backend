@@ -7,6 +7,7 @@ import { Category } from "../../domain/entities/category.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
+import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 import { TagStatus } from "../../domain/value-objects/tag-status.js";
 import { categories, tags } from "./schema.js";
 
@@ -18,6 +19,7 @@ class DrizzleCategoryRepository implements CategoryRepository {
         .values({
           id: category.id.toString(),
           familyId: category.familyId.toString(),
+          type: category.type,
           name: category.name.toString(),
           status: category.status,
         })
@@ -77,6 +79,7 @@ class DrizzleCategoryRepository implements CategoryRepository {
     return Category.reconstitute({
       id: categoryRow.id,
       familyId: categoryRow.familyId,
+      type: categoryRow.type === "EXPENSE" ? FinancialItemType.Expense : FinancialItemType.Income,
       name: categoryRow.name,
       status: categoryRow.status === "ACTIVE" ? CategoryStatus.Active : CategoryStatus.Deprecated,
       tags: tagRows.map((tagRow) => ({

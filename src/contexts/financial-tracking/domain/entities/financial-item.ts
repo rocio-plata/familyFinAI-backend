@@ -3,13 +3,14 @@ import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
+import { CannotReclassifyAcrossTypesError } from "../errors/cannot-reclassify-across-types.error.js";
 import { ItemAmountChanged } from "../events/item-amount-changed.event.js";
 import { ItemReclassified } from "../events/item-reclassified.event.js";
 import { ItemRecorded } from "../events/item-recorded.event.js";
 import { CategoryAssignment } from "../value-objects/category-assignment.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import { FinancialItemId } from "../value-objects/financial-item-id.js";
-import { FinancialItemType } from "../value-objects/financial-item-type.js";
+import type { FinancialItemType } from "../value-objects/financial-item-type.js";
 import { Money } from "../value-objects/money.js";
 import { Note } from "../value-objects/note.js";
 import { TagId } from "../value-objects/tag-id.js";
@@ -19,7 +20,6 @@ import { TransactionDate } from "../value-objects/transaction-date.js";
 interface CreateFinancialItemProps {
   familyId: FamilyId;
   recordedBy: UserId;
-  type?: FinancialItemType;
   amount: Money;
   category: CategoryAssignment;
   title: Title;
@@ -89,12 +89,12 @@ class FinancialItem {
     return this._createdAt;
   }
 
-  static create(props: CreateFinancialItemProps): FinancialItem {
+  static create(props: CreateFinancialItemProps, resolvedType: FinancialItemType): FinancialItem {
     const item = new FinancialItem(
       FinancialItemId.generate(),
       props.familyId,
       props.recordedBy,
-      props.type ?? FinancialItemType.Expense,
+      resolvedType,
       props.amount,
       props.category,
       props.title,
@@ -134,7 +134,10 @@ class FinancialItem {
     );
   }
 
-  reclassify(newCategory: CategoryAssignment): void {
+  reclassify(newCategory: CategoryAssignment, newCategoryType: FinancialItemType): void {
+    if (newCategoryType !== this._type) {
+      throw new CannotReclassifyAcrossTypesError(this._type, newCategoryType);
+    }
     const previousCategory = this._category;
     this._category = newCategory;
     this.domainEvents.push(
