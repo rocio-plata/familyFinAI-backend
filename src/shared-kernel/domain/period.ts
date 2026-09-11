@@ -35,6 +35,14 @@ class Period {
   equals(other: Period): boolean {
     return this.year === other.year && this.month === other.month;
   }
+
+  isAfter(other: Period): boolean {
+    return this.year > other.year || (this.year === other.year && this.month > other.month);
+  }
+
+  next(): Period {
+    return this.month === 12 ? Period.of(this.year + 1, 1) : Period.of(this.year, this.month + 1);
+  }
 }
 
 export { Period };
