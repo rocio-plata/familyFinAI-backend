@@ -1,4 +1,8 @@
-# Budgeting — Casos de uso
+# Budgeting — Diseño de casos de uso
+
+> Estado: diseño funcional pendiente de implementación. El directorio `src/contexts/budgeting/` existe como espacio reservado, pero actualmente no registra rutas, casos de uso, repositorios ni handlers en la composición de la aplicación.
+
+Este documento describe el comportamiento objetivo del contexto. No debe interpretarse como una lista de endpoints disponibles ni como un contrato implementado.
 
 Documentación de los casos de uso del contexto `Budgeting`, previa a su implementación. Sigue la misma convención usada en `casos-de-uso-family-access.md` y `casos-de-uso-financial-tracking.md`: **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio disparados**.
 

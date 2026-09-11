@@ -1,202 +1,91 @@
-# FamilyFin AI — Backend: estructura de carpetas (avance)
+# FamilyFin AI Backend: estructura actual
 
-Detalle de dónde va cada archivo/clase que hemos definido hasta ahora en la conversación. Los archivos marcados con `📝` son los que ya discutimos con código de ejemplo; el resto son huecos previsibles de la estructura que aún no detallamos.
+Este documento describe el estado implementado del repositorio. Los diseños funcionales de
+contextos todavía no implementados se mantienen en los documentos de casos de uso y se marcan
+como pendientes allí.
 
-```
-familyfin-backend/
-├── src/
-│   ├── contexts/
-│   │   │
-│   │   ├── family-access/
-│   │   │   ├── domain/
-│   │   │   │   ├── entities/
-│   │   │   │   │   ├── family.ts                       📝 Family (Aggregate Root) — create, inviteMember, removeMember, changeRole
-│   │   │   │   │   ├── member.ts                        📝 Member (entidad hija, sin agregado propio) — createOwner
-│   │   │   │   │   └── invitation.ts                     📝 Invitation (Aggregate Root separado) — accept, revoke
-│   │   │   │   ├── value-objects/
-│   │   │   │   │   ├── role.ts                            📝 Role — owner(), member(), canRemoveMembers()
-│   │   │   │   │   ├── family-name.ts                     📝 FamilyName — validación de longitud
-│   │   │   │   │   ├── email-address.ts                   📝 EmailAddress — validación de formato
-│   │   │   │   │   └── invitation-status.ts                  InvitationStatus (Pending | Accepted | Expired | Revoked)
-│   │   │   │   ├── events/
-│   │   │   │   │   ├── family-created.event.ts               FamilyCreated
-│   │   │   │   │   ├── member-invited.event.ts                MemberInvited
-│   │   │   │   │   ├── invitation-accepted.event.ts            InvitationAccepted
-│   │   │   │   │   ├── member-removed.event.ts                 MemberRemoved
-│   │   │   │   │   └── member-role-changed.event.ts             MemberRoleChanged
-│   │   │   │   └── repositories/
-│   │   │   │       ├── family.repository.ts                    FamilyRepository (interfaz/puerto)
-│   │   │   │       └── invitation.repository.ts                 InvitationRepository (interfaz/puerto)
-│   │   │   ├── application/
-│   │   │   │   ├── commands/
-│   │   │   │   │   ├── invite-member.command.ts
-│   │   │   │   │   └── join-family.command.ts
-│   │   │   │   ├── queries/
-│   │   │   │   │   ├── get-family-membership.query.ts    📝 GetFamilyMembershipQuery — usada por requireFamilyMembership
-│   │   │   │   │   └── get-family-members.query.ts
-│   │   │   │   └── event-handlers/
-│   │   │   │       └── on-invitation-accepted.handler.ts       agrega el Member a Family al aceptar
-│   │   │   └── infrastructure/
-│   │   │       ├── persistence/
-│   │   │       │   ├── drizzle-family.repository.ts
-│   │   │       │   └── drizzle-invitation.repository.ts
-│   │   │       └── http/
-│   │   │           └── family.routes.ts
-│   │   │
-│   │   ├── financial-tracking/                            ← core domain
-│   │   │   ├── domain/
-│   │   │   │   ├── entities/
-│   │   │   │   │   ├── financial-item.ts                📝 FinancialItem (Aggregate Root) — create, reclassify, updateAmount
-│   │   │   │   │   ├── category.ts                       📝 Category (Aggregate Root) — addTag, rename, deprecate, reactivate
-│   │   │   │   │   └── tag.ts                             📝 Tag (entidad hija) — rename, deprecate
-│   │   │   │   ├── value-objects/
-│   │   │   │   │   ├── money.ts                           📝 Money — of, add, isGreaterThan
-│   │   │   │   │   ├── category-assignment.ts             📝 CategoryAssignment — categoryId + tagId opcional
-│   │   │   │   │   ├── transaction-date.ts                📝 TransactionDate — valida fecha no futura
-│   │   │   │   │   ├── title.ts                           📝 Title — longitud/no vacío
-│   │   │   │   │   ├── note.ts                            📝 Note — opcional
-│   │   │   │   │   ├── financial-item-type.ts             📝 FinancialItemType (Expense | Income)
-│   │   │   │   │   ├── category-name.ts                       CategoryName
-│   │   │   │   │   ├── tag-name.ts                            TagName
-│   │   │   │   │   ├── category-status.ts                 📝 CategoryStatus (Active | Deprecated)
-│   │   │   │   │   └── tag-status.ts                      📝 TagStatus (Active | Deprecated)
-│   │   │   │   ├── events/
-│   │   │   │   │   ├── item-recorded.event.ts             📝 ItemRecorded
-│   │   │   │   │   ├── item-amount-changed.event.ts           ItemAmountChanged
-│   │   │   │   │   ├── item-reclassified.event.ts             ItemReclassified
-│   │   │   │   │   ├── item-deleted.event.ts                   ItemDeleted
-│   │   │   │   │   ├── category-created.event.ts               CategoryCreated
-│   │   │   │   │   ├── category-deprecated.event.ts             CategoryDeprecated
-│   │   │   │   │   ├── tag-created.event.ts                     TagCreated
-│   │   │   │   │   └── tag-deprecated.event.ts                   TagDeprecated
-│   │   │   │   ├── services/
-│   │   │   │   │   ├── category-deletion.service.ts       📝 CategoryDeletionService — delete/deprecate con chequeo de items
-│   │   │   │   │   └── tag-deletion.service.ts             📝 TagDeletionService — delete/deprecate con chequeo de items
-│   │   │   │   └── repositories/
-│   │   │   │       ├── financial-item.repository.ts       📝 FinancialItemRepository (interfaz) — countByCategory, countByTag
-│   │   │   │       └── category.repository.ts                  CategoryRepository (interfaz)
-│   │   │   ├── application/
-│   │   │   │   ├── commands/
-│   │   │   │   │   ├── create-financial-item.usecase.ts   📝 CreateFinancialItemUseCase — usado por AI Assistance
-│   │   │   │   │   ├── update-item-amount.usecase.ts
-│   │   │   │   │   ├── reclassify-item.usecase.ts
-│   │   │   │   │   └── delete-item.usecase.ts
-│   │   │   │   └── queries/
-│   │   │   │       └── category-lookup.port.ts            📝 CategoryLookupPort — usado por ScanReceiptUseCase (AI Assistance)
-│   │   │   └── infrastructure/
-│   │   │       ├── persistence/
-│   │   │       │   ├── drizzle-financial-item.repository.ts 📝 publica eventos tras persistir (pullDomainEvents)
-│   │   │       │   └── drizzle-category.repository.ts
-│   │   │       └── http/
-│   │   │           └── financial-item.routes.ts           📝 ejemplo de ruta con authenticate + requireFamilyMembership
-│   │   │
-│   │   ├── budgeting/
-│   │   │   ├── domain/
-│   │   │   │   ├── entities/
-│   │   │   │   │   └── budget.ts                              Budget — registerSpending (protege invariante de overspend)
-│   │   │   │   ├── value-objects/
-│   │   │   │   │   ├── budget-period.ts                       BudgetPeriod
-│   │   │   │   │   └── overspend.ts                           Overspend
-│   │   │   │   ├── events/
-│   │   │   │   │   ├── budget-created.event.ts                BudgetCreated
-│   │   │   │   │   ├── budget-overspent.event.ts               BudgetOverspent
-│   │   │   │   │   └── budget-period-closed.event.ts            BudgetPeriodClosed
-│   │   │   │   └── repositories/
-│   │   │   │       └── budget.repository.ts                   BudgetRepository — findActiveByCategory
-│   │   │   ├── application/
-│   │   │   │   └── event-handlers/
-│   │   │   │       └── on-item-recorded.handler.ts        📝 OnItemRecordedHandler — recalcula spent al escuchar ItemRecorded
-│   │   │   └── infrastructure/
-│   │   │       ├── persistence/
-│   │   │       │   └── drizzle-budget.repository.ts
-│   │   │       └── http/
-│   │   │           └── budget.routes.ts
-│   │   │
-│   │   ├── reporting/
-│   │   │   ├── domain/
-│   │   │   │   └── entities/
-│   │   │   │       ├── report.ts                              Report
-│   │   │   │       ├── breakdown.ts                            Breakdown
-│   │   │   │       └── trend.ts                                 Trend
-│   │   │   ├── application/
-│   │   │   │   ├── queries/                                    read side (CQRS) — consultas de reportes
-│   │   │   │   └── event-handlers/
-│   │   │   │       └── on-item-recorded.handler.ts             actualiza agregados/read models de reporting
-│   │   │   └── infrastructure/
-│   │   │       ├── persistence/                                read models materializados
-│   │   │       └── http/
-│   │   │           └── report.routes.ts
-│   │   │
-│   │   └── ai-assistance/
-│   │       ├── domain/
-│   │       │   ├── entities/
-│   │       │   │   ├── expense-suggestion.ts              📝 ExpenseSuggestion — confirm()
-│   │       │   │   ├── receipt-suggestion.ts               📝 ReceiptSuggestion — fromScan() (1 recibo = 1 gasto), confirm, discard
-│   │       │   │   └── confirmed-suggestion.ts              ConfirmedSuggestion
-│   │       │   ├── value-objects/
-│   │       │   │   ├── confidence-score.ts                 ConfidenceScore
-│   │       │   │   ├── merchant-name.ts                    MerchantName
-│   │       │   │   └── receipt-image-ref.ts                 ReceiptImageRef
-│   │       │   ├── events/
-│   │       │   │   ├── suggestion-generated.event.ts        SuggestionGenerated
-│   │       │   │   ├── suggestion-confirmed.event.ts          SuggestionConfirmed
-│   │       │   │   ├── suggestion-discarded.event.ts           SuggestionDiscarded
-│   │       │   │   └── merchant-category-learned.event.ts       MerchantCategoryLearned
-│   │       │   ├── ports/
-│   │       │   │   ├── natural-language-parser.port.ts    📝 NaturalLanguageParserPort — parse(text, context)
-│   │       │   │   ├── receipt-scanner.port.ts             📝 ReceiptScannerPort — scan(image, context) → ReceiptScanResult
-│   │       │   │   └── natural-language-query.port.ts          NaturalLanguageQueryPort (pendiente de detallar)
-│   │       │   └── repositories/
-│   │       │       ├── suggestion.repository.ts                SuggestionRepository
-│   │       │       └── merchant-category-history.repository.ts 📝 MerchantCategoryHistoryRepository — "Jumbo → Groceries"
-│   │       ├── application/
-│   │       │   ├── confirm-suggestion.usecase.ts          📝 ConfirmSuggestionUseCase — llama a CreateFinancialItemUseCase
-│   │       │   ├── scan-receipt.usecase.ts                📝 ScanReceiptUseCase — chequea historial antes de llamar a IA
-│   │       │   └── event-handlers/
-│   │       │       └── on-item-recorded.handler.ts             actualiza MerchantCategoryHistory
-│   │       └── infrastructure/
-│   │           ├── providers/
-│   │           │   ├── openai-parser.adapter.ts           📝 OpenAINaturalLanguageParser — implementa NaturalLanguageParserPort
-│   │           │   └── vision-receipt-scanner.adapter.ts   📝 VisionReceiptScannerAdapter — implementa ReceiptScannerPort
-│   │           ├── persistence/
-│   │           │   ├── drizzle-suggestion.repository.ts
-│   │           │   └── drizzle-merchant-category-history.repository.ts
-│   │           └── http/
-│   │               └── ai-assistance.routes.ts
-│   │
-│   ├── shared-kernel/
-│   │   ├── domain/
-│   │   │   └── domain-event.ts                            📝 DomainEvent (clase base abstracta) — eventId, occurredAt, eventName
-│   │   └── errors/
-│   │       └── domain-error.ts                                 clase base de errores de dominio
-│   │
-│   └── platform/
-│       ├── server.ts                                           bootstrap de Fastify, registro de rutas por contexto
-│       ├── db/
-│       │   ├── connection.ts                                   conexión Drizzle → Neon (Postgres)
-│       │   └── migrations/
-│       ├── events/
-│       │   └── in-process-event-bus.ts                    📝 InProcessEventBus — publish/subscribe, in-process para el MVP
-│       └── auth/
-│           ├── jwt.ts                                      📝 JwtService — sign/verify con jose (access token)
-│           ├── tokens.ts                                   📝 TokenService — issueTokenPair, refresh (rotación), revokeAll
-│           ├── refresh-token.ts                            📝 RefreshToken (entidad) — generate, isExpired, isRevoked, revoke
-│           ├── refresh-token.repository.ts                     RefreshTokenRepository (interfaz)
-│           ├── authenticate.middleware.ts                 📝 authenticate — solo verifica identidad (JWT)
-│           ├── require-family-membership.middleware.ts    📝 requireFamilyMembership — delega en GetFamilyMembershipQuery
-│           └── http/
-│               └── auth.routes.ts                          📝 POST /auth/refresh, POST /auth/logout
-│
-├── tests/
-│   └── contexts/                                                espejo de la estructura de contexts/ (pendiente de diseñar)
-│
-├── package.json
-└── README.md                                              📝 ya generado
+## Mapa de alto nivel
+
+```text
+src/
+├── contexts/
+│   ├── identity/             # Usuarios, registro, login y perfil
+│   ├── family-access/        # Familias, miembros, invitaciones y membresías
+│   ├── financial-tracking/   # Categorías, tags y movimientos financieros
+│   ├── budgeting/            # Reservado: aún sin implementación
+│   ├── reporting/            # Reservado: aún sin implementación
+│   └── ai-assistance/        # Reservado: aún sin implementación
+├── platform/
+│   ├── auth/                 # JWT, refresh tokens y middleware
+│   ├── db/                   # Drizzle, schema, migraciones y unit of work
+│   ├── events/               # Event bus en memoria
+│   ├── http/                 # Manejo HTTP de errores
+│   ├── app.ts                # Composición de Fastify y registro de módulos
+│   └── server.ts             # Selección de persistencia y arranque
+└── shared-kernel/            # Eventos, value objects y errores compartidos
+
+tests/
+├── contexts/                 # Tests de identidad, acceso familiar y tracking financiero
+├── platform/                 # Tests de app, auth, HTTP y workflows
+└── shared-kernel/            # Tests de primitivas compartidas
 ```
 
-## Notas sobre lo pendiente
+## Contextos implementados
 
-- **`tests/`**: aún no definimos la estrategia de testing para esta arquitectura hexagonal (unitarios sobre el dominio puro vs. de integración sobre adaptadores).
-- **`platform/db/migrations/`**: pendiente una vez definamos el modelo de datos concreto en Postgres (lo dejamos explícitamente para más adelante, priorizando primero el diseño DDD).
-- **`NaturalLanguageQueryPort`**: mencionado pero no detallado todavía (las consultas tipo *"¿cuánto gastamos en restaurantes?"*).
-- Los archivos sin `📝` son huecos previsibles de la estructura (siguen el mismo patrón que ya vimos en otros contextos) pero no los hemos discutido con código de ejemplo todavía.
+### Identity
+
+Contiene el agregado `User`, los casos de uso de registro, login, cambio de contraseña y
+actualización del nombre visible. Expone las rutas de identidad y usa repositorios in-memory o
+Drizzle según `PERSISTENCE_MODE`.
+
+### Family & Access
+
+Gestiona familias, miembros, invitaciones, roles y moneda predeterminada. Sus consultas de
+membresía y pertenencia son utilizadas por los demás contextos para autorizar operaciones.
+
+### Financial Tracking
+
+Contiene `FinancialItem`, `Category` y `Tag`, además de sus value objects, errores, repositorios,
+casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos puedan reaccionar.
+
+## Contextos reservados
+
+`Budgeting`, `Reporting` y `AI Assistance` conservan únicamente la estructura de carpetas y
+archivos `.gitkeep`. Sus documentos de diseño no representan endpoints disponibles ni código
+ejecutado por `src/platform/app.ts`.
+
+## Infraestructura y composición
+
+- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access y Financial Tracking.
+- `src/platform/server.ts` selecciona repositorios in-memory por defecto o adaptadores Drizzle
+  cuando `PERSISTENCE_MODE=postgres`.
+- PostgreSQL se ejecuta localmente con `docker-compose.yml`; las migraciones están en
+  `src/platform/db/migrations/`.
+- El event bus actual es in-process; no hay todavía un broker externo.
+- La suite usa `node:test` y dobles in-memory para los casos de uso.
+
+## Capas por contexto
+
+Los contextos implementados siguen, de forma general, esta separación:
+
+```text
+<contexto>/
+├── domain/          # Entidades, value objects, eventos, errores y puertos
+├── application/     # Commands, queries y workflows/event handlers
+└── infrastructure/  # Rutas Fastify, repositorios y adaptadores
+```
+
+La dependencia apunta hacia el dominio: la lógica de negocio no depende de Fastify, Drizzle ni
+de proveedores externos.
+
+## Estado de implementación
+
+| Área | Estado |
+|---|---|
+| Identity | Implementado con memoria y PostgreSQL |
+| Family & Access | Implementado con memoria y PostgreSQL |
+| Financial Tracking | Implementado con memoria y PostgreSQL |
+| Auth y refresh tokens | Implementado con memoria y PostgreSQL |
+| Budgeting | Diseño documentado; implementación pendiente |
+| Reporting | Estructura reservada; implementación pendiente |
+| AI Assistance | Diseño/documentación parcial; implementación pendiente |

@@ -48,29 +48,49 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
 
 3. **Variables de entorno**
 
-   > Aún no hay conexión real a Postgres ni un `.env`/`.env.example` en el repo: los adaptadores de infraestructura (repositorios Drizzle, rutas HTTP) todavía no están implementados, y toda la suite de tests usa repositorios in-memory. Esta sección se completará cuando se agreguen esos adaptadores (`DATABASE_URL`, `JWT_SECRET`, etc.).
+   El servidor permite ejecutar el backend con repositorios en memoria o con PostgreSQL. Para desarrollo local con PostgreSQL, crea un archivo `.env`:
 
-4. **Levantar el servidor en modo desarrollo**
+   ```dotenv
+   PERSISTENCE_MODE=postgres
+   DATABASE_URL=postgresql://familyfin:familyfin_dev_password@localhost:5432/familyfin
+   JWT_SECRET=dev-secret-change-me
+   JWT_ACCESS_TOKEN_EXPIRY=15m
+   LOG_LEVEL=debug
+   ```
+
+   `.env` no se versiona. También puedes omitir `PERSISTENCE_MODE` para usar `memory`; en ese modo los datos se pierden al reiniciar el proceso.
+
+4. **Inicializar PostgreSQL local** (opcional)
+   ```bash
+   npm run db:init
+   ```
+
+   Este comando levanta el contenedor definido en `docker-compose.yml`, espera a que PostgreSQL esté disponible y aplica las migraciones. Para detenerlo:
+   ```bash
+   npm run db:down
+   ```
+
+5. **Levantar el servidor en modo desarrollo**
    ```bash
    npm run dev
    ```
-   Deberías ver el log de Fastify escuchando en el puerto 3000. Por ahora el único endpoint expuesto es el de salud:
+   El servidor escucha en `http://localhost:3000`. Comprueba su estado con:
    ```bash
    curl http://localhost:3000/health
    ```
 
-5. **Correr los tests**
+6. **Correr los tests**
    ```bash
    npm test
    ```
 
-6. **Correr el lint**
+7. **Correr el lint**
    ```bash
    npm run lint          # solo reporta
    npm run lint:fix      # corrige lo que pueda automáticamente
    ```
 
-7. **Build de producción**
+8. **Build de producción**
    ```bash
    npm run build
    npm start
@@ -86,6 +106,13 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
 | `npm test` | Corre los tests unitarios (`node:test`) |
 | `npm run lint` | Revisa el código con Biome (sin modificar archivos) |
 | `npm run lint:fix` | Revisa y corrige automáticamente lo que Biome pueda resolver |
+| `npm run db:up` | Levanta PostgreSQL local con Docker |
+| `npm run db:down` | Detiene los servicios de Docker |
+| `npm run db:init` | Levanta PostgreSQL y aplica las migraciones |
+| `npm run db:reset` | Elimina el volumen local, recrea PostgreSQL y aplica las migraciones |
+| `npm run db:generate` | Genera una migración Drizzle a partir del schema |
+| `npm run db:migrate` | Aplica las migraciones pendientes |
+| `npm run db:studio` | Abre Drizzle Studio |
 
 ## d. Estructura del proyecto
 
@@ -94,14 +121,14 @@ El backend está organizado por **bounded contexts** (módulos verticales autoco
 ```
 src/
 ├── contexts/
-│   ├── family-access/        # Familias, miembros, invitaciones, roles
-│   ├── financial-tracking/   # Items financieros, categorías, tags — core domain
-│   ├── budgeting/            # Presupuestos mensuales por categoría
-│   ├── reporting/            # Agregaciones, comparaciones, drill-down
-│   └── ai-assistance/        # Interpretación de texto, recibos, insights
-│       └── domain/ports/     # Anticorruption layer hacia proveedores de IA
-├── shared-kernel/            # Entity, DomainEvent, Currency — mínimo común entre contextos
-└── platform/                 # Infraestructura transversal: server, db, auth, events
+│   ├── identity/             # Registro, login, perfil y cambio de contraseña
+│   ├── family-access/        # Familias, miembros, invitaciones y roles
+│   ├── financial-tracking/   # Items financieros, categorías y tags — core domain
+│   ├── budgeting/            # Reservado para presupuestos mensuales
+│   ├── reporting/            # Reservado para agregaciones y consultas
+│   └── ai-assistance/        # Reservado para interpretación, recibos e insights
+├── shared-kernel/            # Primitivas y errores compartidos entre contextos
+└── platform/                 # Fastify, PostgreSQL/Drizzle, auth y event bus
 
 tests/
 └── contexts/                 # Espejo de la estructura de src/contexts/, con dobles de prueba en doubles/
@@ -128,22 +155,17 @@ Cada contexto sigue internamente:
     └── providers/                     # Adaptadores externos (solo en ai-assistance)
 ```
 
-Para el detalle archivo por archivo de todo lo implementado hasta el momento, ver `docs/estructura-proyecto.md`.
+Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 
 ## e. Funcionalidades principales
 
 - **Economía familiar compartida**: múltiples usuarios de una misma familia, cada uno con su propio login, registrando y consultando la misma información financiera.
 - **Registro de gastos e ingresos**: cada movimiento (`FinancialItem`) tiene tipo, categoría obligatoria, tag opcional, título, observación, monto y fecha. Por defecto se asume gasto, para agilizar el registro.
 - **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada).
-- **Dashboard y reportes**: visión general del mes actual, gráficos por categoría, comparación entre períodos y drill-down desde el resumen general hasta el movimiento individual.
-- **Presupuestos**: definición de presupuesto mensual por categoría, con seguimiento de gasto vs. disponible.
-- **Asistencia con IA** (bajo la filosofía "la IA propone, el usuario confirma"):
-  - Registro mediante lenguaje natural (ej. *"gasté $25.000 en bencina ayer"*).
-  - Registro mediante foto de un recibo (siempre genera un único movimiento).
-  - Clasificación inteligente de categoría/tag, aprovechando el historial de la familia para evitar llamadas innecesarias a IA.
-  - Consultas en lenguaje natural sobre las propias finanzas.
-  - Insights y recomendaciones basados en los datos reales de la familia.
-- **Seguridad y aislamiento**: cada familia solo accede a sus propios datos; autenticación por JWT con refresh tokens rotables.
+- **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
+- **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
+- **Presupuestos, reportes y asistencia con IA**: contextos reservados; el diseño está documentado, pero todavía no forma parte de la API registrada por `src/platform/app.ts`.
+- **Seguridad y aislamiento**: autenticación por JWT, refresh tokens rotables y autorización mediante pertenencia a la familia.
 
 ## f. Usuario y contraseña de prueba
 
