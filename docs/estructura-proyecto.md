@@ -13,7 +13,7 @@ src/
 │   ├── family-access/        # Familias, miembros, invitaciones y membresías
 │   ├── financial-tracking/   # Categorías, tags y movimientos financieros
 │   ├── budgeting/            # Reservado: aún sin implementación
-│   ├── reporting/            # Read model inicial de agregaciones
+│   ├── reporting/            # Queries, handlers, persistencia y endpoints de Reporting
 │   └── ai-assistance/        # Reservado: aún sin implementación
 ├── platform/
 │   ├── auth/                 # JWT, refresh tokens y middleware
@@ -25,7 +25,7 @@ src/
 └── shared-kernel/            # Eventos, value objects y errores compartidos
 
 tests/
-├── contexts/                 # Tests de identidad, acceso familiar y tracking financiero
+├── contexts/                 # Tests de identidad, acceso familiar, tracking financiero y Reporting
 ├── platform/                 # Tests de app, auth, HTTP y workflows
 └── shared-kernel/            # Tests de primitivas compartidas
 ```
@@ -52,15 +52,15 @@ casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos p
 
 `Budgeting` tiene un modelo de dominio inicial (`BudgetConfiguration`, `BudgetPeriodStatus`,
 `Period` y `BudgetBalance`), pero todavía no registra casos de uso, persistencia, handlers ni
-rutas. `Reporting` tiene el read model inicial `CategoryPeriodAggregate` y el value object
-`ItemCount`; reutiliza `Period` desde `shared-kernel`, pero todavía no registra queries,
-persistencia, handlers ni rutas. `AI Assistance` conserva
+rutas. `Reporting` tiene implementados el read model `CategoryPeriodAggregate`, el value object
+`ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición,
+suscripciones al `EventBus` y rutas HTTP. `AI Assistance` conserva
 únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos de diseño no
 representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`.
 
 ## Infraestructura y composición
 
-- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access y Financial Tracking.
+- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access, Financial Tracking y Reporting.
 - `src/platform/server.ts` selecciona repositorios in-memory por defecto o adaptadores Drizzle
   cuando `PERSISTENCE_MODE=postgres`.
 - PostgreSQL se ejecuta localmente con `docker-compose.yml`; las migraciones están en

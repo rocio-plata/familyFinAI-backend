@@ -1,5 +1,8 @@
 # Plan de reajuste — El tipo (Gasto/Ingreso) pertenece a la Categoría
 
+> Estado: plan ejecutado. El modelo, casos de uso, rutas, persistencia y tests ya reflejan que
+> `Category.type` es la fuente de verdad para el tipo del movimiento.
+
 ## El error de diseño
 
 Hasta ahora, `FinancialItemType` (`Expense`/`Income`) era un campo independiente de `FinancialItem`, elegido libremente al crear el movimiento, sin ninguna relación con su `Category`. Esto permite inconsistencias reales: nada impide crear un item de tipo `Income` con la categoría `"Supermercado"`, o tener la misma categoría usada indistintamente para gastos e ingresos.
@@ -191,7 +194,7 @@ Como `type` en `categories` va a ser `NOT NULL`, y ya tienes filas existentes (s
 
 ---
 
-## Plan de implementación (orden sugerido, con TDD)
+## Plan de implementación ejecutado (referencia histórica)
 
 1. **`FinancialItemType`**: sin cambios (sigue siendo el mismo enum, solo cambia quién lo posee).
 2. **`Category`**: agregar el campo `type` al constructor y a `create()`, con test unitario confirmando que `category.type` queda fijo y que no existe forma de cambiarlo.
@@ -207,8 +210,8 @@ Como `type` en `categories` va a ser `NOT NULL`, y ya tienes filas existentes (s
 12. **Colección de Postman**: actualizar los requests `Create Category`, `Create Financial Item` y `Reclassify Financial Item` para reflejar los nuevos contratos.
 13. **Actualizar `casos-de-uso-financial-tracking.md`** con los cambios de entrada en `CreateCategory`, `CreateFinancialItem`, `ReclassifyFinancialItem` y `GetCategories`.
 
-## Pendientes que quedan abiertos tras este ajuste
+## Mejoras opcionales que quedan abiertas tras este ajuste
 
 1. **Validar que `Budgeting` solo acepte categorías de tipo `Expense`** al crear un `BudgetConfiguration` — natural ahora que el tipo es explícito, pero no forma parte de este plan.
 2. **Simplificar `CategoryPeriodAggregate`** en `Reporting` (un solo campo `total` en vez de `totalExpense`/`totalIncome`) — mejora opcional, no urgente.
-3. **Migración de datos existentes** en tu Postgres local — decidir entre `db:reset` (más simple, pierdes los datos de prueba actuales) o una migración en dos pasos que preserve las categorías ya creadas.
+3. **Migración de datos existentes** — resuelta para el flujo actual mediante reset de la base de datos; un entorno que necesite conservar datos antiguos requerirá una migración específica.

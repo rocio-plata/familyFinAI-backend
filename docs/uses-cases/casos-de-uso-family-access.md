@@ -169,12 +169,11 @@ Lista todos los miembros de una familia, para pantallas de administración dentr
 | `MemberNotFoundError` | RemoveMember, ChangeMemberRole |
 | `InvitationNotPendingError` | AcceptInvitation, RevokeInvitation |
 | `InvitationExpiredError` | AcceptInvitation |
-| `FamilyNotFoundError` | InviteMember, GetFamilyMembers *(pendiente de implementar — referenciado pero no definido aún)* |
+| `FamilyNotFoundError` | InviteMember, GetFamilyMembers |
 | `UnsupportedCurrencyError` | ChangeDefaultCurrency |
 
 ## Pendientes antes de implementar
 
-1. **`FamilyNotFoundError`** — referenciado en varios casos de uso pero su clase todavía no fue escrita.
-2. **Permisos de `InviteMember`/`RemoveMember`** — hoy usan el mismo criterio que `Owner` puro; falta decidir si se separan en permisos más granulares (ver nota que dejamos abierta en `Role`).
-3. **Notificación real de invitaciones** (email) — fuera del alcance de este contexto, pero condiciona si `MemberInvited` necesita más datos en el payload del evento.
-4. **DTOs de salida** — ninguno de estos casos de uso tiene todavía definida su forma de respuesta HTTP (por ejemplo, qué campos exactos devuelve `GetFamilyMembers`).
+1. **Permisos de `InviteMember`/`RemoveMember`** — hoy usan el mismo criterio que `Owner` puro; falta decidir si se separan en permisos más granulares (ver nota que dejamos abierta en `Role`).
+2. **Notificación real de invitaciones** (email) — fuera del alcance de este contexto, pero condiciona si `MemberInvited` necesita más datos en el payload del evento.
+3. **DTOs de salida** — revisar y ampliar los contratos HTTP si la app móvil necesita campos adicionales en consultas como `GetFamilyMembers`.

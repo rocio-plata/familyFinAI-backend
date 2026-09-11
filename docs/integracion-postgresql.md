@@ -388,17 +388,28 @@ class DrizzleFamilyRepository implements FamilyRepository {
   }
 
   private toDomain(familyRow: typeof families.$inferSelect, memberRows: (typeof members.$inferSelect)[]): Family {
-    // Family no expone un constructor público "desde persistencia" todavía — ver pendientes.
-    // Requiere un factory adicional tipo Family.reconstitute(...) que no valide invariantes de creación
-    // (ya fueron validadas cuando se creó originalmente), solo reconstruya el estado.
-    throw new Error("Pendiente: Family.reconstitute() no está implementado todavía");
+    return Family.reconstitute({
+      id: familyRow.id,
+      name: familyRow.name,
+      defaultCurrency: familyRow.defaultCurrency,
+      createdBy: familyRow.createdBy,
+      createdAt: familyRow.createdAt,
+      members: memberRows.map((memberRow) => ({
+        userId: memberRow.userId,
+        role: memberRow.role,
+        joinedAt: memberRow.joinedAt,
+        displayOrder: memberRow.displayOrder,
+      })),
+    });
   }
 }
 
 export { DrizzleFamilyRepository };
 ```
 
-**El punto más importante de esta sección**: `toDomain()` necesita una forma de reconstruir un `Family` (y en general, cualquier Aggregate Root) **sin volver a ejecutar las validaciones de creación** ni disparar eventos de dominio otra vez — leer de la base de datos no es "crear una familia nueva". Hoy ninguna de las entidades tiene ese método. Es el pendiente más importante de toda esta guía (ver sección 8).
+**Estado actual**: `Family.reconstitute()` y el patrón equivalente en las demás entidades persistidas
+ya están implementados. Estos factories reconstruyen el estado desde la base de datos sin volver a
+disparar eventos de creación.
 
 ---
 
@@ -452,9 +463,9 @@ Esto es un cambio de interfaz no trivial (`FamilyRepository`/`InvitationReposito
 
 ## 8. Pendientes antes/durante la implementación
 
-1. **`Entity.reconstitute()` en cada Aggregate Root**: ninguna entidad (`Family`, `FinancialItem`, `Category`, etc.) tiene hoy un factory para reconstruirse desde persistencia sin re-disparar validaciones de creación ni eventos de dominio. Es el bloqueante más importante — probablemente un patrón como `Family.reconstitute(props)` (sin eventos, sin invariantes de "creación", solo invariantes de forma) en cada entidad, antes de escribir cualquier `toDomain()` real.
+1. **`Entity.reconstitute()` en cada Aggregate Root**: ✅ implementado en las entidades usadas por los repositorios Drizzle, incluyendo `Family`, `FinancialItem`, `Category`, `User`, `Invitation`, `RefreshToken` y `CategoryPeriodAggregate`.
 2. **Corregir el tipo de `period` en `budget_period_statuses`**: quedó como `uuid` por error en el borrador de esta guía — debe ser `varchar(7)` como en `category_period_aggregates`.
 3. **Unit of Work**: diseñado conceptualmente en la sección 7, pero no implementado — impacta la firma de todos los repositorios (agregar parámetro `tx` opcional).
 4. **Testing de integración contra Postgres real**: hoy todos los tests usan repositorios in-memory. Falta decidir la estrategia para tests que sí toquen Postgres (¿una base de datos de test separada en Neon? ¿contenedor Docker local? — esto último requeriría Docker como nueva dependencia de desarrollo, a evaluar contra el criterio de pocas dependencias).
-5. **Índices**: ninguna tabla tiene índices definidos más allá de las primary keys — como mínimo, `familyId` en casi todas las tablas necesita índice (es el filtro más común de todas las queries), y `financial_items` se beneficiaría de un índice compuesto `(family_id, occurred_on)` para las consultas de `GetFinancialItems`/`GetDashboardSummary`.
+5. **Índices**: los índices principales ya están definidos en los schemas actuales, incluyendo índices por familia y el compuesto `(family_id, occurred_on)` en `financial_items`. Revisar índices adicionales queda como optimización futura basada en métricas reales.
 6. **Pool de conexiones en serverless**: si el backend se despliega en un entorno serverless (funciones que se crean/destruyen por request), un `Pool` de `pg` tradicional puede agotar las conexiones de Neon rápidamente — Neon ofrece un driver HTTP/WebSocket (`@neondatabase/serverless`) pensado para este escenario, a evaluar según cómo termine desplegándose el backend.

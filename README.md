@@ -254,13 +254,14 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 
 - **Family & Access** — los casos de uso de familias, miembros, invitaciones, roles, moneda y orden de familias, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL.
 - **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías y tags, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL.
+- **Reporting & Analytics** — read model `CategoryPeriodAggregate`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y cinco rutas HTTP.
 - Eventos de dominio entre contextos, event bus in-process (`platform/events`), y flujo de autenticación/autorización (JWT con rotación de refresh tokens, middlewares `authenticate`/`requireFamilyMembership`) en `platform/auth`.
 - Anticorruption layer de `AI Assistance` definida a nivel de diseño (puertos), sin adaptadores concretos todavía.
 
 **Pendiente:**
 
 - `Budgeting`: entidades y value objects iniciales (`BudgetConfiguration`, `BudgetPeriodStatus`, `Period` y `BudgetBalance`); quedan pendientes los casos de uso, repositorios, handlers y rutas.
-- `Reporting & Analytics`: entidad `CategoryPeriodAggregate` y value object `ItemCount`; reutiliza `Period` desde `shared-kernel`. Quedan pendientes los casos de uso, repositorios, handlers y rutas.
+- `Reporting & Analytics`: ✅ implementado. Incluye `CategoryPeriodAggregate`, `ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y cinco rutas HTTP.
 - `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
 - Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
 - `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.
