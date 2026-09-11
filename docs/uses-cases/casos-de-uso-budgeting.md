@@ -1,7 +1,7 @@
 # Budgeting — Diseño de casos de uso
 
-> Estado: `CreateBudgetConfiguration` y `UpdateDefaultBudgetAmount` ya están implementados y
-> probados. El resto de los casos de uso,
+> Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
+> `SetBudgetOverrideForPeriod` ya están implementados y probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -77,6 +77,13 @@ Modifica el monto por defecto de la configuración recurrente (afecta a los per�
 ---
 
 ### 3. SetBudgetOverrideForPeriod
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/commands/set-budget-override-for-period.usecase.ts`, con
+> pruebas unitarias. Guarda el override, actualiza inmediatamente el `BudgetPeriodStatus` si ya
+> existe y no crea un status mensual ausente. Pendientes: adaptador de persistencia, composición y
+> ruta HTTP; la publicación de `BudgetOverspent` todavía debe definirse cuando se implemente ese
+> evento.
 
 Sobrescribe el monto límite para un mes específico, sin afectar la configuración recurrente ni otros meses.
 
@@ -194,7 +201,7 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 | `BudgetConfigurationNotFoundError` | UpdateDefaultBudgetAmount, SetBudgetOverrideForPeriod, RemoveBudgetOverrideForPeriod, DeactivateBudgetConfiguration | ✅ definido e implementado |
 | `DuplicateBudgetConfigurationError` | CreateBudgetConfiguration | ✅ definido e implementado |
 | `CategoryNotExpenseError` | CreateBudgetConfiguration | ✅ definido e implementado |
-| `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ❌ nuevo |
+| `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ✅ definido e implementado |
 | `InvalidPeriodError` | Construcción de `Period` (mes fuera de 1–12) | ✅ shared-kernel |
 | `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudgetConfiguration | (compartidos con `Financial Tracking`) |
 | `InvalidMoneyError` | Varios | ✅ ya definido (pendiente de mover a `shared-kernel`, ver más abajo) |
