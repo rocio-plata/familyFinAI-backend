@@ -1,6 +1,7 @@
 # Budgeting — Diseño de casos de uso
 
-> Estado: `CreateBudgetConfiguration` ya está implementado y probado. El resto de los casos de uso,
+> Estado: `CreateBudgetConfiguration` y `UpdateDefaultBudgetAmount` ya están implementados y
+> probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -52,6 +53,12 @@ Define un presupuesto recurrente para una categoría, con un monto por defecto q
 ---
 
 ### 2. UpdateDefaultBudgetAmount
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/commands/update-default-budget-amount.usecase.ts`, con
+> pruebas unitarias. Valida que la configuración pertenezca a la familia, actualiza y persiste el
+> monto por defecto sin modificar los estados mensuales ya generados. Pendientes: adaptador de
+> persistencia, composición del contexto y ruta HTTP.
 
 Modifica el monto por defecto de la configuración recurrente (afecta a los períodos futuros que no tengan un override propio; no modifica retroactivamente períodos ya generados).
 
@@ -184,7 +191,7 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
-| `BudgetConfigurationNotFoundError` | UpdateDefaultBudgetAmount, SetBudgetOverrideForPeriod, RemoveBudgetOverrideForPeriod, DeactivateBudgetConfiguration | ❌ nuevo |
+| `BudgetConfigurationNotFoundError` | UpdateDefaultBudgetAmount, SetBudgetOverrideForPeriod, RemoveBudgetOverrideForPeriod, DeactivateBudgetConfiguration | ✅ definido e implementado |
 | `DuplicateBudgetConfigurationError` | CreateBudgetConfiguration | ✅ definido e implementado |
 | `CategoryNotExpenseError` | CreateBudgetConfiguration | ✅ definido e implementado |
 | `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ❌ nuevo |
