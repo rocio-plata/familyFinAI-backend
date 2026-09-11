@@ -114,12 +114,12 @@ Depende de Fase 3 porque `CreateBudgetConfiguration` valida contra categorías e
 
 Puramente de lectura; depende de que Fase 3 (y opcionalmente Fase 4) ya estén generando datos reales para que las queries tengan algo que mostrar:
 
-1. Conectar los event handlers de `Reporting` al `EventBus` (mismo patrón de verificación que en Fase 3, paso 1).
-2. `GET /families/:familyId/dashboard` (`GetDashboardSummary`).
-3. `GET /families/:familyId/reports/breakdown` (`GetCategoryBreakdown`).
-4. `GET /families/:familyId/reports/comparison` (`GetPeriodComparison`).
-5. `GET /families/:familyId/reports/trend` (`GetTrend`).
-6. `GET /families/:familyId/reports/drilldown` (`GetDrillDown`).
+1. ✅ Conectar los event handlers de `Reporting` al `EventBus`.
+2. ✅ `GET /families/:familyId/dashboard` (`GetDashboardSummary`).
+3. ✅ `GET /families/:familyId/reports/breakdown` (`GetCategoryBreakdown`).
+4. ✅ `GET /families/:familyId/reports/comparison` (`GetPeriodComparison`).
+5. ✅ `GET /families/:familyId/reports/trend` (`GetTrend`).
+6. ✅ `GET /families/:familyId/reports/drilldown` (`GetDrillDown`).
 
 ---
 
