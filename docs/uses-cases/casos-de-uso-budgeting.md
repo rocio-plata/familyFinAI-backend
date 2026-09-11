@@ -1,10 +1,15 @@
 # Budgeting — Diseño de casos de uso
 
-> Estado: modelo de dominio inicial implementado (`BudgetConfiguration`, `BudgetPeriodStatus`, `Period` y `BudgetBalance`). Los casos de uso, repositorios, handlers y rutas siguen pendientes y todavía no se registran en la composición de la aplicación.
+> Estado: `CreateBudgetConfiguration` ya está implementado y probado. El resto de los casos de uso,
+> la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
+> contexto todavía no está registrado en la composición de la aplicación.
 
 Este documento describe el comportamiento objetivo del contexto. No debe interpretarse como una lista de endpoints disponibles ni como un contrato HTTP implementado.
 
-Documentación de los casos de uso del contexto `Budgeting`, previa a su implementación. Sigue la misma convención usada en `casos-de-uso-family-access.md` y `casos-de-uso-financial-tracking.md`: **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio disparados**.
+Documentación de los casos de uso del contexto `Budgeting`. Sigue la misma convención usada en
+`casos-de-uso-family-access.md` y `casos-de-uso-financial-tracking.md`: **actor**,
+**precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
+disparados**.
 
 Recordatorio de arquitectura: `Budgeting` es un **subdominio de soporte** (no core domain). Consume eventos de `Financial Tracking` (`ItemRecorded`, `ItemAmountChanged`, `ItemReclassified`, `ItemDeleted`) para mantener el seguimiento de gasto actualizado — el usuario interactúa con comandos explícitos (crear/editar presupuesto), mientras el recálculo del gasto ocurre vía **event handlers**.
 
@@ -24,6 +29,12 @@ Los presupuestos son **mensuales**, con un modelo híbrido: se definen una vez y
 
 ### 1. CreateBudgetConfiguration
 
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/commands/create-budget-configuration.usecase.ts`, con
+> pruebas unitarias. Valida la familia, la categoría activa de tipo `Expense`, evita duplicados
+> activos, persiste mediante `BudgetConfigurationRepository` y publica `BudgetCreated`. Pendientes:
+> adaptador de persistencia, composición del contexto y ruta HTTP.
+
 Define un presupuesto recurrente para una categoría, con un monto por defecto que aplica desde ahora en adelante, todos los meses.
 
 - **Actor**: un `Member` de la familia (a definir si se restringe a `Owner` — ver pendientes).
@@ -35,7 +46,7 @@ Define un presupuesto recurrente para una categoría, con un monto por defecto q
   3. Se valida que no exista otra `BudgetConfiguration` activa para la misma `categoryId`.
   4. Se invoca `BudgetConfiguration.create(familyId, categoryId, defaultAmount)`.
   5. Se persiste vía `BudgetConfigurationRepository.save()`.
-- **Errores posibles**: `InvalidMoneyError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `DuplicateBudgetConfigurationError`.
+- **Errores posibles**: `InvalidMoneyError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `CategoryNotExpenseError`, `DuplicateBudgetConfigurationError`.
 - **Eventos disparados**: `BudgetCreated`.
 
 ---
@@ -174,7 +185,8 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
 | `BudgetConfigurationNotFoundError` | UpdateDefaultBudgetAmount, SetBudgetOverrideForPeriod, RemoveBudgetOverrideForPeriod, DeactivateBudgetConfiguration | ❌ nuevo |
-| `DuplicateBudgetConfigurationError` | CreateBudgetConfiguration | ❌ nuevo |
+| `DuplicateBudgetConfigurationError` | CreateBudgetConfiguration | ✅ definido e implementado |
+| `CategoryNotExpenseError` | CreateBudgetConfiguration | ✅ definido e implementado |
 | `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ❌ nuevo |
 | `InvalidPeriodError` | Construcción de `Period` (mes fuera de 1–12) | ✅ shared-kernel |
 | `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudgetConfiguration | (compartidos con `Financial Tracking`) |
@@ -184,5 +196,5 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 
 1. **Permisos**: mismo punto abierto que en `Financial Tracking` — ¿cualquier `Member` puede gestionar presupuestos, o solo `Owner`?
 2. **`Money` compartido**: sigue pendiente moverlo a `shared-kernel`, igual que `Currency`, para que `Budgeting` no dependa del dominio interno de `Financial Tracking`.
-3. **Consulta cruzada de categorías**: `CreateBudgetConfiguration` y `GetBudgets` necesitan un puerto tipo `CategoryLookupPort` hacia `Financial Tracking`.
-4. **`ItemAmountChanged` necesita `previousAmount`**: hay que confirmar/ajustar el payload del evento para que `OnItemAmountChangedHandler` pueda calcular la diferencia correctamente.
+3. **Consulta cruzada de categorías**: `CreateBudgetConfiguration` usa temporalmente `GetCategoriesQuery` como consulta síncrona pública de `Financial Tracking`; `GetBudgets` deberá reutilizar este contrato o extraer un puerto/adaptador dedicado si el contexto crece.
+4. **`ItemAmountChanged` necesita `previousAmount`**: ✅ resuelto en el evento compartido; Reporting ya lo utiliza y Budgeting podrá reutilizar el mismo payload.
