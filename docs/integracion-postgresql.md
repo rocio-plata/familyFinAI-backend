@@ -233,7 +233,7 @@ export const budgetPeriodStatuses = pgTable("budget_period_statuses", {
 
 **Nota sobre `overrides`**: se guarda como `jsonb` — es un mapa pequeño (excepciones puntuales, no todos los meses), así que no amerita una tabla relacional separada; Postgres permite indexar/consultar dentro de `jsonb` si más adelante hiciera falta.
 
-**Nota sobre `period`**: quedó mal tipado arriba a propósito, para señalar un pendiente real — `BudgetPeriod` (año+mes) debería mapearse como `varchar(7)` (ej. `"2026-09"`) o como dos columnas `year`/`month` (`integer`), no como `uuid`. Se corrige en la sección de pendientes.
+**Nota sobre `period`**: quedó mal tipado arriba a propósito, para señalar un pendiente real — `Period` (año+mes) debería mapearse como `varchar(7)` (ej. `"2026-09"`) o como dos columnas `year`/`month` (`integer`), no como `uuid`. Se corrige en la sección de pendientes.
 
 ### `reporting/infrastructure/persistence/schema.ts`
 

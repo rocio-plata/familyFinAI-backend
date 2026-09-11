@@ -1,6 +1,10 @@
 # Reporting & Analytics — Casos de uso
 
-Documentación de los casos de uso del contexto `Reporting`, previa a su implementación. Sigue la misma convención usada en los documentos anteriores: **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio disparados**.
+Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial ya está
+implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`), mientras que las
+queries, handlers, persistencia y rutas descritas aquí siguen pendientes. Sigue la misma
+convención usada en los documentos anteriores: **actor**, **precondiciones**, **flujo principal**,
+**flujos alternativos/errores**, **eventos de dominio disparados**.
 
 Recordatorio de arquitectura: `Reporting` es casi puramente un **consumidor** de eventos (patrón CQRS, lado de lectura) — no expone comandos que el usuario invoque directamente para modificar nada; toda su "escritura" ocurre vía event handlers que reaccionan a lo que pasa en `Financial Tracking`. Sus casos de uso visibles para el usuario son todos **queries**.
 
@@ -12,7 +16,7 @@ Para que las queries no tengan que recalcular sumas sobre todos los `FinancialIt
 interface CategoryPeriodAggregate {
   familyId: FamilyId;
   categoryId: CategoryId;
-  period: BudgetPeriod;        // reutilizado de shared-kernel, ver pendientes
+  period: Period;              // reutilizado desde shared-kernel
   totalExpense: Money;
   totalIncome: Money;
   itemCount: number;
@@ -30,7 +34,7 @@ Este read model es la base de `GetDashboardSummary`, `GetCategoryBreakdown` y `G
 Vista rápida de la situación financiera del período actual — la pantalla principal de la app, según la especificación original.
 
 - **Actor**: cualquier `Member` de la familia.
-- **Entrada**: `familyId`, `period` (opcional, default: `BudgetPeriod.current()`).
+- **Entrada**: `familyId`, `period` (opcional, default: `Period.current()`).
 - **Flujo principal**:
   1. Se consultan todos los `CategoryPeriodAggregate` de la familia para ese período.
   2. Se calcula el resumen: `totalExpenses` (suma de todos los `totalExpense`), `totalIncome` (suma de todos los `totalIncome`), `balance` (`totalIncome - totalExpenses`).
@@ -75,7 +79,7 @@ Evolución de ingresos y gastos a lo largo de varios períodos consecutivos — 
 - **Actor**: cualquier `Member` de la familia.
 - **Entrada**: `familyId`, `fromPeriod`, `toPeriod` (rango de meses), `categoryId` (opcional — si se omite, evolución general).
 - **Flujo principal**:
-  1. Se generan todos los `BudgetPeriod` dentro del rango solicitado.
+  1. Se generan todos los `Period` dentro del rango solicitado.
   2. Por cada uno, se busca el `CategoryPeriodAggregate` correspondiente (o se asume cero si no existe).
   3. Se devuelve la serie de datos ordenada cronológicamente, lista para graficar.
 - **Errores posibles**: `InvalidPeriodRangeError` (si `fromPeriod` es posterior a `toPeriod`).
@@ -105,7 +109,7 @@ Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAg
 
 - **Se dispara con**: `ItemRecorded`.
 - **Flujo principal**:
-  1. Se calcula `period = BudgetPeriod.fromDate(event.occurredOn)`.
+  1. Se calcula `period = Period.fromDate(event.occurredOn)`.
   2. Se busca (o se crea) el `CategoryPeriodAggregate` para `familyId` + `categoryId` + `period`.
   3. Según `event.type`, se suma el monto a `totalExpense` o `totalIncome`, y se incrementa `itemCount`.
   4. Se persiste.
@@ -146,8 +150,7 @@ Nótese que `Reporting` es el contexto con **menos errores propios** de todos lo
 
 ## Pendientes antes de implementar
 
-1. **`BudgetPeriod` como Value Object compartido**: igual que `Money`/`Currency`, `BudgetPeriod` se definió dentro del contexto `Budgeting`, pero `Reporting` lo necesita igual — candidato a moverse a `shared-kernel`.
-2. **`ItemAmountChanged` necesita `previousAmount`**: mismo pendiente ya anotado en `Budgeting` — afecta a ambos contextos por igual, buena razón para resolverlo pronto.
-3. **Puerto hacia `Financial Tracking`**: `GetCategoryBreakdown`, `GetDrillDown`, etc. necesitan resolver nombres de categorías/tags y, en el último nivel del drill-down, delegar en `GetFinancialItems`. Se resuelve con un puerto de solo lectura hacia `Financial Tracking`, similar al `CategoryLookupPort` que ya usa `AI Assistance` y que quedó pendiente para `Budgeting`.
-4. **Estrategia de reconstrucción del read model**: si `CategoryPeriodAggregate` se corrompe o se necesita reconstruir desde cero (ej. después de un bug), no hay un mecanismo definido para "recalcular todo desde el histórico de `FinancialItem`". Vale la pena dejarlo previsto como una operación administrativa futura, aunque no sea parte del MVP.
-5. **Insights y recomendaciones** (`AI Assistance`, sección 10.5 de la especificación original): `GetPeriodComparison` provee el cálculo numérico que alimentaría un insight como *"tus gastos en restaurantes subieron 35%"*, pero la generación del insight en sí (decidir qué comparaciones son "interesantes" de mostrar, redactarlas en lenguaje natural) vive en `AI Assistance`, no aquí — falta definir el contrato entre ambos contextos para ese flujo.
+1. **`ItemAmountChanged` necesita `previousAmount`**: mismo pendiente ya anotado en `Budgeting` — afecta a ambos contextos por igual, buena razón para resolverlo pronto.
+2. **Puerto hacia `Financial Tracking`**: `GetCategoryBreakdown`, `GetDrillDown`, etc. necesitan resolver nombres de categorías/tags y, en el último nivel del drill-down, delegar en `GetFinancialItems`. Se resuelve con un puerto de solo lectura hacia `Financial Tracking`, similar al `CategoryLookupPort` que ya usa `AI Assistance` y que quedó pendiente para `Budgeting`.
+3. **Estrategia de reconstrucción del read model**: si `CategoryPeriodAggregate` se corrompe o se necesita reconstruir desde cero (ej. después de un bug), no hay un mecanismo definido para "recalcular todo desde el histórico de `FinancialItem`". Vale la pena dejarlo previsto como una operación administrativa futura, aunque no sea parte del MVP.
+4. **Insights y recomendaciones** (`AI Assistance`, sección 10.5 de la especificación original): `GetPeriodComparison` provee el cálculo numérico que alimentaría un insight como *"tus gastos en restaurantes subieron 35%"*, pero la generación del insight en sí (decidir qué comparaciones son "interesantes" de mostrar, redactarlas en lenguaje natural) vive en `AI Assistance`, no aquí — falta definir el contrato entre ambos contextos para ese flujo.

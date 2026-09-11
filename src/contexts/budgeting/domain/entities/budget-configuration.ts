@@ -1,11 +1,12 @@
 // src/contexts/budgeting/domain/entities/budget-configuration.ts
+
+import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { InvalidMoneyError } from "../../../financial-tracking/domain/errors/invalid-money.error.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import type { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { NoOverrideForPeriodError } from "../errors/no-override-for-period.error.js";
 import { BudgetConfigurationId } from "../value-objects/budget-configuration-id.js";
-import type { BudgetPeriod } from "../value-objects/budget-period.js";
 
 class BudgetConfiguration {
   private constructor(
@@ -52,7 +53,7 @@ class BudgetConfiguration {
     );
   }
 
-  resolveAmountFor(period: BudgetPeriod): Money {
+  resolveAmountFor(period: Period): Money {
     return this._overrides.get(period.toString()) ?? this._defaultAmount;
   }
 
@@ -61,12 +62,12 @@ class BudgetConfiguration {
     this._defaultAmount = newAmount;
   }
 
-  setOverrideForPeriod(period: BudgetPeriod, amount: Money): void {
+  setOverrideForPeriod(period: Period, amount: Money): void {
     this.ensureSameCurrency(amount);
     this._overrides.set(period.toString(), amount);
   }
 
-  removeOverrideForPeriod(period: BudgetPeriod): void {
+  removeOverrideForPeriod(period: Period): void {
     if (!this._overrides.delete(period.toString())) {
       throw new NoOverrideForPeriodError(period.toString());
     }

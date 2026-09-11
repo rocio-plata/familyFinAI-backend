@@ -136,7 +136,7 @@ class DisplayName {
 }
 ```
 
-`UserId` y `EmailAddress` se **reutilizan** de `family-access` — candidatas a moverse a `shared-kernel` (ver pendientes), mismo caso que `Money`/`Currency`/`BudgetPeriod`.
+`UserId` y `EmailAddress` se **reutilizan** de `family-access` — candidatas a moverse a `shared-kernel` (ver pendientes), mismo caso que `Money`/`Currency`/`Period`.
 
 ---
 
@@ -379,7 +379,7 @@ Como la familia personal es la **primera y única** en ese momento, no necesita 
 
 ## Pendientes antes de implementar
 
-1. **`EmailAddress` compartido**: mover a `shared-kernel`, igual que `Money`/`Currency`/`BudgetPeriod`.
+1. **`EmailAddress` compartido**: mover a `shared-kernel`, igual que `Money`/`Currency`/`Period`.
 2. **Recuperación de contraseña**: fuera de alcance, depende de envío de emails.
 3. **`findAllByMemberUserId` en `FamilyRepository`**: nuevo método en la interfaz del puerto — agregar tanto a `InMemoryFamilyRepository` como a `DrizzleFamilyRepository` cuando se implemente.
 4. **Unit of Work para `ReorderMyFamilies`**: mismo pendiente que `AcceptInvitationUseCase` — escritura multi-agregado sin transacción real todavía (repositorios in-memory no lo necesitan, Postgres sí).

@@ -125,7 +125,7 @@ src/
 │   ├── family-access/        # Familias, miembros, invitaciones y roles
 │   ├── financial-tracking/   # Items financieros, categorías y tags — core domain
 │   ├── budgeting/            # Dominio inicial de presupuestos mensuales
-│   ├── reporting/            # Reservado para agregaciones y consultas
+│   ├── reporting/            # Read model inicial para agregaciones y consultas
 │   └── ai-assistance/        # Reservado para interpretación, recibos e insights
 ├── shared-kernel/            # Primitivas y errores compartidos entre contextos
 └── platform/                 # Fastify, PostgreSQL/Drizzle, auth y event bus
@@ -165,7 +165,8 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
 - **Presupuestos**: entidades y value objects iniciales; los casos de uso, persistencia y rutas todavía no forman parte de la API registrada por `src/platform/app.ts`.
-- **Reportes y asistencia con IA**: contextos reservados; el diseño está documentado, pero todavía no forma parte de la API.
+- **Reportes**: read model inicial para agregaciones por categoría y período; las queries, handlers y rutas todavía no forman parte de la API.
+- **Asistencia con IA**: contexto reservado; el diseño está documentado, pero todavía no forma parte de la API.
 - **Seguridad y aislamiento**: autenticación por JWT, refresh tokens rotables y autorización mediante pertenencia a la familia.
 
 ## f. Usuario y contraseña de prueba
@@ -258,8 +259,9 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 
 **Pendiente:**
 
-- `Budgeting`: entidades y value objects iniciales (`BudgetConfiguration`, `BudgetPeriodStatus`, `BudgetPeriod` y `BudgetBalance`); quedan pendientes los casos de uso, repositorios, handlers y rutas.
-- `Reporting & Analytics` y `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
+- `Budgeting`: entidades y value objects iniciales (`BudgetConfiguration`, `BudgetPeriodStatus`, `Period` y `BudgetBalance`); quedan pendientes los casos de uso, repositorios, handlers y rutas.
+- `Reporting & Analytics`: entidad `CategoryPeriodAggregate` y value object `ItemCount`; reutiliza `Period` desde `shared-kernel`. Quedan pendientes los casos de uso, repositorios, handlers y rutas.
+- `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
 - Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
 - `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.
 - Resolución del `Currency` por defecto de la familia dentro de `CreateFinancialItem` (hoy recibe el monto ya construido con su moneda).
