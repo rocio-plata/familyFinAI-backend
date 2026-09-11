@@ -3,7 +3,8 @@
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
-ya cuentan con pruebas unitarias. `OnItemRecordedHandler` también está implementado y probado.
+ya cuentan con pruebas unitarias. `OnItemRecordedHandler` y `OnItemAmountChangedHandler` también
+están implementados y probados.
 Siguen pendientes los demás handlers, la persistencia, las rutas y el resto de las queries
 descritas aquí. Sigue la misma convención usada en los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
@@ -157,9 +158,14 @@ Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAg
 
 ### 7. OnItemAmountChangedHandler
 
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/event-handlers/on-item-amount-changed.event-handler.ts`,
+> con pruebas unitarias. El evento `ItemAmountChanged` incluye categoría, tipo y fecha; el handler
+> aplica la diferencia entre `previousAmount` y `newAmount` sin modificar `itemCount`.
+> Pendientes: adaptador de persistencia y suscripción en la composición de la aplicación.
+
 - **Se dispara con**: `ItemAmountChanged`.
-- **Precondición de diseño**: necesita `previousAmount` en el payload del evento para ajustar la diferencia. El evento ya incluye ese dato, pero el handler sigue pendiente.
-- **Flujo principal**: ajusta `totalExpense`/`totalIncome` del `CategoryPeriodAggregate` correspondiente con la diferencia entre el monto anterior y el nuevo.
+- **Flujo principal**: ajusta `totalExpense`/`totalIncome` del `CategoryPeriodAggregate` correspondiente con la diferencia entre el monto anterior y el nuevo, conservando `itemCount`.
 
 ---
 
@@ -188,7 +194,6 @@ Nótese que `Reporting` es el contexto con **menos errores propios** de todos lo
 
 ## Pendientes antes de implementar
 
-1. **`ItemAmountChanged` necesita `previousAmount`**: mismo pendiente ya anotado en `Budgeting` — afecta a ambos contextos por igual, buena razón para resolverlo pronto.
-2. **Puerto hacia `Financial Tracking`**: `GetCategoryBreakdown`, `GetDrillDown`, etc. necesitan resolver nombres de categorías/tags y, en el último nivel del drill-down, delegar en `GetFinancialItems`. Se resuelve con un puerto de solo lectura hacia `Financial Tracking`, similar al `CategoryLookupPort` que ya usa `AI Assistance` y que quedó pendiente para `Budgeting`.
-3. **Estrategia de reconstrucción del read model**: si `CategoryPeriodAggregate` se corrompe o se necesita reconstruir desde cero (ej. después de un bug), no hay un mecanismo definido para "recalcular todo desde el histórico de `FinancialItem`". Vale la pena dejarlo previsto como una operación administrativa futura, aunque no sea parte del MVP.
-4. **Insights y recomendaciones** (`AI Assistance`, sección 10.5 de la especificación original): `GetPeriodComparison` provee el cálculo numérico que alimentaría un insight como *"tus gastos en restaurantes subieron 35%"*, pero la generación del insight en sí (decidir qué comparaciones son "interesantes" de mostrar, redactarlas en lenguaje natural) vive en `AI Assistance`, no aquí — falta definir el contrato entre ambos contextos para ese flujo.
+1. **Puerto hacia `Financial Tracking`**: `GetCategoryBreakdown`, `GetDrillDown`, etc. necesitan resolver nombres de categorías/tags y, en el último nivel del drill-down, delegar en `GetFinancialItems`. Se resuelve con un puerto de solo lectura hacia `Financial Tracking`, similar al `CategoryLookupPort` que ya usa `AI Assistance` y que quedó pendiente para `Budgeting`.
+2. **Estrategia de reconstrucción del read model**: si `CategoryPeriodAggregate` se corrompe o se necesita reconstruir desde cero (ej. después de un bug), no hay un mecanismo definido para "recalcular todo desde el histórico de `FinancialItem`". Vale la pena dejarlo previsto como una operación administrativa futura, aunque no sea parte del MVP.
+3. **Insights y recomendaciones** (`AI Assistance`, sección 10.5 de la especificación original): `GetPeriodComparison` provee el cálculo numérico que alimentaría un insight como *"tus gastos en restaurantes subieron 35%"*, pero la generación del insight en sí (decidir qué comparaciones son "interesantes" de mostrar, redactarlas en lenguaje natural) vive en `AI Assistance`, no aquí — falta definir el contrato entre ambos contextos para ese flujo.
