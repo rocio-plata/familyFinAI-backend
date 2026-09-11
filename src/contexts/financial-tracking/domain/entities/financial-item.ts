@@ -161,6 +161,9 @@ class FinancialItem {
       new ItemAmountChanged(
         this.id,
         this.familyId.toString(),
+        this.categoryAssignment.categoryId,
+        this.type,
+        this.occurredOn.value,
         previousAmount,
         newAmount.amount,
         newAmount.currency.toString(),

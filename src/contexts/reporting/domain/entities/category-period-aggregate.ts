@@ -68,6 +68,12 @@ class CategoryPeriodAggregate {
     this._itemCount = this._itemCount.increment();
   }
 
+  changeItemAmount(type: FinancialItemType, previousAmount: Money, newAmount: Money): void {
+    this.ensureSameCurrency(previousAmount);
+    this.ensureSameCurrency(newAmount);
+    this.updateTotal(type, newAmount.amount - previousAmount.amount);
+  }
+
   removeItem(type: FinancialItemType, amount: Money): void {
     this.ensureSameCurrency(amount);
     if (this._itemCount.value === 0) {
