@@ -3,8 +3,9 @@
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
-ya cuentan con pruebas unitarias. Siguen pendientes los handlers, la persistencia, las rutas y el
-resto de las queries descritas aquí. Sigue la misma convención usada en los documentos anteriores:
+ya cuentan con pruebas unitarias. `OnItemRecordedHandler` también está implementado y probado.
+Siguen pendientes los demás handlers, la persistencia, las rutas y el resto de las queries
+descritas aquí. Sigue la misma convención usada en los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
 dominio disparados**.
 
@@ -138,6 +139,12 @@ Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAg
 
 ### 6. OnItemRecordedHandler
 
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/event-handlers/on-item-recorded.event-handler.ts`, con
+> pruebas unitarias. El evento `ItemRecorded` transporta `occurredOn`, `currency` y el
+> `FinancialItemType`; el handler crea o actualiza el agregado de familia, categoría y período.
+> Pendientes: adaptador de persistencia y suscripción en la composición de la aplicación.
+
 - **Se dispara con**: `ItemRecorded`.
 - **Flujo principal**:
   1. Se calcula `period = Period.fromDate(event.occurredOn)`.
@@ -151,7 +158,7 @@ Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAg
 ### 7. OnItemAmountChangedHandler
 
 - **Se dispara con**: `ItemAmountChanged`.
-- **Precondición de diseño**: mismo pendiente que en `Budgeting` — necesita `previousAmount` en el payload del evento para ajustar la diferencia.
+- **Precondición de diseño**: necesita `previousAmount` en el payload del evento para ajustar la diferencia. El evento ya incluye ese dato, pero el handler sigue pendiente.
 - **Flujo principal**: ajusta `totalExpense`/`totalIncome` del `CategoryPeriodAggregate` correspondiente con la diferencia entre el monto anterior y el nuevo.
 
 ---
