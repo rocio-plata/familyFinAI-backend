@@ -50,9 +50,11 @@ casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos p
 
 ## Contextos reservados
 
-`Budgeting`, `Reporting` y `AI Assistance` conservan únicamente la estructura de carpetas y
-archivos `.gitkeep`. Sus documentos de diseño no representan endpoints disponibles ni código
-ejecutado por `src/platform/app.ts`.
+`Budgeting` tiene un modelo de dominio inicial (`BudgetConfiguration`, `BudgetPeriodStatus`,
+`BudgetPeriod` y `BudgetBalance`), pero todavía no registra casos de uso, persistencia, handlers ni
+rutas. `Reporting` y `AI Assistance` conservan únicamente la estructura de carpetas y archivos
+`.gitkeep`. Sus documentos de diseño no representan endpoints disponibles ni código ejecutado por
+`src/platform/app.ts`.
 
 ## Infraestructura y composición
 
@@ -86,6 +88,6 @@ de proveedores externos.
 | Family & Access | Implementado con memoria y PostgreSQL |
 | Financial Tracking | Implementado con memoria y PostgreSQL |
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
-| Budgeting | Diseño documentado; implementación pendiente |
+| Budgeting | Entidades y value objects iniciales; aplicación e infraestructura pendientes |
 | Reporting | Estructura reservada; implementación pendiente |
 | AI Assistance | Diseño/documentación parcial; implementación pendiente |
