@@ -248,18 +248,17 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 
 ## Estado actual
 
-**Implementado (dominio + aplicación, con TDD y dobles in-memory):**
+**Implementado (dominio, aplicación e infraestructura, con TDD y dobles in-memory):**
 
-- **Family & Access** — los 9 casos de uso documentados en `docs/uses-cases/family-access.md`: `CreateFamily`, `InviteMember`, `AcceptInvitation`, `RevokeInvitation`, `RemoveMember`, `ChangeMemberRole`, `ChangeDefaultCurrency`, `GetFamilyMembership`, `GetFamilyMembers`.
-- **Financial Tracking** (core domain) — los 16 casos de uso documentados en `docs/uses-cases/casos-de-uso-financial-tracking.md`: `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem`, `DeleteFinancialItem`, `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `AddTagToCategory`, `ReorderCategoryTags`, `RenameTag`, `DeleteTag`, `DeprecateTag`, `GetFinancialItems`, `GetCategories`.
+- **Family & Access** — los casos de uso de familias, miembros, invitaciones, roles, moneda y orden de familias, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL.
+- **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías y tags, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL.
 - Eventos de dominio entre contextos, event bus in-process (`platform/events`), y flujo de autenticación/autorización (JWT con rotación de refresh tokens, middlewares `authenticate`/`requireFamilyMembership`) en `platform/auth`.
 - Anticorruption layer de `AI Assistance` definida a nivel de diseño (puertos), sin adaptadores concretos todavía.
 
 **Pendiente:**
 
 - `Budgeting`, `Reporting & Analytics` y `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
-- Adaptadores de infraestructura para `Family & Access` y `Financial Tracking`: repositorios Drizzle sobre Postgres (hoy solo hay repositorios in-memory usados en tests) y rutas HTTP Fastify (el servidor solo expone `/health`).
-- Variables de entorno y conexión real a Neon/Postgres (`DATABASE_URL`, `JWT_SECRET`, etc.) — aún no están cableadas en el código.
+- Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
 - `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.
 - Resolución del `Currency` por defecto de la familia dentro de `CreateFinancialItem` (hoy recibe el monto ya construido con su moneda).
 - Roles/permisos granulares para los casos de uso de `FinancialItem` (`CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem`, `DeleteFinancialItem` no validan rol todavía) y estrategia de despliegue.
