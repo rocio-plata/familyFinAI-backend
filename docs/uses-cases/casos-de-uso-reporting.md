@@ -1,8 +1,9 @@
 # Reporting & Analytics — Casos de uso
 
-Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial ya está
-implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`), mientras que las
-queries, handlers, persistencia y rutas descritas aquí siguen pendientes. Sigue la misma
+Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
+implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
+`GetDashboardSummary` y `GetCategoryBreakdown` ya cuentan con pruebas unitarias. Siguen pendientes
+los handlers, la persistencia, las rutas y el resto de las queries descritas aquí. Sigue la misma
 convención usada en los documentos anteriores: **actor**, **precondiciones**, **flujo principal**,
 **flujos alternativos/errores**, **eventos de dominio disparados**.
 
@@ -31,6 +32,10 @@ Este read model es la base de `GetDashboardSummary`, `GetCategoryBreakdown` y `G
 
 ### 1. GetDashboardSummary
 
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/queries/get-dashboard-summary.query.ts`, con pruebas
+> unitarias. Pendientes: adaptador de persistencia, registro en la composición y ruta HTTP.
+
 Vista rápida de la situación financiera del período actual — la pantalla principal de la app, según la especificación original.
 
 - **Actor**: cualquier `Member` de la familia.
@@ -45,6 +50,12 @@ Vista rápida de la situación financiera del período actual — la pantalla pr
 ---
 
 ### 2. GetCategoryBreakdown
+
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/queries/get-category-breakdown.query.ts`, con pruebas
+> unitarias. Resuelve los nombres mediante `GetCategoriesQuery`, incluyendo categorías deprecadas
+> para conservar el histórico. Pendientes: adaptador de persistencia, registro en la composición y
+> ruta HTTP.
 
 Distribución de gastos por categoría para un período — alimenta los gráficos de categorías del dashboard y de la sección de Reports.
 

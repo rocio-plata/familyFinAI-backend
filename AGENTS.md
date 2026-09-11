@@ -212,6 +212,14 @@ Toda nueva funcionalidad se implementa con **Test-Driven Development**:
 
 No se acepta código de producción nuevo sin un test que lo respalde.
 
+### Documentación de implementación
+
+- Cada implementación o cambio de un caso de uso debe actualizar, dentro de la misma rama y
+  cambio, la documentación funcional correspondiente en `docs/uses-cases/` para reflejar el
+  estado real de implementación, sus contratos y sus pendientes.
+- No declarar un caso de uso como pendiente cuando ya esté implementado, ni como implementado
+  antes de que su código y pruebas estén en verde.
+
 ### Convenciones en los tests
 
 - Nombres de tests en **español**, descriptivos del comportamiento: `test("rechaza un nombre de familia vacío", ...)`.
