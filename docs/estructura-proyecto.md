@@ -12,7 +12,7 @@ src/
 │   ├── identity/             # Usuarios, registro, login y perfil
 │   ├── family-access/        # Familias, miembros, invitaciones y membresías
 │   ├── financial-tracking/   # Categorías, tags y movimientos financieros
-│   ├── budgeting/            # Reservado: aún sin implementación
+│   ├── budgeting/            # Casos de uso iniciales de presupuestos mensuales
 │   ├── reporting/            # Queries, handlers, persistencia y endpoints de Reporting
 │   └── ai-assistance/        # Reservado: aún sin implementación
 ├── platform/
