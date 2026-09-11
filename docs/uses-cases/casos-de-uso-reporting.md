@@ -3,8 +3,8 @@
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
-ya cuentan con pruebas unitarias. `OnItemRecordedHandler` y `OnItemAmountChangedHandler` también
-están implementados y probados.
+ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedHandler` y
+`OnItemReclassifiedHandler` también están implementados y probados.
 Siguen pendientes los demás handlers, la persistencia, las rutas y el resto de las queries
 descritas aquí. Sigue la misma convención usada en los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
@@ -170,6 +170,12 @@ Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAg
 ---
 
 ### 8. OnItemReclassifiedHandler
+
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/event-handlers/on-item-reclassified.event-handler.ts`, con
+> pruebas unitarias. El evento `ItemReclassified` incluye tipo, fecha, importe y moneda; el handler
+> resta el movimiento del agregado anterior y lo registra en el agregado nuevo, creándolo si hace
+> falta. Pendientes: adaptador de persistencia y suscripción en la composición de la aplicación.
 
 - **Se dispara con**: `ItemReclassified`.
 - **Flujo principal**: resta el monto del `CategoryPeriodAggregate` de la categoría anterior (y decrementa `itemCount`), suma al de la nueva categoría (creándolo si es necesario, e incrementa su `itemCount`).

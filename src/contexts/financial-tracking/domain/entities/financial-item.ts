@@ -150,6 +150,10 @@ class FinancialItem {
         newCategory.categoryId,
         previousCategory.tagId,
         newCategory.tagId,
+        this.type,
+        this.occurredOn.value,
+        this.amount.amount,
+        this.amount.currency.toString(),
       ),
     );
   }
