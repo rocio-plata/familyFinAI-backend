@@ -2,11 +2,11 @@
 
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
-`GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison` y `GetTrend` ya cuentan con
-pruebas unitarias. Siguen pendientes los handlers, la persistencia, las rutas y el resto de las
-queries descritas aquí. Sigue la misma convención usada en los documentos anteriores: **actor**,
-**precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
-disparados**.
+`GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
+ya cuentan con pruebas unitarias. Siguen pendientes los handlers, la persistencia, las rutas y el
+resto de las queries descritas aquí. Sigue la misma convención usada en los documentos anteriores:
+**actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
+dominio disparados**.
 
 Recordatorio de arquitectura: `Reporting` es casi puramente un **consumidor** de eventos (patrón CQRS, lado de lectura) — no expone comandos que el usuario invoque directamente para modificar nada; toda su "escritura" ocurre vía event handlers que reaccionan a lo que pasa en `Financial Tracking`. Sus casos de uso visibles para el usuario son todos **queries**.
 
@@ -111,6 +111,13 @@ Evolución de ingresos y gastos a lo largo de varios períodos consecutivos — 
 ---
 
 ### 5. GetDrillDown
+
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/queries/get-drill-down.query.ts`, con pruebas unitarias.
+> Devuelve un resultado discriminado por nivel: `category` delega en `GetCategoryBreakdownQuery`,
+> `tag` agrupa los gastos obtenidos mediante `GetFinancialItemsQuery`, e `item` devuelve los DTOs
+> individuales filtrados por categoría y tag. Pendientes: adaptador de persistencia, registro en
+> la composición y ruta HTTP.
 
 Navega desde una vista general hacia los movimientos individuales que la componen — la característica de drill-down mencionada en la especificación original (`Gastos → Comestibles → Supermarket → Items individuales`).
 
