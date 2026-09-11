@@ -1,6 +1,6 @@
 # Budgeting — Diseño de casos de uso
 
-> Estado: modelo de dominio inicial implementado (`BudgetConfiguration`, `BudgetPeriodStatus`, `BudgetPeriod` y `BudgetBalance`). Los casos de uso, repositorios, handlers y rutas siguen pendientes y todavía no se registran en la composición de la aplicación.
+> Estado: modelo de dominio inicial implementado (`BudgetConfiguration`, `BudgetPeriodStatus`, `Period` y `BudgetBalance`). Los casos de uso, repositorios, handlers y rutas siguen pendientes y todavía no se registran en la composición de la aplicación.
 
 Este documento describe el comportamiento objetivo del contexto. No debe interpretarse como una lista de endpoints disponibles ni como un contrato HTTP implementado.
 
@@ -14,7 +14,7 @@ Los presupuestos son **mensuales**, con un modelo híbrido: se definen una vez y
 
 - **`BudgetConfiguration`** (Aggregate Root) — la configuración recurrente por familia + categoría: un monto por defecto, y un mapa de excepciones puntuales por período (`overrides`). Cambia con poca frecuencia (el usuario la edita a propósito).
 - **`BudgetPeriodStatus`** (Aggregate Root separado) — el seguimiento real de gasto de una familia + categoría + mes específico, con el límite resuelto (`limitAmount`, snapshot al momento de crear el registro del mes) y el `spent` acumulado. Cambia con cada movimiento financiero registrado en esa categoría/mes.
-- **`BudgetPeriod`** (Value Object) — año + mes (ej. `"2026-09"`), con `BudgetPeriod.current()` y `BudgetPeriod.fromDate(date)` como factories.
+- **`Period`** (Value Object compartido) — año + mes (ej. `"2026-09"`), con `Period.current()` y `Period.fromDate(date)` como factories.
 
 `BudgetPeriodStatus.limitAmount` es un snapshot deliberado: si se cambia el `defaultAmount` de la configuración, los períodos ya generados no cambian su límite retroactivamente — solo los períodos nuevos (o un recálculo explícito, ver pendientes) toman el valor actualizado.
 
@@ -112,7 +112,7 @@ Desactiva el presupuesto recurrente — deja de generar seguimiento para meses f
 Lista los presupuestos de la familia para un período dado, con su estado de gasto — corresponde a la tabla `Category / Budget / Spent / Remaining` de la especificación original.
 
 - **Actor**: cualquier `Member` de la familia.
-- **Entrada**: `familyId`, `period` (opcional, default: `BudgetPeriod.current()`).
+- **Entrada**: `familyId`, `period` (opcional, default: `Period.current()`).
 - **Flujo principal**:
   1. Se buscan todas las `BudgetConfiguration` activas de la familia.
   2. Por cada una, se resuelve el monto aplicable al período (`resolveAmountFor(period)` — override si existe, si no el `defaultAmount`).
@@ -134,7 +134,7 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 - **Flujo principal**:
   1. Si `event.type !== Expense`, se ignora.
   2. Se busca una `BudgetConfiguration` activa para `familyId` + `categoryId` del evento; si no existe, no se hace nada (no todas las categorías tienen presupuesto).
-  3. Se calcula `period = BudgetPeriod.fromDate(event.occurredOn)`.
+  3. Se calcula `period = Period.fromDate(event.occurredOn)`.
   4. Se busca (o se crea, si es el primer gasto del mes en esa categoría) el `BudgetPeriodStatus` para `familyId` + `categoryId` + `period`, usando `budgetConfiguration.resolveAmountFor(period)` como `limitAmount` inicial.
   5. Se invoca `budgetPeriodStatus.registerSpending(event.amount)`.
   6. Se persiste.
@@ -176,7 +176,7 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 | `BudgetConfigurationNotFoundError` | UpdateDefaultBudgetAmount, SetBudgetOverrideForPeriod, RemoveBudgetOverrideForPeriod, DeactivateBudgetConfiguration | ❌ nuevo |
 | `DuplicateBudgetConfigurationError` | CreateBudgetConfiguration | ❌ nuevo |
 | `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ❌ nuevo |
-| `InvalidBudgetPeriodError` | Construcción de `BudgetPeriod` (mes fuera de 1–12) | ❌ nuevo |
+| `InvalidPeriodError` | Construcción de `Period` (mes fuera de 1–12) | ✅ shared-kernel |
 | `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudgetConfiguration | (compartidos con `Financial Tracking`) |
 | `InvalidMoneyError` | Varios | ✅ ya definido (pendiente de mover a `shared-kernel`, ver más abajo) |
 

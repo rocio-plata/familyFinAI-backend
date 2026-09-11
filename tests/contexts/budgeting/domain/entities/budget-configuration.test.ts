@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { BudgetConfiguration } from "../../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
-import { BudgetPeriod } from "../../../../../src/contexts/budgeting/domain/value-objects/budget-period.js";
 import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
+import { Period } from "../../../../../src/shared-kernel/domain/period.js";
 
 describe("BudgetConfiguration", () => {
   const familyId = FamilyId.generate();
@@ -17,12 +17,12 @@ describe("BudgetConfiguration", () => {
 
     assert.ok(configuration.isActive);
     assert.equal(configuration.defaultAmount.amount, 100_000);
-    assert.equal(configuration.resolveAmountFor(BudgetPeriod.of(2026, 9)).amount, 100_000);
+    assert.equal(configuration.resolveAmountFor(Period.of(2026, 9)).amount, 100_000);
   });
 
   it("resuelve un override sin modificar el monto por defecto", () => {
     const configuration = BudgetConfiguration.create(familyId, categoryId, Money.of(100_000, clp));
-    const period = BudgetPeriod.of(2026, 9);
+    const period = Period.of(2026, 9);
 
     configuration.setOverrideForPeriod(period, Money.of(120_000, clp));
 
@@ -32,7 +32,7 @@ describe("BudgetConfiguration", () => {
 
   it("vuelve al monto por defecto al eliminar un override", () => {
     const configuration = BudgetConfiguration.create(familyId, categoryId, Money.of(100_000, clp));
-    const period = BudgetPeriod.of(2026, 9);
+    const period = Period.of(2026, 9);
     configuration.setOverrideForPeriod(period, Money.of(120_000, clp));
 
     configuration.removeOverrideForPeriod(period);

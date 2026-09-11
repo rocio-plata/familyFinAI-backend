@@ -1,30 +1,30 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BudgetPeriod } from "../../../../../src/contexts/budgeting/domain/value-objects/budget-period.js";
+import { Period } from "../../../../../src/shared-kernel/domain/period.js";
 
-describe("BudgetPeriod", () => {
+describe("Period", () => {
   describe("of()", () => {
     it("crea un período mensual válido", () => {
-      const period = BudgetPeriod.of(2026, 9);
+      const period = Period.of(2026, 9);
 
       assert.equal(period.toString(), "2026-09");
     });
 
     it("rechaza un mes fuera del rango válido", () => {
-      assert.throws(() => BudgetPeriod.of(2026, 13), { name: "InvalidBudgetPeriodError" });
+      assert.throws(() => Period.of(2026, 13), { name: "InvalidPeriodError" });
     });
   });
 
   describe("fromDate()", () => {
     it("convierte una fecha al período correspondiente", () => {
-      const period = BudgetPeriod.fromDate(new Date("2026-09-15T12:00:00.000Z"));
+      const period = Period.fromDate(new Date("2026-09-15T12:00:00.000Z"));
 
       assert.equal(period.toString(), "2026-09");
     });
   });
 
   it("compara períodos por año y mes", () => {
-    assert.ok(BudgetPeriod.of(2026, 9).equals(BudgetPeriod.of(2026, 9)));
-    assert.ok(!BudgetPeriod.of(2026, 9).equals(BudgetPeriod.of(2026, 10)));
+    assert.ok(Period.of(2026, 9).equals(Period.of(2026, 9)));
+    assert.ok(!Period.of(2026, 9).equals(Period.of(2026, 10)));
   });
 });

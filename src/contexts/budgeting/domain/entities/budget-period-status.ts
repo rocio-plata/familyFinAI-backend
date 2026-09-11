@@ -1,10 +1,11 @@
 // src/contexts/budgeting/domain/entities/budget-period-status.ts
+
+import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { InvalidMoneyError } from "../../../financial-tracking/domain/errors/invalid-money.error.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { BudgetBalance } from "../value-objects/budget-balance.js";
-import type { BudgetPeriod } from "../value-objects/budget-period.js";
 import { BudgetPeriodStatusId } from "../value-objects/budget-period-status-id.js";
 
 class BudgetPeriodStatus {
@@ -12,7 +13,7 @@ class BudgetPeriodStatus {
     private readonly _id: BudgetPeriodStatusId,
     private readonly _familyId: FamilyId,
     private readonly _categoryId: CategoryId,
-    private readonly _period: BudgetPeriod,
+    private readonly _period: Period,
     private _limitAmount: Money,
     private _spent: Money,
   ) {}
@@ -29,7 +30,7 @@ class BudgetPeriodStatus {
     return this._categoryId;
   }
 
-  get period(): BudgetPeriod {
+  get period(): Period {
     return this._period;
   }
 
@@ -55,7 +56,7 @@ class BudgetPeriodStatus {
   static create(
     familyId: FamilyId,
     categoryId: CategoryId,
-    period: BudgetPeriod,
+    period: Period,
     limitAmount: Money,
   ): BudgetPeriodStatus {
     return new BudgetPeriodStatus(

@@ -13,7 +13,7 @@ src/
 │   ├── family-access/        # Familias, miembros, invitaciones y membresías
 │   ├── financial-tracking/   # Categorías, tags y movimientos financieros
 │   ├── budgeting/            # Reservado: aún sin implementación
-│   ├── reporting/            # Reservado: aún sin implementación
+│   ├── reporting/            # Read model inicial de agregaciones
 │   └── ai-assistance/        # Reservado: aún sin implementación
 ├── platform/
 │   ├── auth/                 # JWT, refresh tokens y middleware
@@ -51,10 +51,12 @@ casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos p
 ## Contextos reservados
 
 `Budgeting` tiene un modelo de dominio inicial (`BudgetConfiguration`, `BudgetPeriodStatus`,
-`BudgetPeriod` y `BudgetBalance`), pero todavía no registra casos de uso, persistencia, handlers ni
-rutas. `Reporting` y `AI Assistance` conservan únicamente la estructura de carpetas y archivos
-`.gitkeep`. Sus documentos de diseño no representan endpoints disponibles ni código ejecutado por
-`src/platform/app.ts`.
+`Period` y `BudgetBalance`), pero todavía no registra casos de uso, persistencia, handlers ni
+rutas. `Reporting` tiene el read model inicial `CategoryPeriodAggregate` y el value object
+`ItemCount`; reutiliza `Period` desde `shared-kernel`, pero todavía no registra queries,
+persistencia, handlers ni rutas. `AI Assistance` conserva
+únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos de diseño no
+representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`.
 
 ## Infraestructura y composición
 
@@ -89,5 +91,5 @@ de proveedores externos.
 | Financial Tracking | Implementado con memoria y PostgreSQL |
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
 | Budgeting | Entidades y value objects iniciales; aplicación e infraestructura pendientes |
-| Reporting | Estructura reservada; implementación pendiente |
+| Reporting | Read model y value objects iniciales; aplicación e infraestructura pendientes |
 | AI Assistance | Diseño/documentación parcial; implementación pendiente |
