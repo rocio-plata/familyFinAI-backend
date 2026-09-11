@@ -2,10 +2,10 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { ItemDeleted } from "../../../src/contexts/financial-tracking/domain/events/item-deleted.event.js";
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemId } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
 import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { ItemDeleted } from "../../../src/contexts/financial-tracking/domain/events/item-deleted.event.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { OnItemDeletedEventHandler } from "../../../src/contexts/reporting/application/event-handlers/on-item-deleted.event-handler.js";
 import { CategoryPeriodAggregate } from "../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";

@@ -45,4 +45,20 @@ describe("CategoryPeriodAggregate", () => {
       name: "InvalidItemCountError",
     });
   });
+
+  it("rehidrata los acumulados persistidos", () => {
+    const aggregate = CategoryPeriodAggregate.reconstitute({
+      familyId,
+      categoryId,
+      period,
+      currency: clp,
+      totalExpense: 35_000,
+      totalIncome: 100_000,
+      itemCount: 3,
+    });
+
+    assert.equal(aggregate.totalExpense.amount, 35_000);
+    assert.equal(aggregate.totalIncome.amount, 100_000);
+    assert.equal(aggregate.itemCount.value, 3);
+  });
 });
