@@ -2,10 +2,11 @@
 
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
-`GetDashboardSummary` y `GetCategoryBreakdown` ya cuentan con pruebas unitarias. Siguen pendientes
-los handlers, la persistencia, las rutas y el resto de las queries descritas aquí. Sigue la misma
-convención usada en los documentos anteriores: **actor**, **precondiciones**, **flujo principal**,
-**flujos alternativos/errores**, **eventos de dominio disparados**.
+`GetDashboardSummary`, `GetCategoryBreakdown` y `GetPeriodComparison` ya cuentan con pruebas
+unitarias. Siguen pendientes los handlers, la persistencia, las rutas y el resto de las queries
+descritas aquí. Sigue la misma convención usada en los documentos anteriores: **actor**,
+**precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
+disparados**.
 
 Recordatorio de arquitectura: `Reporting` es casi puramente un **consumidor** de eventos (patrón CQRS, lado de lectura) — no expone comandos que el usuario invoque directamente para modificar nada; toda su "escritura" ocurre vía event handlers que reaccionan a lo que pasa en `Financial Tracking`. Sus casos de uso visibles para el usuario son todos **queries**.
 
@@ -70,6 +71,12 @@ Distribución de gastos por categoría para un período — alimenta los gráfic
 ---
 
 ### 3. GetPeriodComparison
+
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/queries/get-period-comparison.query.ts`, con pruebas
+> unitarias. Devuelve gastos, ingresos y saldo para cada período, además de las variaciones de
+> gastos e ingresos. Para una base de comparación en cero, la variación porcentual es `0`.
+> Pendientes: adaptador de persistencia, registro en la composición y ruta HTTP.
 
 Compara dos períodos entre sí — por categoría o a nivel total.
 
