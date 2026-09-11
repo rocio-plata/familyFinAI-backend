@@ -4,6 +4,8 @@ import { DrizzleFamilyRepository } from "../contexts/family-access/infrastructur
 import { DrizzleInvitationRepository } from "../contexts/family-access/infrastructure/persistence/drizzle-invitation.repository.js";
 import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
+import { GetCategoriesQuery } from "../contexts/financial-tracking/application/queries/get-categories.query.js";
+import { GetFinancialItemsQuery } from "../contexts/financial-tracking/application/queries/get-financial-items.query.js";
 import { DrizzleCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-category.repository.js";
 import { DrizzleFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-financial-item.repository.js";
 import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
@@ -15,6 +17,8 @@ import {
 } from "../contexts/identity/infrastructure/password-hasher.js";
 import { DrizzleUserRepository } from "../contexts/identity/infrastructure/persistence/drizzle-user.repository.js";
 import { InMemoryUserRepository } from "../contexts/identity/infrastructure/persistence/in-memory-user.repository.js";
+import { DrizzleCategoryPeriodAggregateRepository } from "../contexts/reporting/infrastructure/persistence/drizzle-category-period-aggregate.repository.js";
+import { InMemoryCategoryPeriodAggregateRepository } from "../contexts/reporting/infrastructure/persistence/in-memory-category-period-aggregate.repository.js";
 import { buildApp } from "./app.js";
 import { JwtService } from "./auth/jwt.js";
 import { DrizzleRefreshTokenRepository } from "./auth/persistence/drizzle-refresh-token.repository.js";
@@ -53,6 +57,9 @@ const categoryRepository = usePostgres
 const financialItemRepository = usePostgres
   ? new DrizzleFinancialItemRepository()
   : new InMemoryFinancialItemRepository();
+const categoryPeriodAggregateRepository = usePostgres
+  ? new DrizzleCategoryPeriodAggregateRepository()
+  : new InMemoryCategoryPeriodAggregateRepository();
 const refreshTokenRepository = usePostgres
   ? new DrizzleRefreshTokenRepository()
   : new InMemoryRefreshTokenRepository();
@@ -78,6 +85,12 @@ const app = buildApp({
   financialTracking: {
     categoryRepository,
     financialItemRepository,
+    eventBus,
+  },
+  reporting: {
+    aggregateRepository: categoryPeriodAggregateRepository,
+    getCategoriesQuery: new GetCategoriesQuery(categoryRepository),
+    getFinancialItemsQuery: new GetFinancialItemsQuery(financialItemRepository),
     eventBus,
   },
 });

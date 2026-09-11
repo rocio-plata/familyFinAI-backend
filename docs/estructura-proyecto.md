@@ -91,5 +91,5 @@ de proveedores externos.
 | Financial Tracking | Implementado con memoria y PostgreSQL |
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
 | Budgeting | Entidades y value objects iniciales; aplicación e infraestructura pendientes |
-| Reporting | Queries, handlers y persistencia del read model `CategoryPeriodAggregate` implementados; composición y rutas pendientes |
+| Reporting | Queries, handlers, persistencia, composición y endpoints del read model `CategoryPeriodAggregate` implementados |
 | AI Assistance | Diseño/documentación parcial; implementación pendiente |

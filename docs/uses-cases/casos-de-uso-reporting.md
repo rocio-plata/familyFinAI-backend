@@ -4,10 +4,10 @@ Documentación de los casos de uso del contexto `Reporting`. El modelo de domini
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
 ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedHandler`,
-OnItemReclassifiedHandler` y `OnItemDeletedHandler` también están implementados y probados. La
-persistencia InMemory y Drizzle de `CategoryPeriodAggregate` ya está implementada. Siguen
-pendientes la composición del módulo, las suscripciones al `EventBus`, las rutas y el resto de las
-queries descritas aquí. Sigue la misma convención usada en los documentos anteriores:
+`OnItemReclassifiedHandler` y `OnItemDeletedHandler` también están implementados y probados. La
+persistencia InMemory y Drizzle de `CategoryPeriodAggregate`, la composición del módulo, las
+suscripciones al `EventBus` y las rutas HTTP ya están implementadas. Siguen pendientes el resto de
+las queries descritas aquí. Sigue la misma convención usada en los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
 dominio disparados**.
 

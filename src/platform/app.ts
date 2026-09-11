@@ -13,6 +13,10 @@ import {
   type IdentityModuleDependencies,
 } from "../contexts/identity/identity.module.js";
 import { registerIdentityRoutes } from "../contexts/identity/infrastructure/http/identity.routes.js";
+import {
+  buildReportingModule,
+  type ReportingModuleDependencies,
+} from "../contexts/reporting/reporting.module.js";
 import { buildAuthModule } from "./auth/auth.module.js";
 import { authenticate } from "./auth/authenticate.middleware.js";
 import type { JwtSigner } from "./auth/jwt-signer.js";
@@ -24,6 +28,7 @@ interface AppDependencies {
   familyAccess: FamilyAccessModuleDependencies;
   identity: IdentityModuleDependencies;
   financialTracking?: FinancialTrackingModuleDependencies;
+  reporting?: ReportingModuleDependencies;
   logLevel?: string;
 }
 
@@ -45,6 +50,13 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
         familyAccessModule.useCases.getFamilyDefaultCurrency,
       )
     : null;
+  const reportingModule =
+    dependencies.reporting && financialTrackingModule
+      ? buildReportingModule(
+          dependencies.reporting,
+          familyAccessModule.useCases.getFamilyMembership,
+        )
+      : null;
   const authenticateRequest = authenticate(dependencies.jwtService);
   const authModule = buildAuthModule({
     tokenService: dependencies.identity.tokenService,
@@ -68,6 +80,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
   authModule.registerRoutes(app);
   familyAccessModule.registerRoutes(app, authenticateRequest);
   financialTrackingModule?.registerRoutes(app, authenticateRequest);
+  reportingModule?.registerRoutes(app, authenticateRequest);
 
   return app;
 }
