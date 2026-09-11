@@ -5,6 +5,8 @@ import type { FamilyId } from "../../../family-access/domain/value-objects/famil
 import type { CategoryPeriodAggregate } from "../entities/category-period-aggregate.js";
 
 interface CategoryPeriodAggregateRepository {
+  save(aggregate: CategoryPeriodAggregate): Promise<void>;
+
   findByFamilyIdAndPeriod(familyId: FamilyId, period: Period): Promise<CategoryPeriodAggregate[]>;
 }
 
