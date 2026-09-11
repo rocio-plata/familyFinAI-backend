@@ -25,4 +25,14 @@ describe("Period compartido", () => {
     assert.ok(Period.of(2026, 9).equals(Period.of(2026, 9)));
     assert.ok(!Period.of(2026, 9).equals(Period.of(2026, 10)));
   });
+
+  it("detecta si un período ocurre después de otro", () => {
+    assert.ok(Period.of(2026, 10).isAfter(Period.of(2026, 9)));
+    assert.ok(!Period.of(2026, 9).isAfter(Period.of(2026, 10)));
+  });
+
+  it("avanza al período siguiente y cambia de año cuando corresponde", () => {
+    assert.equal(Period.of(2026, 9).next().toString(), "2026-10");
+    assert.equal(Period.of(2026, 12).next().toString(), "2027-01");
+  });
 });

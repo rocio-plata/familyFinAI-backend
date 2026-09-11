@@ -2,9 +2,9 @@
 
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
-`GetDashboardSummary`, `GetCategoryBreakdown` y `GetPeriodComparison` ya cuentan con pruebas
-unitarias. Siguen pendientes los handlers, la persistencia, las rutas y el resto de las queries
-descritas aquí. Sigue la misma convención usada en los documentos anteriores: **actor**,
+`GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison` y `GetTrend` ya cuentan con
+pruebas unitarias. Siguen pendientes los handlers, la persistencia, las rutas y el resto de las
+queries descritas aquí. Sigue la misma convención usada en los documentos anteriores: **actor**,
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
 disparados**.
 
@@ -91,6 +91,12 @@ Compara dos períodos entre sí — por categoría o a nivel total.
 ---
 
 ### 4. GetTrend
+
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/queries/get-trend.query.ts`, con pruebas unitarias. Genera
+> una serie mensual inclusiva con gastos, ingresos, saldo y ceros para períodos sin agregados;
+> admite filtro por `categoryId` y lanza `InvalidPeriodRangeError` para rangos invertidos.
+> Pendientes: adaptador de persistencia, registro en la composición y ruta HTTP.
 
 Evolución de ingresos y gastos a lo largo de varios períodos consecutivos — para gráficos de tendencia en la sección de Reports.
 
