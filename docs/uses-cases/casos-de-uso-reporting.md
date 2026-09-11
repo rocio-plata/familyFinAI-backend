@@ -3,10 +3,10 @@
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
-ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedHandler` y
-`OnItemReclassifiedHandler` también están implementados y probados.
-Siguen pendientes los demás handlers, la persistencia, las rutas y el resto de las queries
-descritas aquí. Sigue la misma convención usada en los documentos anteriores:
+ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedHandler`,
+`OnItemReclassifiedHandler` y `OnItemDeletedHandler` también están implementados y probados.
+Siguen pendientes la persistencia, las rutas y el resto de las queries descritas aquí. Sigue la
+misma convención usada en los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
 dominio disparados**.
 
@@ -183,6 +183,12 @@ Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAg
 ---
 
 ### 9. OnItemDeletedHandler
+
+> Estado de implementación: implementado en
+> `src/contexts/reporting/application/event-handlers/on-item-deleted.event-handler.ts`, con
+> pruebas unitarias. El evento `ItemDeleted` incluye tipo, fecha, importe y moneda; el handler
+> resta el movimiento del agregado de familia, categoría y período correspondiente. Pendientes:
+> adaptador de persistencia y suscripción en la composición de la aplicación.
 
 - **Se dispara con**: `ItemDeleted`.
 - **Flujo principal**: resta el monto del `CategoryPeriodAggregate` correspondiente y decrementa `itemCount`.

@@ -36,6 +36,8 @@ class DeleteFinancialItemUseCase {
         item.categoryAssignment.tagId,
         item.amount.amount,
         item.type,
+        item.occurredOn.value,
+        item.amount.currency.toString(),
       ),
     );
   }
