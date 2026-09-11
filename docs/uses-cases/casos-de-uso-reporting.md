@@ -4,9 +4,10 @@ Documentación de los casos de uso del contexto `Reporting`. El modelo de domini
 implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
 ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedHandler`,
-`OnItemReclassifiedHandler` y `OnItemDeletedHandler` también están implementados y probados.
-Siguen pendientes la persistencia, las rutas y el resto de las queries descritas aquí. Sigue la
-misma convención usada en los documentos anteriores:
+OnItemReclassifiedHandler` y `OnItemDeletedHandler` también están implementados y probados. La
+persistencia InMemory y Drizzle de `CategoryPeriodAggregate` ya está implementada. Siguen
+pendientes la composición del módulo, las suscripciones al `EventBus`, las rutas y el resto de las
+queries descritas aquí. Sigue la misma convención usada en los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
 dominio disparados**.
 
@@ -207,5 +208,5 @@ Nótese que `Reporting` es el contexto con **menos errores propios** de todos lo
 ## Pendientes antes de implementar
 
 1. **Puerto hacia `Financial Tracking`**: `GetCategoryBreakdown`, `GetDrillDown`, etc. necesitan resolver nombres de categorías/tags y, en el último nivel del drill-down, delegar en `GetFinancialItems`. Se resuelve con un puerto de solo lectura hacia `Financial Tracking`, similar al `CategoryLookupPort` que ya usa `AI Assistance` y que quedó pendiente para `Budgeting`.
-2. **Estrategia de reconstrucción del read model**: si `CategoryPeriodAggregate` se corrompe o se necesita reconstruir desde cero (ej. después de un bug), no hay un mecanismo definido para "recalcular todo desde el histórico de `FinancialItem`". Vale la pena dejarlo previsto como una operación administrativa futura, aunque no sea parte del MVP.
+2. **Reconstrucción histórica**: no se realiza backfill desde `financial_items`. Después de un reset de la base de datos, `category_period_aggregates` comienza vacío y se pobla únicamente mediante eventos nuevos. `CategoryPeriodAggregate.reconstitute` solo hidrata filas del propio read model cuando el repositorio las lee; no recalcula históricos.
 3. **Insights y recomendaciones** (`AI Assistance`, sección 10.5 de la especificación original): `GetPeriodComparison` provee el cálculo numérico que alimentaría un insight como *"tus gastos en restaurantes subieron 35%"*, pero la generación del insight en sí (decidir qué comparaciones son "interesantes" de mostrar, redactarlas en lenguaje natural) vive en `AI Assistance`, no aquí — falta definir el contrato entre ambos contextos para ese flujo.

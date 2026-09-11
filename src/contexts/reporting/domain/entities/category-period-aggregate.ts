@@ -62,6 +62,26 @@ class CategoryPeriodAggregate {
     );
   }
 
+  static reconstitute(props: {
+    familyId: FamilyId;
+    categoryId: CategoryId;
+    period: Period;
+    currency: Currency;
+    totalExpense: number;
+    totalIncome: number;
+    itemCount: number;
+  }): CategoryPeriodAggregate {
+    return new CategoryPeriodAggregate(
+      props.familyId,
+      props.categoryId,
+      props.period,
+      props.currency,
+      Money.of(props.totalExpense, props.currency),
+      Money.of(props.totalIncome, props.currency),
+      ItemCount.of(props.itemCount),
+    );
+  }
+
   registerItem(type: FinancialItemType, amount: Money): void {
     this.ensureSameCurrency(amount);
     this.updateTotal(type, amount.amount);
