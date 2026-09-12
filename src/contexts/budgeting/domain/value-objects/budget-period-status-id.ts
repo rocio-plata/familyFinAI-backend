@@ -8,6 +8,10 @@ class BudgetPeriodStatusId {
     return new BudgetPeriodStatusId(randomUUID());
   }
 
+  static of(value: string): BudgetPeriodStatusId {
+    return new BudgetPeriodStatusId(value);
+  }
+
   toString(): string {
     return this.value;
   }

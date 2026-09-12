@@ -1,10 +1,11 @@
 // src/contexts/budgeting/domain/entities/budget-configuration.ts
 
+import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
-import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { InvalidMoneyError } from "../../../financial-tracking/domain/errors/invalid-money.error.js";
-import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
-import type { Money } from "../../../financial-tracking/domain/value-objects/money.js";
+import { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
+import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { NoOverrideForPeriodError } from "../errors/no-override-for-period.error.js";
 import { BudgetConfigurationId } from "../value-objects/budget-configuration-id.js";
 
@@ -34,6 +35,10 @@ class BudgetConfiguration {
     return this._defaultAmount;
   }
 
+  get overrides(): ReadonlyMap<string, Money> {
+    return this._overrides;
+  }
+
   get isActive(): boolean {
     return this._isActive;
   }
@@ -50,6 +55,33 @@ class BudgetConfiguration {
       defaultAmount,
       new Map(),
       true,
+    );
+  }
+
+  static reconstitute(props: {
+    id: string;
+    familyId: string;
+    categoryId: string;
+    defaultAmount: number;
+    defaultCurrency: string;
+    overrides: Record<string, { amount: number; currency: string }>;
+    isActive: boolean;
+  }): BudgetConfiguration {
+    const defaultCurrency = Currency.of(props.defaultCurrency);
+    const overrides = new Map(
+      Object.entries(props.overrides).map(([period, value]) => [
+        period,
+        Money.of(value.amount, Currency.of(value.currency)),
+      ]),
+    );
+
+    return new BudgetConfiguration(
+      BudgetConfigurationId.of(props.id),
+      FamilyId.of(props.familyId),
+      CategoryId.of(props.categoryId),
+      Money.of(props.defaultAmount, defaultCurrency),
+      overrides,
+      props.isActive,
     );
   }
 

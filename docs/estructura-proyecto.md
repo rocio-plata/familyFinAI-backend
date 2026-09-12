@@ -90,6 +90,6 @@ de proveedores externos.
 | Family & Access | Implementado con memoria y PostgreSQL |
 | Financial Tracking | Implementado con memoria y PostgreSQL |
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
-| Budgeting | Dominio inicial y cuatro comandos implementados; demás casos de uso, persistencia, handlers y rutas pendientes |
+| Budgeting | Cinco comandos/queries, cuatro handlers y persistencia InMemory/Drizzle implementados; composición y rutas pendientes |
 | Reporting | Queries, handlers, persistencia, composición y endpoints del read model `CategoryPeriodAggregate` implementados |
 | AI Assistance | Diseño/documentación parcial; implementación pendiente |

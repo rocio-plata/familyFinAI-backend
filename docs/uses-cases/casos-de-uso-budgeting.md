@@ -5,9 +5,10 @@
 > `DeactivateBudgetConfiguration`, `GetBudgets`, `OnItemRecordedHandler` y
 > `OnItemAmountChangedHandler`, `OnItemReclassifiedHandler` y `OnItemDeletedHandler` ya están
 > implementados y probados.
-> El resto de los casos de uso,
-> la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
-> contexto todavía no está registrado en la composición de la aplicación.
+> La persistencia InMemory y Drizzle de `BudgetConfiguration` y `BudgetPeriodStatus` ya está
+> implementada. El resto de los casos de uso, la composición, las suscripciones al `EventBus`, los
+> handlers y las rutas siguen pendientes; el contexto todavía no está registrado en la composición
+> de la aplicación.
 
 Este documento describe el comportamiento objetivo del contexto. No debe interpretarse como una lista de endpoints disponibles ni como un contrato HTTP implementado.
 
@@ -261,3 +262,6 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 2. **`Money` compartido**: sigue pendiente moverlo a `shared-kernel`, igual que `Currency`, para que `Budgeting` no dependa del dominio interno de `Financial Tracking`.
 3. **Consulta cruzada de categorías**: `CreateBudgetConfiguration` usa temporalmente `GetCategoriesQuery` como consulta síncrona pública de `Financial Tracking`; `GetBudgets` deberá reutilizar este contrato o extraer un puerto/adaptador dedicado si el contexto crece.
 4. **`ItemAmountChanged` necesita `previousAmount`**: ✅ resuelto en el evento compartido; Reporting ya lo utiliza y Budgeting podrá reutilizar el mismo payload.
+5. **Backfill histórico**: no se recalculan presupuestos desde `financial_items`. Después de resetear
+  la base de datos, las tablas de Budgeting comienzan vacías y se poblarán únicamente con eventos
+  nuevos; los repositorios solo rehidratan filas propias ya persistidas.

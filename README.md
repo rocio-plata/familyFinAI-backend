@@ -260,7 +260,7 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 
 **Pendiente:**
 
-- `Budgeting`: dominio inicial y cuatro comandos (`CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount`, `SetBudgetOverrideForPeriod` y `DeactivateBudgetConfiguration`) implementados con pruebas; quedan pendientes los demás casos de uso, persistencia propia, handlers y rutas.
+- `Budgeting`: dominio inicial, cinco comandos/queries, cuatro handlers y persistencia InMemory/Drizzle del read model implementados con pruebas; quedan pendientes composición, suscripciones al `EventBus` y rutas HTTP.
 - `Reporting & Analytics`: ✅ implementado. Incluye `CategoryPeriodAggregate`, `ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y cinco rutas HTTP.
 - `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
 - Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
