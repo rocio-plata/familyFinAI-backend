@@ -11,6 +11,8 @@ import { CategoryId } from "../../../src/contexts/financial-tracking/domain/valu
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Currency } from "../../../src/shared-kernel/domain/currency.js";
 import { Period } from "../../../src/shared-kernel/domain/period.js";
+import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
+import { InMemoryBudgetPeriodStatusRepository } from "./doubles/in-memory-budget-period-status.repository.js";
 
 describe("SetBudgetOverrideForPeriodUseCase", () => {
   test("guarda el override y actualiza el estado mensual existente", async () => {
@@ -85,35 +87,3 @@ describe("SetBudgetOverrideForPeriodUseCase", () => {
     );
   });
 });
-
-class InMemoryBudgetConfigurationRepository {
-  private readonly budgets = new Map<string, BudgetConfiguration>();
-
-  async save(budget: BudgetConfiguration): Promise<void> {
-    this.budgets.set(budget.id.toString(), budget);
-  }
-
-  async findById(id: BudgetConfiguration["id"]): Promise<BudgetConfiguration | null> {
-    return this.budgets.get(id.toString()) ?? null;
-  }
-}
-
-class InMemoryBudgetPeriodStatusRepository {
-  private readonly statuses = new Map<string, BudgetPeriodStatus>();
-
-  async save(status: BudgetPeriodStatus): Promise<void> {
-    this.statuses.set(this.key(status.familyId, status.categoryId, status.period), status);
-  }
-
-  async findByFamilyIdCategoryIdAndPeriod(
-    familyId: Family["id"],
-    categoryId: CategoryId,
-    period: Period,
-  ): Promise<BudgetPeriodStatus | null> {
-    return this.statuses.get(this.key(familyId, categoryId, period)) ?? null;
-  }
-
-  private key(familyId: Family["id"], categoryId: CategoryId, period: Period): string {
-    return `${familyId.toString()}:${categoryId.toString()}:${period.toString()}`;
-  }
-}

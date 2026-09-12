@@ -15,6 +15,7 @@ import { Money } from "../../../src/contexts/financial-tracking/domain/value-obj
 import { InMemoryFamilyRepository } from "../../contexts/family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "../../contexts/financial-tracking/doubles/in-memory-category.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
+import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
 
 describe("CreateBudgetConfigurationUseCase", () => {
   test("crea y persiste un presupuesto para una categoría de gasto activa", async () => {
@@ -110,17 +111,3 @@ describe("CreateBudgetConfigurationUseCase", () => {
     );
   });
 });
-
-class InMemoryBudgetConfigurationRepository {
-  private readonly budgets: BudgetConfiguration[] = [];
-
-  async save(budget: BudgetConfiguration): Promise<void> {
-    const index = this.budgets.findIndex((current) => current.id.equals(budget.id));
-    if (index === -1) this.budgets.push(budget);
-    else this.budgets[index] = budget;
-  }
-
-  async findByFamilyId(familyId: Family["id"]): Promise<BudgetConfiguration[]> {
-    return this.budgets.filter((budget) => budget.familyId.equals(familyId));
-  }
-}

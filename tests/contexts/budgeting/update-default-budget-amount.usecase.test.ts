@@ -9,6 +9,7 @@ import { UserId } from "../../../src/contexts/family-access/domain/value-objects
 import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Currency } from "../../../src/shared-kernel/domain/currency.js";
+import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
 
 describe("UpdateDefaultBudgetAmountUseCase", () => {
   test("actualiza y persiste el monto por defecto", async () => {
@@ -75,15 +76,3 @@ describe("UpdateDefaultBudgetAmountUseCase", () => {
     );
   });
 });
-
-class InMemoryBudgetConfigurationRepository {
-  private readonly budgets = new Map<string, BudgetConfiguration>();
-
-  async save(budget: BudgetConfiguration): Promise<void> {
-    this.budgets.set(budget.id.toString(), budget);
-  }
-
-  async findById(id: BudgetConfiguration["id"]): Promise<BudgetConfiguration | null> {
-    return this.budgets.get(id.toString()) ?? null;
-  }
-}
