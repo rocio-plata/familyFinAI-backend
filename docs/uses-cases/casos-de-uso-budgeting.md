@@ -2,7 +2,8 @@
 
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
 > `SetBudgetOverrideForPeriod`, `RemoveBudgetOverrideForPeriod` y
-> `DeactivateBudgetConfiguration` y `GetBudgets` ya están implementados y probados. El resto de los casos de uso,
+> `DeactivateBudgetConfiguration`, `GetBudgets` y `OnItemRecordedHandler` ya están implementados y
+> probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -174,6 +175,13 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 
 ### 7. OnItemRecordedHandler
 
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/event-handlers/on-item-recorded.event-handler.ts`, con
+> pruebas unitarias. Ignora ingresos y categorías sin presupuesto, crea el `BudgetPeriodStatus`
+> con el override/default aplicable y acumula el gasto en statuses existentes. Pendientes:
+> composición del contexto, suscripción al `EventBus`, persistencia concreta y publicación de
+> `BudgetOverspent`.
+
 - **Se dispara con**: `ItemRecorded`.
 - **Flujo principal**:
   1. Si `event.type !== Expense`, se ignora.
@@ -189,7 +197,7 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 ### 8. OnItemAmountChangedHandler
 
 - **Se dispara con**: `ItemAmountChanged`.
-- **Precondición de diseño**: requiere que el evento incluya tanto el monto anterior como el nuevo (`previousAmount`, `newAmount`) — ver pendientes, hoy el evento solo definía el estado nuevo.
+- **Precondición de diseño**: el evento ya incluye tanto el monto anterior como el nuevo (`previousAmount`, `newAmount`); el handler sigue pendiente.
 - **Flujo principal**: igual que `OnItemRecordedHandler` en la resolución del `BudgetPeriodStatus`, pero aplicando la diferencia (`newAmount - previousAmount`) en vez del monto completo.
 - **Eventos disparados**: `BudgetOverspent` (si aplica).
 

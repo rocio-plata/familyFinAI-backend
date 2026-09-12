@@ -22,7 +22,7 @@ class Money {
   }
 
   add(other: Money): Money {
-    if (this._currency !== other._currency) throw new InvalidMoneyError();
+    if (!this._currency.equals(other._currency)) throw new InvalidMoneyError();
     return new Money(this._amount + other._amount, this._currency);
   }
 

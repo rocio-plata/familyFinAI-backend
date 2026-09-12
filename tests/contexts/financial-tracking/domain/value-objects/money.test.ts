@@ -29,6 +29,12 @@ describe("Money", () => {
       assert.ok(result.isGreaterThan(a));
     });
 
+    it("suma montos creados con instancias equivalentes de la misma moneda", () => {
+      const result = Money.of(100, Currency.of("CLP")).add(Money.of(200, Currency.of("CLP")));
+
+      assert.equal(result.amount, 300);
+    });
+
     it("lanza InvalidMoneyError al sumar monedas distintas", () => {
       assert.throws(() => Money.of(100, clp).add(Money.of(100, usd)), {
         name: "InvalidMoneyError",
