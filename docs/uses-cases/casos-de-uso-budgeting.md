@@ -3,7 +3,8 @@
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
 > `SetBudgetOverrideForPeriod`, `RemoveBudgetOverrideForPeriod` y
 > `DeactivateBudgetConfiguration`, `GetBudgets`, `OnItemRecordedHandler` y
-> `OnItemAmountChangedHandler` ya están implementados y probados. El resto de los casos de uso,
+> `OnItemAmountChangedHandler` y `OnItemReclassifiedHandler` ya están implementados y probados.
+> El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -211,6 +212,13 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 ---
 
 ### 9. OnItemReclassifiedHandler
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/event-handlers/on-item-reclassified.event-handler.ts`, con
+> pruebas unitarias. Ignora ingresos, resta el gasto del status de origen y lo suma al status de
+> destino cuando existe una configuración activa, creando el status si es necesario. Pendientes:
+> composición del contexto, suscripción al `EventBus`, persistencia concreta y publicación de
+> `BudgetOverspent`.
 
 - **Se dispara con**: `ItemReclassified`.
 - **Flujo principal**:
