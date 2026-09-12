@@ -1,6 +1,10 @@
 // /src/platform/app.ts
 import Fastify, { type FastifyInstance } from "fastify";
 import {
+  type BudgetingModuleDependencies,
+  buildBudgetingModule,
+} from "../contexts/budgeting/budgeting.module.js";
+import {
   buildFamilyAccessModule,
   type FamilyAccessModuleDependencies,
 } from "../contexts/family-access/family-access.module.js";
@@ -29,6 +33,7 @@ interface AppDependencies {
   identity: IdentityModuleDependencies;
   financialTracking?: FinancialTrackingModuleDependencies;
   reporting?: ReportingModuleDependencies;
+  budgeting?: BudgetingModuleDependencies;
   logLevel?: string;
 }
 
@@ -57,6 +62,14 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
           familyAccessModule.useCases.getFamilyMembership,
         )
       : null;
+  const budgetingModule =
+    dependencies.budgeting && financialTrackingModule
+      ? buildBudgetingModule(
+          dependencies.budgeting,
+          familyAccessModule.useCases.getFamilyMembership,
+          familyAccessModule.useCases.getFamilyDefaultCurrency,
+        )
+      : null;
   const authenticateRequest = authenticate(dependencies.jwtService);
   const authModule = buildAuthModule({
     tokenService: dependencies.identity.tokenService,
@@ -81,6 +94,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
   familyAccessModule.registerRoutes(app, authenticateRequest);
   financialTrackingModule?.registerRoutes(app, authenticateRequest);
   reportingModule?.registerRoutes(app, authenticateRequest);
+  budgetingModule?.registerRoutes(app, authenticateRequest);
 
   return app;
 }
