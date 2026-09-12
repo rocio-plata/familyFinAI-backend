@@ -2,8 +2,8 @@
 
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
 > `SetBudgetOverrideForPeriod`, `RemoveBudgetOverrideForPeriod` y
-> `DeactivateBudgetConfiguration`, `GetBudgets` y `OnItemRecordedHandler` ya están implementados y
-> probados. El resto de los casos de uso,
+> `DeactivateBudgetConfiguration`, `GetBudgets`, `OnItemRecordedHandler` y
+> `OnItemAmountChangedHandler` ya están implementados y probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -195,6 +195,13 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 ---
 
 ### 8. OnItemAmountChangedHandler
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/event-handlers/on-item-amount-changed.event-handler.ts`,
+> con pruebas unitarias. Ignora ingresos y categorías sin presupuesto, aplica el delta entre
+> `newAmount` y `previousAmount` sobre el status mensual y conserva el límite. Pendientes:
+> composición del contexto, suscripción al `EventBus`, persistencia concreta y publicación de
+> `BudgetOverspent`.
 
 - **Se dispara con**: `ItemAmountChanged`.
 - **Precondición de diseño**: el evento ya incluye tanto el monto anterior como el nuevo (`previousAmount`, `newAmount`); el handler sigue pendiente.
