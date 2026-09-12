@@ -2,7 +2,7 @@
 
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
 > `SetBudgetOverrideForPeriod`, `RemoveBudgetOverrideForPeriod` y
-> `DeactivateBudgetConfiguration` ya están implementados y probados. El resto de los casos de uso,
+> `DeactivateBudgetConfiguration` y `GetBudgets` ya están implementados y probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -146,6 +146,12 @@ Desactiva el presupuesto recurrente — deja de generar seguimiento para meses f
 ## Queries
 
 ### 6. GetBudgets
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/queries/get-budgets.query.ts`, con pruebas unitarias. Lista
+> configuraciones activas, resuelve overrides, usa gasto cero cuando falta `BudgetPeriodStatus`,
+> calcula el restante y obtiene el nombre de categoría mediante `GetCategoriesQuery`. Pendientes:
+> adaptador de persistencia, composición del contexto y ruta HTTP.
 
 Lista los presupuestos de la familia para un período dado, con su estado de gasto — corresponde a la tabla `Category / Budget / Spent / Remaining` de la especificación original.
 
