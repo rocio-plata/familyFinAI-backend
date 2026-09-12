@@ -1,9 +1,10 @@
 // src/contexts/budgeting/domain/entities/budget-period-status.ts
 
-import type { Period } from "../../../../shared-kernel/domain/period.js";
-import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
+import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Period } from "../../../../shared-kernel/domain/period.js";
+import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { InvalidMoneyError } from "../../../financial-tracking/domain/errors/invalid-money.error.js";
-import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
+import { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { BudgetBalance } from "../value-objects/budget-balance.js";
 import { BudgetPeriodStatusId } from "../value-objects/budget-period-status-id.js";
@@ -66,6 +67,26 @@ class BudgetPeriodStatus {
       period,
       limitAmount,
       Money.of(0, limitAmount.currency),
+    );
+  }
+
+  static reconstitute(props: {
+    id: string;
+    familyId: string;
+    categoryId: string;
+    period: string;
+    limitAmount: number;
+    spent: number;
+    currency: string;
+  }): BudgetPeriodStatus {
+    const currency = Currency.of(props.currency);
+    return new BudgetPeriodStatus(
+      BudgetPeriodStatusId.of(props.id),
+      FamilyId.of(props.familyId),
+      CategoryId.of(props.categoryId),
+      Period.of(Number(props.period.slice(0, 4)), Number(props.period.slice(5, 7))),
+      Money.of(props.limitAmount, currency),
+      Money.of(props.spent, currency),
     );
   }
 

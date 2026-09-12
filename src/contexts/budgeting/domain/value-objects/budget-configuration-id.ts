@@ -8,6 +8,10 @@ class BudgetConfigurationId {
     return new BudgetConfigurationId(randomUUID());
   }
 
+  static of(value: string): BudgetConfigurationId {
+    return new BudgetConfigurationId(value);
+  }
+
   toString(): string {
     return this.value;
   }
