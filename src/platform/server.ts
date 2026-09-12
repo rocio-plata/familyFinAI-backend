@@ -1,4 +1,9 @@
 // /src/platform/server.ts
+
+import { DrizzleBudgetConfigurationRepository } from "../contexts/budgeting/infrastructure/persistence/drizzle-budget-configuration.repository.js";
+import { DrizzleBudgetPeriodStatusRepository } from "../contexts/budgeting/infrastructure/persistence/drizzle-budget-period-status.repository.js";
+import { InMemoryBudgetConfigurationRepository } from "../contexts/budgeting/infrastructure/persistence/in-memory-budget-configuration.repository.js";
+import { InMemoryBudgetPeriodStatusRepository } from "../contexts/budgeting/infrastructure/persistence/in-memory-budget-period-status.repository.js";
 import { IdentityUserDirectoryAdapter } from "../contexts/family-access/infrastructure/adapters/identity-user-directory.adapter.js";
 import { DrizzleFamilyRepository } from "../contexts/family-access/infrastructure/persistence/drizzle-family.repository.js";
 import { DrizzleInvitationRepository } from "../contexts/family-access/infrastructure/persistence/drizzle-invitation.repository.js";
@@ -60,6 +65,12 @@ const financialItemRepository = usePostgres
 const categoryPeriodAggregateRepository = usePostgres
   ? new DrizzleCategoryPeriodAggregateRepository()
   : new InMemoryCategoryPeriodAggregateRepository();
+const budgetConfigurationRepository = usePostgres
+  ? new DrizzleBudgetConfigurationRepository()
+  : new InMemoryBudgetConfigurationRepository();
+const budgetPeriodStatusRepository = usePostgres
+  ? new DrizzleBudgetPeriodStatusRepository()
+  : new InMemoryBudgetPeriodStatusRepository();
 const refreshTokenRepository = usePostgres
   ? new DrizzleRefreshTokenRepository()
   : new InMemoryRefreshTokenRepository();
@@ -91,6 +102,13 @@ const app = buildApp({
     aggregateRepository: categoryPeriodAggregateRepository,
     getCategoriesQuery: new GetCategoriesQuery(categoryRepository),
     getFinancialItemsQuery: new GetFinancialItemsQuery(financialItemRepository),
+    eventBus,
+  },
+  budgeting: {
+    familyRepository,
+    budgetConfigurationRepository,
+    budgetPeriodStatusRepository,
+    getCategoriesQuery: new GetCategoriesQuery(categoryRepository),
     eventBus,
   },
 });
