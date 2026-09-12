@@ -164,8 +164,8 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 - **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada).
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
-- **Presupuestos**: entidades y value objects iniciales; los casos de uso, persistencia y rutas todavía no forman parte de la API registrada por `src/platform/app.ts`.
-- **Reportes**: read model inicial para agregaciones por categoría y período; las queries, handlers y rutas todavía no forman parte de la API.
+- **Presupuestos**: cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle y seis rutas HTTP bajo `/families/:familyId/budgets`.
+- **Reportes**: read model materializado, cinco queries, cuatro handlers, persistencia InMemory/Drizzle y cinco rutas HTTP implementadas.
 - **Asistencia con IA**: contexto reservado; el diseño está documentado, pero todavía no forma parte de la API.
 - **Seguridad y aislamiento**: autenticación por JWT, refresh tokens rotables y autorización mediante pertenencia a la familia.
 
@@ -260,7 +260,7 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 
 **Pendiente:**
 
-- `Budgeting`: dominio inicial, cinco comandos/queries, cuatro handlers y persistencia InMemory/Drizzle del read model implementados con pruebas; quedan pendientes composición, suscripciones al `EventBus` y rutas HTTP.
+- `Budgeting`: dominio, cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP implementados con pruebas; quedan pendientes únicamente los trabajos listados en la documentación de Budgeting.
 - `Reporting & Analytics`: ✅ implementado. Incluye `CategoryPeriodAggregate`, `ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y cinco rutas HTTP.
 - `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
 - Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.

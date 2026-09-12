@@ -1,6 +1,8 @@
 # Integración con PostgreSQL (Drizzle) — Guía de implementación
 
-Documento de referencia para construir la capa de persistencia real del backend, reemplazando los repositorios in-memory usados hasta ahora en tests y como placeholder en `server.ts`. Sigue los principios ya establecidos: arquitectura hexagonal (el dominio no conoce Drizzle), mínima dependencia externa, y consistencia con el modelo DDD de cada bounded context.
+Documento de referencia para la capa de persistencia PostgreSQL/Drizzle del backend. El servidor
+selecciona repositorios InMemory o Drizzle mediante `PERSISTENCE_MODE`. Sigue los principios ya
+establecidos: arquitectura hexagonal, mínima dependencia externa y consistencia con el modelo DDD.
 
 ---
 
@@ -210,30 +212,33 @@ export const financialItems = pgTable("financial_items", {
 ### `budgeting/infrastructure/persistence/schema.ts`
 
 ```typescript
-import { pgTable, uuid, numeric, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { boolean, index, jsonb, numeric, pgTable, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const budgetConfigurations = pgTable("budget_configurations", {
   id: uuid("id").primaryKey(),
   familyId: uuid("family_id").notNull(),
   categoryId: uuid("category_id").notNull(),
   defaultAmount: numeric("default_amount", { precision: 14, scale: 2 }).notNull(),
-  active: boolean("active").notNull().default(true),
-  overrides: jsonb("overrides").notNull().default({}), // { "2026-09": "150000.00", ... }
+  defaultCurrency: varchar("default_currency", { length: 3 }).notNull(),
+  overrides: jsonb("overrides").notNull().default({}),
+  isActive: boolean("is_active").notNull().default(true),
 });
 
 export const budgetPeriodStatuses = pgTable("budget_period_statuses", {
   id: uuid("id").primaryKey(),
   familyId: uuid("family_id").notNull(),
   categoryId: uuid("category_id").notNull(),
-  period: uuid("period").notNull(), // ver nota abajo — probablemente varchar, no uuid
+  period: varchar("period", { length: 7 }).notNull(),
   limitAmount: numeric("limit_amount", { precision: 14, scale: 2 }).notNull(),
   spent: numeric("spent", { precision: 14, scale: 2 }).notNull().default("0"),
+  currency: varchar("currency", { length: 3 }).notNull(),
 });
 ```
 
 **Nota sobre `overrides`**: se guarda como `jsonb` — es un mapa pequeño (excepciones puntuales, no todos los meses), así que no amerita una tabla relacional separada; Postgres permite indexar/consultar dentro de `jsonb` si más adelante hiciera falta.
 
-**Nota sobre `period`**: quedó mal tipado arriba a propósito, para señalar un pendiente real — `Period` (año+mes) debería mapearse como `varchar(7)` (ej. `"2026-09"`) o como dos columnas `year`/`month` (`integer`), no como `uuid`. Se corrige en la sección de pendientes.
+**Nota sobre `period`**: el bloque anterior es histórico. La implementación actual usa correctamente
+`varchar(7)` (ej. `"2026-09"`) en `reporting` y `budgeting`; no se usa `uuid` para períodos.
 
 ### `reporting/infrastructure/persistence/schema.ts`
 
@@ -464,7 +469,7 @@ Esto es un cambio de interfaz no trivial (`FamilyRepository`/`InvitationReposito
 ## 8. Pendientes antes/durante la implementación
 
 1. **`Entity.reconstitute()` en cada Aggregate Root**: ✅ implementado en las entidades usadas por los repositorios Drizzle, incluyendo `Family`, `FinancialItem`, `Category`, `User`, `Invitation`, `RefreshToken` y `CategoryPeriodAggregate`.
-2. **Corregir el tipo de `period` en `budget_period_statuses`**: quedó como `uuid` por error en el borrador de esta guía — debe ser `varchar(7)` como en `category_period_aggregates`.
+2. **Tipo de `period` en `budget_period_statuses`**: ✅ corregido en la implementación; usa `varchar(7)`.
 3. **Unit of Work**: diseñado conceptualmente en la sección 7, pero no implementado — impacta la firma de todos los repositorios (agregar parámetro `tx` opcional).
 4. **Testing de integración contra Postgres real**: hoy todos los tests usan repositorios in-memory. Falta decidir la estrategia para tests que sí toquen Postgres (¿una base de datos de test separada en Neon? ¿contenedor Docker local? — esto último requeriría Docker como nueva dependencia de desarrollo, a evaluar contra el criterio de pocas dependencias).
 5. **Índices**: los índices principales ya están definidos en los schemas actuales, incluyendo índices por familia y el compuesto `(family_id, occurred_on)` en `financial_items`. Revisar índices adicionales queda como optimización futura basada en métricas reales.

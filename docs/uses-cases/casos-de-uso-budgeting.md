@@ -5,10 +5,9 @@
 > `DeactivateBudgetConfiguration`, `GetBudgets`, `OnItemRecordedHandler` y
 > `OnItemAmountChangedHandler`, `OnItemReclassifiedHandler` y `OnItemDeletedHandler` ya están
 > implementados y probados.
-> La persistencia InMemory y Drizzle de `BudgetConfiguration` y `BudgetPeriodStatus` ya está
-> implementada. El resto de los casos de uso, la composición, las suscripciones al `EventBus`, los
-> handlers y las rutas siguen pendientes; el contexto todavía no está registrado en la composición
-> de la aplicación.
+> La persistencia InMemory y Drizzle de `BudgetConfiguration` y `BudgetPeriodStatus`, la composición,
+> las suscripciones al `EventBus` y las seis rutas HTTP ya están implementadas. Quedan abiertas las
+> decisiones funcionales indicadas al final del documento.
 
 Este documento describe el comportamiento objetivo del contexto. No debe interpretarse como una lista de endpoints disponibles ni como un contrato HTTP implementado.
 
@@ -27,7 +26,7 @@ Los presupuestos son **mensuales**, con un modelo híbrido: se definen una vez y
 - **`BudgetPeriodStatus`** (Aggregate Root separado) — el seguimiento real de gasto de una familia + categoría + mes específico, con el límite resuelto (`limitAmount`, snapshot al momento de crear el registro del mes) y el `spent` acumulado. Cambia con cada movimiento financiero registrado en esa categoría/mes.
 - **`Period`** (Value Object compartido) — año + mes (ej. `"2026-09"`), con `Period.current()` y `Period.fromDate(date)` como factories.
 
-`BudgetPeriodStatus.limitAmount` es un snapshot deliberado: si se cambia el `defaultAmount` de la configuración, los períodos ya generados no cambian su límite retroactivamente — solo los períodos nuevos (o un recálculo explícito, ver pendientes) toman el valor actualizado.
+`BudgetPeriodStatus.limitAmount` es un snapshot deliberado: si se cambia el `defaultAmount` de la configuración, los períodos ya generados no cambian su límite retroactivamente — solo los períodos nuevos (o un recálculo explícito, todavía no previsto) toman el valor actualizado.
 
 ---
 
@@ -38,8 +37,8 @@ Los presupuestos son **mensuales**, con un modelo híbrido: se definen una vez y
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/commands/create-budget-configuration.usecase.ts`, con
 > pruebas unitarias. Valida la familia, la categoría activa de tipo `Expense`, evita duplicados
-> activos, persiste mediante `BudgetConfigurationRepository` y publica `BudgetCreated`. Pendientes:
-> adaptador de persistencia, composición del contexto y ruta HTTP.
+> activos, persiste mediante `BudgetConfigurationRepository` y publica `BudgetCreated`. La
+> persistencia, composición y ruta HTTP están implementadas.
 
 Define un presupuesto recurrente para una categoría, con un monto por defecto que aplica desde ahora en adelante, todos los meses.
 
@@ -62,8 +61,8 @@ Define un presupuesto recurrente para una categoría, con un monto por defecto q
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/commands/update-default-budget-amount.usecase.ts`, con
 > pruebas unitarias. Valida que la configuración pertenezca a la familia, actualiza y persiste el
-> monto por defecto sin modificar los estados mensuales ya generados. Pendientes: adaptador de
-> persistencia, composición del contexto y ruta HTTP.
+> monto por defecto sin modificar los estados mensuales ya generados. La persistencia, composición y
+> ruta HTTP están implementadas.
 
 Modifica el monto por defecto de la configuración recurrente (afecta a los períodos futuros que no tengan un override propio; no modifica retroactivamente períodos ya generados).
 
@@ -86,8 +85,8 @@ Modifica el monto por defecto de la configuración recurrente (afecta a los per�
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/commands/set-budget-override-for-period.usecase.ts`, con
 > pruebas unitarias. Guarda el override, actualiza inmediatamente el `BudgetPeriodStatus` si ya
-> existe y no crea un status mensual ausente. Pendientes: adaptador de persistencia, composición y
-> ruta HTTP; la publicación de `BudgetOverspent` todavía debe definirse cuando se implemente ese
+> existe y no crea un status mensual ausente. La persistencia, composición y ruta HTTP están
+> implementadas; la publicación de `BudgetOverspent` todavía debe definirse cuando se implemente ese
 > evento.
 
 Sobrescribe el monto límite para un mes específico, sin afectar la configuración recurrente ni otros meses.
@@ -111,8 +110,8 @@ Sobrescribe el monto límite para un mes específico, sin afectar la configuraci
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/commands/remove-budget-override-for-period.usecase.ts`, con
 > pruebas unitarias. Valida la pertenencia familiar, elimina el override, persiste la configuración
-> y vuelve al monto por defecto para el período. Pendientes: adaptador de persistencia, composición
-> del contexto y ruta HTTP.
+> y vuelve al monto por defecto para el período. La persistencia, composición y ruta HTTP están
+> implementadas.
 
 Elimina la excepción de un mes específico, volviendo a usar el monto por defecto de la configuración recurrente para ese período.
 
@@ -131,8 +130,8 @@ Elimina la excepción de un mes específico, volviendo a usar el monto por defec
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/commands/deactivate-budget-configuration.usecase.ts`, con
 > pruebas unitarias. Valida la pertenencia familiar, desactiva la configuración y persiste el
-> cambio sin eliminar ni modificar el histórico de `BudgetPeriodStatus`. Pendientes: adaptador de
-> persistencia, composición del contexto y ruta HTTP.
+> cambio sin eliminar ni modificar el histórico de `BudgetPeriodStatus`. La persistencia, composición
+> y ruta HTTP están implementadas.
 
 Desactiva el presupuesto recurrente — deja de generar seguimiento para meses futuros, pero conserva el histórico de `BudgetPeriodStatus` ya generado.
 
@@ -154,8 +153,8 @@ Desactiva el presupuesto recurrente — deja de generar seguimiento para meses f
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/queries/get-budgets.query.ts`, con pruebas unitarias. Lista
 > configuraciones activas, resuelve overrides, usa gasto cero cuando falta `BudgetPeriodStatus`,
-> calcula el restante y obtiene el nombre de categoría mediante `GetCategoriesQuery`. Pendientes:
-> adaptador de persistencia, composición del contexto y ruta HTTP.
+> calcula el restante y obtiene el nombre de categoría mediante `GetCategoriesQuery`. La persistencia,
+> composición y ruta HTTP están implementadas.
 
 Lista los presupuestos de la familia para un período dado, con su estado de gasto — corresponde a la tabla `Category / Budget / Spent / Remaining` de la especificación original.
 
@@ -181,9 +180,8 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/event-handlers/on-item-recorded.event-handler.ts`, con
 > pruebas unitarias. Ignora ingresos y categorías sin presupuesto, crea el `BudgetPeriodStatus`
-> con el override/default aplicable y acumula el gasto en statuses existentes. Pendientes:
-> composición del contexto, suscripción al `EventBus`, persistencia concreta y publicación de
-> `BudgetOverspent`.
+> con el override/default aplicable y acumula el gasto en statuses existentes. La composición,
+> suscripción y persistencia están implementadas; queda por definir la publicación de `BudgetOverspent`.
 
 - **Se dispara con**: `ItemRecorded`.
 - **Flujo principal**:
@@ -202,12 +200,11 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/event-handlers/on-item-amount-changed.event-handler.ts`,
 > con pruebas unitarias. Ignora ingresos y categorías sin presupuesto, aplica el delta entre
-> `newAmount` y `previousAmount` sobre el status mensual y conserva el límite. Pendientes:
-> composición del contexto, suscripción al `EventBus`, persistencia concreta y publicación de
-> `BudgetOverspent`.
+> `newAmount` y `previousAmount` sobre el status mensual y conserva el límite. La composición,
+> suscripción y persistencia están implementadas; queda por definir la publicación de `BudgetOverspent`.
 
 - **Se dispara con**: `ItemAmountChanged`.
-- **Precondición de diseño**: el evento ya incluye tanto el monto anterior como el nuevo (`previousAmount`, `newAmount`); el handler sigue pendiente.
+- **Precondición de diseño**: el evento ya incluye tanto el monto anterior como el nuevo (`previousAmount`, `newAmount`), y el handler está implementado.
 - **Flujo principal**: igual que `OnItemRecordedHandler` en la resolución del `BudgetPeriodStatus`, pero aplicando la diferencia (`newAmount - previousAmount`) en vez del monto completo.
 - **Eventos disparados**: `BudgetOverspent` (si aplica).
 
@@ -218,9 +215,8 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/event-handlers/on-item-reclassified.event-handler.ts`, con
 > pruebas unitarias. Ignora ingresos, resta el gasto del status de origen y lo suma al status de
-> destino cuando existe una configuración activa, creando el status si es necesario. Pendientes:
-> composición del contexto, suscripción al `EventBus`, persistencia concreta y publicación de
-> `BudgetOverspent`.
+> destino cuando existe una configuración activa, creando el status si es necesario. La composición,
+> suscripción y persistencia están implementadas; queda por definir la publicación de `BudgetOverspent`.
 
 - **Se dispara con**: `ItemReclassified`.
 - **Flujo principal**:
@@ -235,8 +231,8 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 > Estado de implementación: implementado en
 > `src/contexts/budgeting/application/event-handlers/on-item-deleted.event-handler.ts`, con
 > pruebas unitarias. Ignora ingresos y categorías sin configuración, y resta el importe del
-> `BudgetPeriodStatus` existente sin crear statuses nuevos. Pendientes: composición del contexto,
-> suscripción al `EventBus`, persistencia concreta y publicación de `BudgetOverspent`.
+> `BudgetPeriodStatus` existente sin crear statuses nuevos. La composición, suscripción y persistencia
+> están implementadas; queda por definir la publicación de `BudgetOverspent`.
 
 - **Se dispara con**: `ItemDeleted`.
 - **Flujo principal**: resta el monto del `BudgetPeriodStatus` correspondiente a la categoría/período del item eliminado, si existe.
@@ -256,12 +252,12 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 | `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudgetConfiguration | (compartidos con `Financial Tracking`) |
 | `InvalidMoneyError` | Varios | ✅ ya definido (pendiente de mover a `shared-kernel`, ver más abajo) |
 
-## Pendientes antes de implementar
+## Decisiones abiertas y mejoras futuras
 
 1. **Permisos**: mismo punto abierto que en `Financial Tracking` — ¿cualquier `Member` puede gestionar presupuestos, o solo `Owner`?
 2. **`Money` compartido**: sigue pendiente moverlo a `shared-kernel`, igual que `Currency`, para que `Budgeting` no dependa del dominio interno de `Financial Tracking`.
 3. **Consulta cruzada de categorías**: `CreateBudgetConfiguration` usa temporalmente `GetCategoriesQuery` como consulta síncrona pública de `Financial Tracking`; `GetBudgets` deberá reutilizar este contrato o extraer un puerto/adaptador dedicado si el contexto crece.
-4. **`ItemAmountChanged` necesita `previousAmount`**: ✅ resuelto en el evento compartido; Reporting ya lo utiliza y Budgeting podrá reutilizar el mismo payload.
+4. **`ItemAmountChanged` necesita `previousAmount`**: ✅ resuelto en el evento compartido; Reporting y Budgeting ya utilizan el payload completo.
 5. **Backfill histórico**: no se recalculan presupuestos desde `financial_items`. Después de resetear
   la base de datos, las tablas de Budgeting comienzan vacías y se poblarán únicamente con eventos
   nuevos; los repositorios solo rehidratan filas propias ya persistidas.

@@ -212,6 +212,6 @@ Como `type` en `categories` va a ser `NOT NULL`, y ya tienes filas existentes (s
 
 ## Mejoras opcionales que quedan abiertas tras este ajuste
 
-1. **Validar que `Budgeting` solo acepte categorías de tipo `Expense`** al crear un `BudgetConfiguration` — natural ahora que el tipo es explícito, pero no forma parte de este plan.
+1. **Validar que `Budgeting` solo acepte categorías de tipo `Expense`** — ✅ implementado en `CreateBudgetConfiguration` mediante `CategoryNotExpenseError`.
 2. **Simplificar `CategoryPeriodAggregate`** en `Reporting` (un solo campo `total` en vez de `totalExpense`/`totalIncome`) — mejora opcional, no urgente.
 3. **Migración de datos existentes** — resuelta para el flujo actual mediante reset de la base de datos; un entorno que necesite conservar datos antiguos requerirá una migración específica.

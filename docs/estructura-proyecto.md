@@ -50,9 +50,8 @@ casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos p
 
 ## Contextos reservados
 
-`Budgeting` tiene un modelo de dominio inicial (`BudgetConfiguration`, `BudgetPeriodStatus`,
-`Period` y `BudgetBalance`), pero todavía no registra casos de uso, persistencia, handlers ni
-rutas. `Reporting` tiene implementados el read model `CategoryPeriodAggregate`, el value object
+`Budgeting` tiene implementados sus cinco comandos/queries, cuatro handlers, persistencia InMemory
+y Drizzle, composición y rutas HTTP. `Reporting` tiene implementados el read model `CategoryPeriodAggregate`, el value object
 `ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición,
 suscripciones al `EventBus` y rutas HTTP. `AI Assistance` conserva
 únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos de diseño no
@@ -60,7 +59,7 @@ representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`
 
 ## Infraestructura y composición
 
-- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access, Financial Tracking y Reporting.
+- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access, Financial Tracking, Budgeting y Reporting.
 - `src/platform/server.ts` selecciona repositorios in-memory por defecto o adaptadores Drizzle
   cuando `PERSISTENCE_MODE=postgres`.
 - PostgreSQL se ejecuta localmente con `docker-compose.yml`; las migraciones están en
@@ -90,6 +89,6 @@ de proveedores externos.
 | Family & Access | Implementado con memoria y PostgreSQL |
 | Financial Tracking | Implementado con memoria y PostgreSQL |
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
-| Budgeting | Cinco comandos/queries, cuatro handlers y persistencia InMemory/Drizzle implementados; composición y rutas pendientes |
+| Budgeting | Completamente implementado con memoria y PostgreSQL; quedan pendientes decisiones funcionales y eventos secundarios |
 | Reporting | Queries, handlers, persistencia, composición y endpoints del read model `CategoryPeriodAggregate` implementados |
 | AI Assistance | Diseño/documentación parcial; implementación pendiente |

@@ -10,7 +10,7 @@ Orden lógico para exponer, vía Fastify, los casos de uso ya diseñados (y en s
 - **Identity** (contexto nuevo, upstream de todo): casos de uso implementados y testeados a nivel de aplicación — `RegisterUser`, `Login`, `GetUserProfile`, `UpdateDisplayName`, `ChangePassword`, `GetUserIdByEmail` (query interna, ya integrada vía `IdentityUserDirectoryAdapter`, wireada en `server.ts`, no se expone por HTTP). Existe el workflow de composición `RegisterUserWithPersonalFamilyWorkflow` (`platform/workflows/`), que orquesta `RegisterUser` + `CreateFamily`. `buildIdentityModule()` ✅ implementado. Rutas expuestas: `POST /auth/register` ✅, `POST /auth/login` ✅, `GET /me/profile` ✅, `PATCH /me/display-name` ✅ y `PATCH /me/password` ✅.
 - **`platform/auth`**: `JwtService`, `TokenService` (con rotación y detección de robo) y `RefreshToken` están implementados y expuestos vía `POST /auth/refresh` ✅ y `POST /auth/logout` ✅. Las rutas viven en `auth.module.ts`, que agrupa la composición HTTP transversal de autenticación.
 - **Family & Access**: los 9 casos de uso originales están implementados, testeados y **expuestos por HTTP** (`POST /families`, `GET /families/:familyId/members`, `POST /families/:familyId/invitations`, `POST /invitations/:invitationId/accept`, `DELETE /invitations/:invitationId`, `DELETE /families/:familyId/members/:memberId`, `PATCH /families/:familyId/members/:memberId/role`, `PATCH /families/:familyId/settings/currency`, `GET /families/:familyId/members/me`), todos con TDD completo. Además, ya se implementó la extensión multi-familia a nivel de aplicación (`GetFamiliesForUser`, `ReorderMyFamilies`, `displayOrder` en `Member`) — **sin ruta HTTP todavía**.
-- **Financial Tracking**: casos de uso y entidades/value objects centrales implementados; sus endpoints HTTP están expuestos. **Reporting** también tiene sus cinco endpoints HTTP implementados; **Budgeting** y **AI Assistance** siguen pendientes.
+- **Financial Tracking**: casos de uso y entidades/value objects centrales implementados; sus endpoints HTTP están expuestos. **Budgeting** y **Reporting** también tienen sus endpoints HTTP implementados. AI Assistance sigue pendiente.
 - **Persistencia**: hay soporte dual. Los repositorios InMemory se usan por defecto y los adaptadores Postgres/Drizzle se activan con `PERSISTENCE_MODE=postgres`; el patrón `reconstitute()` ya está implementado en las entidades persistidas.
 
 ---
@@ -33,7 +33,7 @@ Antes de escalar a docenas de endpoints, resolver esto evita repetir el mismo pr
 
 1. ~~**Helper de registro de dependencias por contexto**: ya resuelto para `Family & Access` (`buildFamilyAccessModule()`). Falta el análogo `buildIdentityModule()` antes de exponer las rutas de la Fase 1.~~ ✅ `buildIdentityModule()` implementado.
 2. **`requireFamilyMembership` conectado de verdad**: ✅ confirmado end-to-end con los endpoints de `Family & Access` (Fase 2).
-3. **Confirmar el criterio de permisos pendiente**: varios documentos de casos de uso (`Financial Tracking`, `Budgeting`) dejaron abierto si las acciones requieren `Owner` o cualquier `Member`. Antes de exponer esos endpoints, conviene resolverlo — cambia qué `minRole` se pasa a `requireFamilyMembership` en cada ruta. `Financial Tracking` ya quedó resuelto en su documento de casos de uso; `Budgeting` sigue pendiente de diseño.
+3. **Criterio de permisos**: ✅ resuelto para los endpoints actuales. Budgeting exige membresía familiar; sus casos de uso no restringen operaciones a `Owner`. Las acciones administrativas futuras pueden requerir una decisión más granular.
 4. ~~**`EmailAddress` movida a `shared-kernel`**~~ ✅: `EmailAddress` e `InvalidEmailError` ahora viven en `shared-kernel` y son consumidos por `Family & Access` e `Identity`.
 
 ---
@@ -100,13 +100,13 @@ Depende de Fase 2 porque cada request necesita `requireFamilyMembership`. Dentro
 
 Depende de Fase 3 porque `CreateBudgetConfiguration` valida contra categorías existentes, y sus event handlers reaccionan a eventos que recién existen cuando hay items reales creándose:
 
-1. **Antes de cualquier ruta**: conectar los 4 event handlers (`OnItemRecordedHandler` y los otros 3) al `EventBus`, y verificar con un test de integración que crear un item vía HTTP efectivamente actualiza un `BudgetPeriodStatus` — este es el primer punto donde se prueba la comunicación asíncrona entre contextos de punta a punta.
-2. `POST /families/:familyId/budgets` (`CreateBudgetConfiguration`).
-3. `GET /families/:familyId/budgets` (`GetBudgets`, con `period` opcional en querystring).
-4. `PATCH /families/:familyId/budgets/:budgetConfigurationId` (`UpdateDefaultBudgetAmount`).
-5. `PUT /families/:familyId/budgets/:budgetConfigurationId/overrides/:period` (`SetBudgetOverrideForPeriod`).
-6. `DELETE /families/:familyId/budgets/:budgetConfigurationId/overrides/:period` (`RemoveBudgetOverrideForPeriod`).
-7. `POST /families/:familyId/budgets/:budgetConfigurationId/deactivate` (`DeactivateBudgetConfiguration`).
+1. ✅ Conectar los 4 event handlers de Budgeting al `EventBus`.
+2. ✅ `POST /families/:familyId/budgets` (`CreateBudgetConfiguration`).
+3. ✅ `GET /families/:familyId/budgets` (`GetBudgets`, con `period` opcional en querystring).
+4. ✅ `PATCH /families/:familyId/budgets/:budgetConfigurationId` (`UpdateDefaultBudgetAmount`).
+5. ✅ `PUT /families/:familyId/budgets/:budgetConfigurationId/overrides/:period` (`SetBudgetOverrideForPeriod`).
+6. ✅ `DELETE /families/:familyId/budgets/:budgetConfigurationId/overrides/:period` (`RemoveBudgetOverrideForPeriod`).
+7. ✅ `POST /families/:familyId/budgets/:budgetConfigurationId/deactivate` (`DeactivateBudgetConfiguration`).
 
 ---
 
