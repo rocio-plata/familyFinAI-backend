@@ -1,8 +1,8 @@
 # Budgeting — Diseño de casos de uso
 
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
-> `SetBudgetOverrideForPeriod` y `RemoveBudgetOverrideForPeriod` ya están implementados y
-> probados. El resto de los casos de uso,
+> `SetBudgetOverrideForPeriod`, `RemoveBudgetOverrideForPeriod` y
+> `DeactivateBudgetConfiguration` ya están implementados y probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -123,6 +123,12 @@ Elimina la excepción de un mes específico, volviendo a usar el monto por defec
 ---
 
 ### 5. DeactivateBudgetConfiguration
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/commands/deactivate-budget-configuration.usecase.ts`, con
+> pruebas unitarias. Valida la pertenencia familiar, desactiva la configuración y persiste el
+> cambio sin eliminar ni modificar el histórico de `BudgetPeriodStatus`. Pendientes: adaptador de
+> persistencia, composición del contexto y ruta HTTP.
 
 Desactiva el presupuesto recurrente — deja de generar seguimiento para meses futuros, pero conserva el histórico de `BudgetPeriodStatus` ya generado.
 

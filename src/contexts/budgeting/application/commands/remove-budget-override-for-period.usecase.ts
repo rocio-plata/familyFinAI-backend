@@ -19,7 +19,7 @@ class RemoveBudgetOverrideForPeriodUseCase {
     const configuration = await this.budgetConfigurationRepository.findById(
       input.budgetConfigurationId,
     );
-    if (!configuration || !configuration.familyId.equals(input.familyId)) {
+    if (!configuration?.familyId.equals(input.familyId)) {
       throw new BudgetConfigurationNotFoundError(input.budgetConfigurationId.toString());
     }
 
