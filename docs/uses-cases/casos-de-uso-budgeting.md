@@ -1,7 +1,8 @@
 # Budgeting — Diseño de casos de uso
 
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
-> `SetBudgetOverrideForPeriod` ya están implementados y probados. El resto de los casos de uso,
+> `SetBudgetOverrideForPeriod` y `RemoveBudgetOverrideForPeriod` ya están implementados y
+> probados. El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
 
@@ -102,6 +103,12 @@ Sobrescribe el monto límite para un mes específico, sin afectar la configuraci
 ---
 
 ### 4. RemoveBudgetOverrideForPeriod
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/commands/remove-budget-override-for-period.usecase.ts`, con
+> pruebas unitarias. Valida la pertenencia familiar, elimina el override, persiste la configuración
+> y vuelve al monto por defecto para el período. Pendientes: adaptador de persistencia, composición
+> del contexto y ruta HTTP.
 
 Elimina la excepción de un mes específico, volviendo a usar el monto por defecto de la configuración recurrente para ese período.
 
