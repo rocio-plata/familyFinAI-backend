@@ -1,6 +1,9 @@
 // tests/contexts/budgeting/create-budget-configuration.usecase.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
+import { CreateBudgetConfigurationUseCase } from "../../../src/contexts/budgeting/application/commands/create-budget-configuration.usecase.js";
+import { BudgetConfiguration } from "../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
+import { BudgetCreated } from "../../../src/contexts/budgeting/domain/events/budget-created.event.js";
 import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
 import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
@@ -9,12 +12,10 @@ import { Category } from "../../../src/contexts/financial-tracking/domain/entiti
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { CreateBudgetConfigurationUseCase } from "../../../src/contexts/budgeting/application/commands/create-budget-configuration.usecase.js";
-import { BudgetConfiguration } from "../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
-import { BudgetCreated } from "../../../src/contexts/budgeting/domain/events/budget-created.event.js";
-import { InMemoryCategoryRepository } from "../../contexts/financial-tracking/doubles/in-memory-category.repository.js";
 import { InMemoryFamilyRepository } from "../../contexts/family-access/doubles/in-memory-family.repository.js";
+import { InMemoryCategoryRepository } from "../../contexts/financial-tracking/doubles/in-memory-category.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
+import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
 
 describe("CreateBudgetConfigurationUseCase", () => {
   test("crea y persiste un presupuesto para una categoría de gasto activa", async () => {
@@ -90,11 +91,9 @@ describe("CreateBudgetConfigurationUseCase", () => {
     const budgetRepository = new InMemoryBudgetConfigurationRepository();
     await familyRepository.save(family);
     await categoryRepository.save(category);
-    await budgetRepository.save(BudgetConfiguration.create(
-      family.id,
-      category.id,
-      Money.of(100_000, "CLP"),
-    ));
+    await budgetRepository.save(
+      BudgetConfiguration.create(family.id, category.id, Money.of(100_000, "CLP")),
+    );
     const useCase = new CreateBudgetConfigurationUseCase(
       familyRepository,
       new GetCategoriesQuery(categoryRepository),
@@ -112,17 +111,3 @@ describe("CreateBudgetConfigurationUseCase", () => {
     );
   });
 });
-
-class InMemoryBudgetConfigurationRepository {
-  private readonly budgets: BudgetConfiguration[] = [];
-
-  async save(budget: BudgetConfiguration): Promise<void> {
-    const index = this.budgets.findIndex((current) => current.id.equals(budget.id));
-    if (index === -1) this.budgets.push(budget);
-    else this.budgets[index] = budget;
-  }
-
-  async findByFamilyId(familyId: Family["id"]): Promise<BudgetConfiguration[]> {
-    return this.budgets.filter((budget) => budget.familyId.equals(familyId));
-  }
-}
