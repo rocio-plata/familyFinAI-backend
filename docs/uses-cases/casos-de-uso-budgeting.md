@@ -3,7 +3,8 @@
 > Estado: `CreateBudgetConfiguration`, `UpdateDefaultBudgetAmount` y
 > `SetBudgetOverrideForPeriod`, `RemoveBudgetOverrideForPeriod` y
 > `DeactivateBudgetConfiguration`, `GetBudgets`, `OnItemRecordedHandler` y
-> `OnItemAmountChangedHandler` y `OnItemReclassifiedHandler` ya están implementados y probados.
+> `OnItemAmountChangedHandler`, `OnItemReclassifiedHandler` y `OnItemDeletedHandler` ya están
+> implementados y probados.
 > El resto de los casos de uso,
 > la persistencia propia de `BudgetConfiguration`, los handlers y las rutas siguen pendientes y el
 > contexto todavía no está registrado en la composición de la aplicación.
@@ -229,6 +230,12 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 ---
 
 ### 10. OnItemDeletedHandler
+
+> Estado de implementación: implementado en
+> `src/contexts/budgeting/application/event-handlers/on-item-deleted.event-handler.ts`, con
+> pruebas unitarias. Ignora ingresos y categorías sin configuración, y resta el importe del
+> `BudgetPeriodStatus` existente sin crear statuses nuevos. Pendientes: composición del contexto,
+> suscripción al `EventBus`, persistencia concreta y publicación de `BudgetOverspent`.
 
 - **Se dispara con**: `ItemDeleted`.
 - **Flujo principal**: resta el monto del `BudgetPeriodStatus` correspondiente a la categoría/período del item eliminado, si existe.
