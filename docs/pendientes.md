@@ -29,13 +29,16 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 ### Opcional
 
-- [ ] Decidir si cualquier `Member` puede gestionar presupuestos o si se requiere rol `Owner`.
 - [ ] Evaluar mover `Money` a `shared-kernel` para evitar depender del dominio interno de `Financial Tracking`.
-- [ ] Evaluar simplificar `CategoryPeriodAggregate` a un único total si el modelo tipado por categoría lo hace conveniente.
-- [ ] Mantener la decisión de no hacer backfill histórico en `Reporting`.
 - [ ] Revisar índices adicionales usando métricas reales de consultas.
 - [ ] Evaluar la estrategia de pool de conexiones si el despliegue final es serverless.
 - [ ] Revisar y estabilizar DTOs HTTP de consultas como `GetFamilyMembers` para la app móvil.
+
+### Decisiones de producto ya cerradas
+
+- [x] Los presupuestos serán modificables por cualquier `Member` de la familia; no se exige rol `Owner`.
+- [x] `CategoryPeriodAggregate` mantendrá separados `totalExpense`, `totalIncome`, `count` y otros valores por categoría, en lugar de un único total agregado.
+- [x] `Reporting` no hará backfill histórico; el read model se alimenta solo con eventos nuevos tras reset.
 
 ## Budgeting
 
@@ -45,10 +48,13 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - Añadir integración end-to-end: crear un movimiento por HTTP y verificar que actualiza
   `BudgetPeriodStatus` a través del `EventBus`.
 
+### Decisión cerrada
+
+- Los presupuestos serán modificables por cualquier `Member` de la familia; no se exige rol
+  `Owner` para estas operaciones.
+
 ### Opcional
 
-- Decidir si cualquier `Member` puede gestionar presupuestos o si las operaciones requieren rol
-  `Owner`.
 - Evaluar mover `Money` a `shared-kernel` para evitar que Budgeting dependa del dominio interno de
   Financial Tracking.
 
@@ -80,12 +86,12 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - Añadir pruebas end-to-end que cubran crear, actualizar, reclasificar y borrar un movimiento y
   verifiquen el read model de Reporting.
 
-### Opcional
+### Decisiones cerradas
 
-- Mantener la decisión de no hacer backfill histórico: después de un reset, el read model comienza
-  vacío y solo se alimenta con eventos nuevos.
-- Evaluar como mejora opcional simplificar `CategoryPeriodAggregate` a un único total si el modelo
-  tipado por categoría lo hace conveniente.
+- No se hará backfill histórico en `Reporting`; después de un reset, el read model comienza vacío y
+  solo se alimenta con eventos nuevos.
+- `CategoryPeriodAggregate` se mantiene con los valores por separado (`totalExpense`, `totalIncome`,
+  `count` y otros datos de agregación) en lugar de un único total global.
 
 ## Persistencia y plataforma
 
