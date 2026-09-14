@@ -1,27 +1,73 @@
 # Pendientes del proyecto
 
-Este documento reúne el trabajo pendiente identificado en los contextos implementados y en la
-infraestructura transversal. `AI Assistance` queda fuera de este inventario.
+Este documento reúne la situación real del repositorio y clasifica cada punto por su estado actual:
+`Resuelto`, `Pendiente` u `Opcional`.
+
+## Checklist global
+
+### Resuelto
+
+- [x] Duplicación del query `GetFamilyMembershipQuery` eliminada del árbol de `application`.
+- [x] Ruta real de `Financial Tracking` corregida y alineada con el código: `src/contexts/financial-tracking/infrastructure/http/financial-tracking.routes.ts`.
+- [x] `UnitOfWork` implementado en `src/platform/db/unit-of-work.ts` y usado en la composición de la app.
+- [x] Endpoints de `Budgeting` y `Reporting` implementados y registrados en la app.
+- [x] Soporte dual InMemory/Postgres según `PERSISTENCE_MODE`.
+- [x] Autenticación + `requireFamilyMembership` funcionando en rutas de familia.
+- [x] Validación HTTP por JSON Schema en rutas de Fastify.
+- [x] Orden de persistencia/publicación en `CreateFinancialItemUseCase` corregido.
+
+### Pendiente
+
+- [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
+- [ ] Implementar notificaciones reales por email para invitaciones.
+- [ ] Definir estrategia de pruebas de integración contra PostgreSQL en CI o base local de test.
+- [ ] Verificar automáticamente `db:reset`, `db:migrate` y la migración inicial desde una base vacía.
+- [ ] Añadir pruebas end-to-end que cubran creación, actualización, reclasificación y borrado de un movimiento y validen el read model de `Reporting`.
+- [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
+- [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
+- [ ] Añadir pruebas de integración para repositorios y migraciones en PostgreSQL.
+
+### Opcional
+
+- [ ] Decidir si cualquier `Member` puede gestionar presupuestos o si se requiere rol `Owner`.
+- [ ] Evaluar mover `Money` a `shared-kernel` para evitar depender del dominio interno de `Financial Tracking`.
+- [ ] Evaluar simplificar `CategoryPeriodAggregate` a un único total si el modelo tipado por categoría lo hace conveniente.
+- [ ] Mantener la decisión de no hacer backfill histórico en `Reporting`.
+- [ ] Revisar índices adicionales usando métricas reales de consultas.
+- [ ] Evaluar la estrategia de pool de conexiones si el despliegue final es serverless.
+- [ ] Revisar y estabilizar DTOs HTTP de consultas como `GetFamilyMembers` para la app móvil.
 
 ## Budgeting
 
+### Pendiente
+
 - Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
+- Añadir integración end-to-end: crear un movimiento por HTTP y verificar que actualiza
+  `BudgetPeriodStatus` a través del `EventBus`.
+
+### Opcional
+
 - Decidir si cualquier `Member` puede gestionar presupuestos o si las operaciones requieren rol
   `Owner`.
 - Evaluar mover `Money` a `shared-kernel` para evitar que Budgeting dependa del dominio interno de
   Financial Tracking.
-- Añadir integración end-to-end: crear un movimiento por HTTP y verificar que actualiza
-  `BudgetPeriodStatus` a través del `EventBus`.
 
 ## Family & Access
 
+### Pendiente
+
 - Implementar notificaciones reales por email para las invitaciones; actualmente están fuera del
   alcance funcional inmediato.
-- Evaluar permisos más granulares para `InviteMember` y `RemoveMember`.
 - Revisar y estabilizar los DTOs HTTP de consultas como `GetFamilyMembers` según las necesidades de
   la app móvil.
 
+### Opcional
+
+- Evaluar permisos más granulares para `InviteMember` y `RemoveMember`.
+
 ## Financial Tracking
+
+### Pendiente
 
 - Mantener documentada la decisión actual de permisos: las operaciones sobre movimientos requieren
   membresía, pero no un rol `Owner`; revisar si el producto necesita permisos más granulares.
@@ -29,25 +75,34 @@ infraestructura transversal. `AI Assistance` queda fuera de este inventario.
 
 ## Reporting
 
+### Pendiente
+
+- Añadir pruebas end-to-end que cubran crear, actualizar, reclasificar y borrar un movimiento y
+  verifiquen el read model de Reporting.
+
+### Opcional
+
 - Mantener la decisión de no hacer backfill histórico: después de un reset, el read model comienza
   vacío y solo se alimenta con eventos nuevos.
 - Evaluar como mejora opcional simplificar `CategoryPeriodAggregate` a un único total si el modelo
   tipado por categoría lo hace conveniente.
-- Añadir pruebas end-to-end que cubran crear, actualizar, reclasificar y borrar un movimiento y
-  verifiquen el read model de Reporting.
 
 ## Persistencia y plataforma
 
-- Implementar un `UnitOfWork` completo para operaciones que modifican varios agregados dentro de
-  una misma transacción.
+### Pendiente
+
 - Definir y ejecutar una estrategia de pruebas de integración contra PostgreSQL en CI o mediante
   una base de datos local de test.
 - Verificar de forma automatizada `db:reset`, `db:migrate` y la migración inicial desde una base
   vacía.
+
+### Opcional
+
 - Revisar índices adicionales usando métricas reales de consultas.
 - Evaluar la estrategia de pool de conexiones si el despliegue final es serverless.
 
 ## Criterio de cierre
 
 Un punto se considera resuelto cuando su implementación, pruebas y documentación reflejan el
-comportamiento real del sistema.
+comportamiento real del sistema. Si un ítem no está en código ni en tests ni en documentación,
+no debe aparecer como `Resuelto`.

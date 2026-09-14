@@ -44,4 +44,4 @@ No existe todavía una ruta que implemente la cadena completa `authenticate` + `
 - **Resuelto:** los 132 archivos TypeScript bajo `src/` ahora comienzan con un comentario uniforme que identifica su ruta, con el formato `// /src/ruta/al/archivo.ts`.
 - **Resuelto:** `POST /families` valida el body mediante el schema de Fastify, por lo que ya no declara un `DomainError` anónimo en la ruta. El manejador global transforma los errores de validación HTTP en una respuesta `400` con el código `HTTP.INVALID_REQUEST_BODY`.
 - **Resuelto:** este hallazgo describía un estado anterior. Reporting ya cuenta con persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y endpoints HTTP; `src/platform/server.ts` selecciona InMemory o PostgreSQL mediante `PERSISTENCE_MODE`.
-- La documentación menciona `financial-item.routes.ts` como ejemplo de middleware, pero ese archivo no existe actualmente.
+- **Corregido:** la ruta real de `Financial Tracking` es `src/contexts/financial-tracking/infrastructure/http/financial-tracking.routes.ts`; la documentación que hacía referencia a un nombre antiguo quedó ajustada para evitar confusión.

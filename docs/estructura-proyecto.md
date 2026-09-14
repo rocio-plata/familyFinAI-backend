@@ -51,11 +51,12 @@ casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos p
 ## Contextos reservados
 
 `Budgeting` tiene implementados sus cinco comandos/queries, cuatro handlers, persistencia InMemory
-y Drizzle, composición y rutas HTTP. `Reporting` tiene implementados el read model `CategoryPeriodAggregate`, el value object
-`ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición,
-suscripciones al `EventBus` y rutas HTTP. `AI Assistance` conserva
-únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos de diseño no
-representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`.
+y Drizzle, composición y rutas HTTP; queda pendiente la definición del evento `BudgetOverspent` y
+algunas decisiones de negocio secundarias. `Reporting` tiene implementados el read model
+`CategoryPeriodAggregate`, el value object `ItemCount`, cinco queries, cuatro event handlers,
+persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y rutas HTTP.
+`AI Assistance` conserva únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos
+de diseño no representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`.
 
 ## Infraestructura y composición
 

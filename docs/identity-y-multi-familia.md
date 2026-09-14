@@ -156,6 +156,8 @@ class DisplayName {
 - **Eventos disparados**: `UserRegistered`.
 - **Nota importante**: este caso de uso **no crea ninguna `Family`** — la creación automática de "Mis finanzas personales" ocurre en una capa de composición aparte, no aquí (ver sección siguiente). Esto es intencional, no un pendiente: mezclar la creación de la familia dentro de `RegisterUser` obligaría a `Identity` a depender de `Family & Access`, invirtiendo la dirección de dependencia ya establecida.
 
+- **Estado actual**: el flujo de registro con familia personal está implementado en la composición de la app, usando `RegisterUserWithPersonalFamilyWorkflow`, y la ruta HTTP `POST /auth/register` lo dispara de forma síncrona para devolver la familia por defecto en la misma respuesta.
+
 ---
 
 ### 2. Login
@@ -308,7 +310,7 @@ El usuario define explícitamente el orden de sus familias.
   2. Por cada `familyId` en `orderedFamilyIds`, según su posición `i`: se busca esa `Family`, se invoca `family.setMemberDisplayOrder(userId, i)`, se persiste.
 - **Errores posibles**: `InvalidFamilyOrderError` (la lista no coincide con las familias reales del usuario).
 - **Eventos disparados**: ninguno.
-- **Nota de consistencia**: este caso de uso escribe en **varios agregados `Family` distintos**, uno por cada familia reordenada — mismo tipo de operación multi-agregado que ya identificamos como pendiente de Unit of Work en `AcceptInvitationUseCase`. Si falla a mitad de camino, algunas familias quedarían con el nuevo orden y otras no — aceptable como pendiente de robustez, no bloqueante para avanzar con el diseño.
+- **Nota de consistencia**: este caso de uso escribe en **varios agregados `Family` distintos**, uno por cada familia reordenada. La capa de plataforma ya expone `UnitOfWork` (`src/platform/db/unit-of-work.ts`), por lo que este patrón queda cubierto en la arquitectura actual y no es un bloqueo funcional pendiente del diseño.
 
 ---
 
@@ -382,7 +384,7 @@ Como la familia personal es la **primera y única** en ese momento, no necesita 
 1. **`EmailAddress` compartido**: mover a `shared-kernel`, igual que `Money`/`Currency`/`Period`.
 2. **Recuperación de contraseña**: fuera de alcance, depende de envío de emails.
 3. **`findAllByMemberUserId` en `FamilyRepository`**: nuevo método en la interfaz del puerto — agregar tanto a `InMemoryFamilyRepository` como a `DrizzleFamilyRepository` cuando se implemente.
-4. **Unit of Work para `ReorderMyFamilies`**: mismo pendiente que `AcceptInvitationUseCase` — escritura multi-agregado sin transacción real todavía (repositorios in-memory no lo necesitan, Postgres sí).
+4. **Robustez de transacciones multi-agregado**: el patrón ya existe en `UnitOfWork`, pero si en el futuro se quiere forzar `tx` explícito en cada repositorio se puede refinar esta capa sin afectar la implementación actual.
 5. **¿Login por email o también por otro identificador?** Se asumió email como único identificador de login.
 6. **Verificación de email**: no contemplada — evaluar si es necesaria para el MVP.
 7. **Nombre de la familia personal**: se fijó como `"Mis finanzas personales"` a secas — evaluar si debería personalizarse con el nombre del usuario, o dejarse editable desde el inicio (ya existe `RenameCategory`... pero no hay `RenameFamily` documentado todavía — falta agregarlo si se quiere permitir cambiar el nombre de cualquier familia, no solo la personal).

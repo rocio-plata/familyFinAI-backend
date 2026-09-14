@@ -420,49 +420,35 @@ disparar eventos de creación.
 
 ## 7. Transacciones multi-agregado (Unit of Work)
 
-Ya identificamos este problema en `AcceptInvitationUseCase`: se guardan dos agregados (`Invitation` y `Family`) que deben ser consistentes entre sí. Con Drizzle, la solución es envolver ambos `save()` en una sola transacción de Postgres — pero eso requiere que los repositorios acepten un cliente de transacción en vez de usar siempre el `db` global.
+La necesidad de transacciones multi-agregado ya fue resuelta en la plataforma actual: `src/platform/db/unit-of-work.ts` expone `DirectUnitOfWork` y `DrizzleUnitOfWork`, y `src/platform/server.ts` los inyecta según el modo de persistencia.
 
 ```typescript
-// platform/db/unit-of-work.ts
+// src/platform/db/unit-of-work.ts
 import { db } from "./connection.js";
 
 type TransactionClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 interface UnitOfWork {
-  run<T>(work: (tx: TransactionClient) => Promise<T>): Promise<T>;
+  run<T>(work: (tx?: TransactionClient) => Promise<T>): Promise<T>;
 }
 
 class DrizzleUnitOfWork implements UnitOfWork {
-  async run<T>(work: (tx: TransactionClient) => Promise<T>): Promise<T> {
+  async run<T>(work: (tx?: TransactionClient) => Promise<T>): Promise<T> {
     return db.transaction(work);
   }
 }
 
-export { DrizzleUnitOfWork };
-export type { UnitOfWork, TransactionClient };
-```
-
-Esto implica un cambio de firma en los repositorios (aceptar opcionalmente un `tx`), y en el caso de uso:
-
-```typescript
-// contexts/family-access/application/commands/accept-invitation.usecase.ts (ajuste conceptual)
-async execute(command: AcceptInvitationCommand): Promise<void> {
-  await this.unitOfWork.run(async (tx) => {
-    const invitation = await this.invitationRepository.findById(command.invitationId, tx);
-    // ...
-    invitation.accept(command.acceptingUserId);
-    await this.invitationRepository.save(invitation, tx);
-
-    const family = await this.familyRepository.findById(invitation.familyId, tx);
-    family.addMemberFromInvitationData(command.acceptingUserId, invitation.role);
-    await this.familyRepository.save(family, tx);
-  });
-
-  // eventos se publican DESPUÉS de que la transacción confirma (mismo principio que ya establecimos)
+class DirectUnitOfWork implements UnitOfWork {
+  async run<T>(work: (tx?: TransactionClient) => Promise<T>): Promise<T> {
+    return work();
+  }
 }
+
+export type { TransactionClient, UnitOfWork };
+export { DirectUnitOfWork, DrizzleUnitOfWork };
 ```
 
-Esto es un cambio de interfaz no trivial (`FamilyRepository`/`InvitationRepository` necesitan aceptar un `tx` opcional), así que conviene implementarlo cuando conectemos este caso de uso específico, no antes.
+Esto resuelve el problema en la capa transversal: los casos de uso que requieran escribir varios agregados pueden usar `unitOfWork.run(...)` sin depender de un patrón ad hoc por contexto. El uso explícito de `tx` en cada repositorio sigue siendo una mejora opcional si más adelante se quiere forzar el paso del cliente de transacción en cada método, pero no es un bloqueo funcional del proyecto actual.
 
 ---
 
@@ -470,7 +456,7 @@ Esto es un cambio de interfaz no trivial (`FamilyRepository`/`InvitationReposito
 
 1. **`Entity.reconstitute()` en cada Aggregate Root**: ✅ implementado en las entidades usadas por los repositorios Drizzle, incluyendo `Family`, `FinancialItem`, `Category`, `User`, `Invitation`, `RefreshToken` y `CategoryPeriodAggregate`.
 2. **Tipo de `period` en `budget_period_statuses`**: ✅ corregido en la implementación; usa `varchar(7)`.
-3. **Unit of Work**: diseñado conceptualmente en la sección 7, pero no implementado — impacta la firma de todos los repositorios (agregar parámetro `tx` opcional).
+3. **Unit of Work**: ✅ implementado en la capa de plataforma; ya no es un pendiente de diseño para la arquitectura actual.
 4. **Testing de integración contra Postgres real**: hoy todos los tests usan repositorios in-memory. Falta decidir la estrategia para tests que sí toquen Postgres (¿una base de datos de test separada en Neon? ¿contenedor Docker local? — esto último requeriría Docker como nueva dependencia de desarrollo, a evaluar contra el criterio de pocas dependencias).
 5. **Índices**: los índices principales ya están definidos en los schemas actuales, incluyendo índices por familia y el compuesto `(family_id, occurred_on)` en `financial_items`. Revisar índices adicionales queda como optimización futura basada en métricas reales.
 6. **Pool de conexiones en serverless**: si el backend se despliega en un entorno serverless (funciones que se crean/destruyen por request), un `Pool` de `pg` tradicional puede agotar las conexiones de Neon rápidamente — Neon ofrece un driver HTTP/WebSocket (`@neondatabase/serverless`) pensado para este escenario, a evaluar según cómo termine desplegándose el backend.
