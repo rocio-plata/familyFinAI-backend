@@ -7,7 +7,7 @@ disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 16 casos de uso de este documento (1–16) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
+> **Estado de implementación**: los 17 casos de uso de este documento (1–17) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
 
 ---
 
@@ -272,6 +272,23 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
 - **Errores posibles**: ninguno propio.
 
 ---
+
+## PaymentMethod
+
+### 17. CreateDefaultPaymentMethods
+
+Crea los medios de pago iniciales de una familia y establece el medio predeterminado del creador.
+
+- **Actor**: proceso interno ejecutado al crear una familia.
+- **Precondiciones**: la familia y el usuario creador existen.
+- **Entrada**: `familyId`, `creatorId`.
+- **Flujo principal**:
+  1. Se consultan los medios de pago existentes de la familia.
+  2. Se crean los faltantes: `Efectivo`, `Tarjeta de Débito`, `Tarjeta de Crédito` y `Transferencia`.
+  3. Se busca la preferencia del creador para esa familia.
+  4. Si no existe, se crea apuntando a `Efectivo`.
+- **Comportamiento repetido**: es idempotente; no duplica medios ni reemplaza una preferencia existente.
+- **Eventos disparados**: ninguno.
 
 ## Resumen de errores nuevos a definir
 
