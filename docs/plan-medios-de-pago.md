@@ -215,7 +215,8 @@ export const paymentMethodPeriodAggregates = pgTable(
 **Estado actual de persistencia**: los schemas y la migración `0006_icy_shriek.sql` ya declaran
 las tablas de medios de pago, preferencias y el agregado de Reporting, además de las foreign keys
 correspondientes. Los repositorios Drizzle de `PaymentMethod` y
-`UserPaymentMethodPreference` aún no están implementados. La migración añade
+`UserPaymentMethodPreference` están implementados y el composition root los selecciona cuando
+`PERSISTENCE_MODE=postgres`. La migración añade
 `financial_items.payment_method_id` como `NOT NULL`. La base se reiniciará con `npm run db:reset`,
 por lo que no se conservarán filas anteriores ni será necesario backfill.
 
@@ -243,7 +244,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 2. **Errores** — ✅ implementados con tests: `InvalidPaymentMethodIdError`, `InvalidPaymentMethodNameError`, `DuplicatePaymentMethodNameError`, `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`, `PaymentMethodHasAssociatedItemsError`, `PaymentMethodIsSomeonesDefaultError` y `NoDefaultPaymentMethodSetError`.
 3. **`PaymentMethod`** — ✅ implementado, scoped por `familyId`, con tests.
 4. **`UserPaymentMethodPreference`** — ✅ implementado con clave compuesta `(userId, familyId)` y tests.
-5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + repositorios in-memory y dobles de test — ✅ implementados con tests de contrato. Incluyen `findByUserAndFamily()`, `findById()`, `existsAnyForPaymentMethod()` y `delete()`; ambas implementaciones in-memory mantienen upsert por identidad. Los adaptadores Drizzle corresponden al paso 19 y siguen pendientes.
+5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + repositorios in-memory/Drizzle y dobles de test — ✅ implementados con tests de contrato. Incluyen `findByUserAndFamily()`, `findById()`, `existsAnyForPaymentMethod()` y `delete()`; las implementaciones hacen upsert por identidad. El composition root selecciona la implementación según `PERSISTENCE_MODE`.
 6. **`PaymentMethodDeletionService`** — ✅ implementado con tests. Valida mediante `PaymentMethodItemAssociationReader` que el medio no tenga items asociados; la eliminación física queda a cargo del futuro caso de uso.
 7. **`FinancialItemRepository.countByPaymentMethod()`** — ✅ implementado en el puerto y en los repositorios in-memory y Drizzle, con tests. La migración de base de datos corresponde al paso 19 y sigue pendiente.
 8. **`FinancialItem`** — ✅ implementado con `paymentMethodId` obligatorio, `changePaymentMethod()`, `ItemPaymentMethodChanged` y tests. La resolución opcional mediante preferencia corresponde al paso 15.
@@ -259,7 +260,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 16. **Actualizar `UpdateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional; si se informa, valida familia y estado activo, cambia el medio y publica `ItemPaymentMethodChanged`. La ruta PATCH y su respuesta también lo soportan.
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — ✅ implementado con entidad, repositorios in-memory/Drizzle, schema y handlers para `ItemRecorded`, `ItemAmountChanged`, `ItemDeleted` e `ItemPaymentMethodChanged`, con tests unitarios. Los eventos fueron ampliados con los datos necesarios para mantener el agregado; la migración DB sigue pendiente del paso 19.
 18. **`GetExpensesByPaymentMethodQuery`** — ✅ implementado con tests TDD. Devuelve gastos por medio de pago para una familia y período, incluye medios deprecados para conservar históricos, ignora ingresos/montos cero y ordena de mayor a menor. La query todavía no está construida en `reporting.module.ts` ni expuesta por HTTP.
-19. **Schemas de Drizzle** — ✅ implementados y migración `0006_icy_shriek.sql` generada para `payment_methods`, `user_payment_method_preferences`, `payment_method_period_aggregates` y la foreign key de `financial_items.payment_method_id`. Pendiente ejecutar `npm run db:reset` para aplicar todo desde una base vacía; no se hará backfill.
+19. **Schemas de Drizzle** — ✅ implementados, con repositorios Drizzle y migración `0006_icy_shriek.sql` aplicada mediante `npm run db:reset` para `payment_methods`, `user_payment_method_preferences`, `payment_method_period_aggregates` y la foreign key de `financial_items.payment_method_id`. No se hizo backfill.
 20. **Rutas HTTP** — ✅ implementadas: endpoints CRUD/deprecación/default bajo `/families/:familyId/payment-methods` y `/families/:familyId/me/default-payment-method`, además de `/families/:familyId/reports/by-payment-method`. Pendientes las pruebas HTTP específicas y la verificación con PostgreSQL tras el reset.
 21. **Actualizar la colección de Postman**.
 22. **Actualizar `casos-de-uso-financial-tracking.md` y `casos-de-uso-reporting.md`**.

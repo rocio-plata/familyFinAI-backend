@@ -21,7 +21,8 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
 - [ ] Implementar notificaciones reales por email para invitaciones.
 - [ ] Definir estrategia de pruebas de integración contra PostgreSQL en CI o base local de test.
-- [ ] Verificar automáticamente `db:reset`, `db:migrate` y la migración inicial desde una base vacía.
+- [x] Ejecutar `npm run db:reset` y aplicar la migración inicial desde una base vacía.
+- [ ] Automatizar en CI la verificación reproducible de `db:reset`/`db:migrate`.
 - [ ] Añadir pruebas end-to-end que cubran creación, actualización, reclasificación y borrado de un movimiento y validen el read model de `Reporting`.
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
@@ -84,8 +85,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - Componer los casos de uso y handlers de medios de pago en `financial-tracking.module.ts`.
 - Registrar `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` en el `EventBus`.
 - Añadir pruebas HTTP específicas para las rutas de medios de pago y default por usuario.
-- Crear los repositorios Drizzle de `PaymentMethod` y `UserPaymentMethodPreference`.
-- Ejecutar `npm run db:reset` y verificar la migración `0006_icy_shriek.sql` desde una base vacía; no se conservarán datos anteriores ni se hará backfill.
+- Verificar de forma automatizada que la migración `0006_icy_shriek.sql` aplicada mediante `npm run db:reset` permanece reproducible; no se conservarán datos anteriores ni se hará backfill.
 
 ## Reporting
 
