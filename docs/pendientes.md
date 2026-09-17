@@ -27,7 +27,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
 - [ ] Implementar notificaciones reales por email para invitaciones.
 - [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
-- [ ] Añadir tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
+- [x] Tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
 - [ ] Añadir tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
@@ -88,7 +88,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - [x] Casos de uso y rutas HTTP de medios de pago compuestos en `financial-tracking.module.ts` (`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`, `SetDefaultPaymentMethodUseCase`, `GetPaymentMethodsQuery`) y expuestos por HTTP en `financial-tracking.routes.ts` (crear, listar, renombrar, deprecar, borrar, fijar default).
 - [x] `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` (medios de pago) suscritos al `EventBus` en `financial-tracking.module.ts`. Al crear una familia se generan automáticamente 4 medios de pago por defecto (Efectivo, Tarjeta de Débito, Tarjeta de Crédito, Transferencia) y se fija "Efectivo" como preferencia del creador; al aceptar una invitación se fija "Efectivo" como preferencia inicial del nuevo miembro; al remover un miembro se borra su preferencia. Probado con test de composición (`tests/unit/contexts/financial-tracking/financial-tracking.module.test.ts`, publica los eventos sobre un `FakeEventBus` y verifica los efectos) y validado end-to-end (los tests de `tests/e2e/` ya no crean el medio de pago manualmente, dependen del que se crea al registrar).
-- [ ] Añadir pruebas HTTP dedicadas (`.route.test.ts`) para las rutas de medios de pago y default por usuario — hoy solo hay tests de los casos de uso con dobles y cobertura funcional vía `tests/e2e/payment-method-lifecycle.test.ts`, pero ningún test HTTP unitario equivalente a `create-category.route.test.ts`.
+- [x] Tests HTTP dedicados (`.route.test.ts`) para las 6 rutas de medios de pago y default por usuario: `create-payment-method.route.test.ts`, `get-payment-methods.route.test.ts`, `rename-payment-method.route.test.ts`, `deprecate-payment-method.route.test.ts`, `delete-payment-method.route.test.ts`, `set-default-payment-method.route.test.ts` (30 tests). Cubren éxito, autenticación, membresía, duplicados, no encontrado, conflictos (asociado a items / default de un usuario) y medio de pago deprecado.
 - [x] Migración `0006_icy_shriek.sql` aplicada mediante `npm run db:reset`; queda pendiente automatizar en CI la verificación de que `db:reset`/`db:migrate` siguen siendo reproducibles (ver sección Persistencia y plataforma).
 
 ## Reporting
