@@ -11,12 +11,14 @@ import { InMemoryFamilyRepository } from "../contexts/family-access/infrastructu
 import { InMemoryInvitationRepository } from "../contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
 import { GetCategoriesQuery } from "../contexts/financial-tracking/application/queries/get-categories.query.js";
 import { GetFinancialItemsQuery } from "../contexts/financial-tracking/application/queries/get-financial-items.query.js";
+import { GetPaymentMethodsQuery } from "../contexts/financial-tracking/application/queries/get-payment-methods.query.js";
 import { DrizzleCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-category.repository.js";
 import { DrizzleFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-financial-item.repository.js";
+import { DrizzlePaymentMethodRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-payment-method.repository.js";
+import { DrizzleUserPaymentMethodPreferenceRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-user-payment-method-preference.repository.js";
 import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
 import { InMemoryFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.js";
 import { InMemoryPaymentMethodRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
-import { GetPaymentMethodsQuery } from "../contexts/financial-tracking/application/queries/get-payment-methods.query.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { GetUserIdByEmailQuery } from "../contexts/identity/application/queries/get-user-id-by-email.query.js";
 import {
@@ -67,7 +69,12 @@ const categoryRepository = usePostgres
 const financialItemRepository = usePostgres
   ? new DrizzleFinancialItemRepository()
   : new InMemoryFinancialItemRepository();
-const paymentMethodRepository = new InMemoryPaymentMethodRepository();
+const paymentMethodRepository = usePostgres
+  ? new DrizzlePaymentMethodRepository()
+  : new InMemoryPaymentMethodRepository();
+const preferenceRepository = usePostgres
+  ? new DrizzleUserPaymentMethodPreferenceRepository()
+  : new InMemoryUserPaymentMethodPreferenceRepository();
 const categoryPeriodAggregateRepository = usePostgres
   ? new DrizzleCategoryPeriodAggregateRepository()
   : new InMemoryCategoryPeriodAggregateRepository();
@@ -106,7 +113,7 @@ const app = buildApp({
     categoryRepository,
     financialItemRepository,
     paymentMethodRepository,
-    preferenceRepository: new InMemoryUserPaymentMethodPreferenceRepository(),
+    preferenceRepository,
     eventBus,
   },
   reporting: {
