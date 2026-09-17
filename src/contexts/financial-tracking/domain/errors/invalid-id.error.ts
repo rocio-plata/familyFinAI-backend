@@ -25,4 +25,17 @@ class InvalidTagIdError extends DomainError {
   }
 }
 
-export { InvalidCategoryIdError, InvalidFinancialItemIdError, InvalidTagIdError };
+class InvalidPaymentMethodIdError extends DomainError {
+  readonly code = "FINANCIAL_TRACKING.INVALID_PAYMENT_METHOD_ID";
+
+  constructor(value: string) {
+    super(`'${value}' no es un PaymentMethodId válido`);
+  }
+}
+
+export {
+  InvalidCategoryIdError,
+  InvalidFinancialItemIdError,
+  InvalidPaymentMethodIdError,
+  InvalidTagIdError,
+};

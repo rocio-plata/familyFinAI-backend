@@ -1,70 +1,68 @@
-# Plan de implementación — Medios de Pago (v2: alcance por usuario)
+# Plan de implementación — Medios de Pago (v3: compartidos por familia, default por usuario)
 
 ## Resumen
 
-`PaymentMethod` vive en `Financial Tracking`, pero **pertenece al usuario, no a la familia**. Cada usuario tiene su propia lista (4 por defecto al registrarse, más los que agregue), con uno marcado como **predeterminado** — se asigna automáticamente a un `FinancialItem` nuevo si no se especifica otro, editable tanto por item como desde la configuración general del usuario. Los reportes de una familia agrupan por **nombre** (no por ID individual), ya que dos miembros pueden tener cada uno su propio "Efectivo" con IDs distintos.
+`PaymentMethod` **pertenece a la familia** — compartido entre todos sus miembros, sin duplicados (una sola "Efectivo" por familia, no una por cada usuario). Lo que sí es individual es **cuál está marcado como predeterminado**: cada usuario puede tener un default distinto dentro de la misma familia (y, como un usuario puede pertenecer a varias familias, un default distinto **por familia** también).
 
-Esta es una revisión de la v1 del plan (que asumía alcance por familia) — varias decisiones cambian en cascada.
 
 ---
 
 ## Decisiones de diseño
 
-### 1. `PaymentMethod` scoped por `userId`, no por `familyId`
+### 1. `PaymentMethod` scoped por `familyId` (como en la v1 original)
 
-Sigue viviendo en `Financial Tracking` (es un concepto financiero, misma familia conceptual que `Category`/`Tag`), pero su dueño es el usuario. `FinancialItem` ya referencia `recordedBy: UserId`, así que este contexto ya conocía el concepto de usuario — no es una dependencia nueva.
+Vuelve a ser igual que `Category`/`Tag`: una lista compartida por toda la familia. Se crean los 4 por defecto al crear la familia (`FamilyCreated`), mismo patrón event-driven que ya usamos.
 
-**Consecuencia directa**: dos miembros de la misma familia tienen **listas de medios de pago completamente independientes**. Si ambos crean uno llamado "Efectivo", son dos `PaymentMethod` distintos (IDs distintos), cada uno solo visible/usable por su dueño.
+### 2. El "default" es una preferencia **por usuario, dentro de una familia** — no global
 
-### 2. Se crean al registrarse, no al crear una familia
+Como el mismo usuario puede pertenecer a varias familias (multi-familia), "mi medio de pago por defecto" no puede ser un valor único y global — necesita estar scoped por **(usuario, familia)**. Ejemplo: en su familia compartida usa "Efectivo" por defecto; en su familia personal, "Tarjeta de Débito".
 
-Mismo patrón event-driven que ya usamos (contexto downstream reaccionando a un evento, sin dependencia circular), pero cambia el evento del que depende: `Financial Tracking` se suscribe a `UserRegistered` (publicado por `Identity`), no a `FamilyCreated`.
+### 3. El "default" vive en un agregado propio, separado de `PaymentMethod`
 
-### 3. El "predeterminado" vive en un agregado propio, separado de `PaymentMethod`
+Mismo motivo que en versiones anteriores: si `isDefault` fuera un campo de `PaymentMethod`, sería una invariante cruzada entre agregados (¿cuál está marcado, entre varios `PaymentMethod` independientes?). Se resuelve con un puntero simple: `UserPaymentMethodPreference`, identificado por la combinación `(userId, familyId)`.
 
-Si `isDefault` fuera un campo de cada `PaymentMethod`, garantizar "solo uno puede ser default a la vez" sería una invariante **cruzada entre agregados** (cada `PaymentMethod` es su propio Aggregate Root) — el mismo tipo de problema que ya evitamos al diseñar el orden de familias. La solución es la misma que usamos ahí: un puntero simple en un solo lugar.
+### 4. Toda membresía nueva recibe un default automáticamente — nunca queda "sin default"
 
-Se introduce un agregado liviano nuevo, `UserPaymentMethodPreference` — una fila por usuario, con el `PaymentMethodId` que está marcado como predeterminado. Vive también en `Financial Tracking` (no hace falta tocar `Identity` para esto — evita acoplar `User` a un identificador que pertenece a otro contexto).
+Para que `CreateFinancialItemUseCase` nunca tenga que **adivinar** cuál sería un buen default si no existe ninguna preferencia, se garantiza que siempre exista una:
 
-### 4. `paymentMethodId` es opcional como *input*, obligatorio como *dato guardado*
+- **Al crear la familia** (`FamilyCreated`): se crean los 4 medios de pago, y se fija el default del creador (`Owner`) en "Efectivo".
+- **Al aceptar una invitación** (`InvitationAccepted`): se fija el default del nuevo miembro en "Efectivo" también, para esa familia.
 
-Mismo patrón que `Family.defaultCurrency` resolviendo `Money`: si no se especifica al crear el item, `CreateFinancialItemUseCase` lo resuelve automáticamente desde `UserPaymentMethodPreference`. El campo en `FinancialItem` nunca queda vacío.
+Así, `CreateFinancialItemUseCase` simplemente **lee** la preferencia existente — si no la encuentra, es un caso realmente excepcional (bug de datos), no un flujo normal a contemplar con lógica de fallback.
 
-### 5. Reportes por familia: agrupados por **nombre**, no por ID
+### 5. Reportes por familia: se simplifican de vuelta — sin necesidad de agrupar por nombre
 
-Como decidiste, un reporte de "gastos del mes por medio de pago" a nivel de familia suma todo lo llamado "Efectivo" junto, sin importar de qué miembro venga. Esto cambia la clave del read model de `Reporting`: en vez de `paymentMethodId`, se agrupa por `paymentMethodName` (normalizado, mismo criterio case-insensitive que ya usa `PaymentMethodName.equals()`).
-
-Para que el event handler de `Reporting` no tenga que hacer una consulta extra a `Financial Tracking` por cada evento, **el nombre viaja denormalizado dentro del propio evento** (`ItemRecorded`, `ItemPaymentMethodChanged`) — el caso de uso que dispara el evento ya tiene el `PaymentMethod` cargado en memoria para validarlo, así que incluir su nombre no cuesta nada extra.
+Como ya no hay medios de pago duplicados por usuario, el problema que motivó "agrupar por nombre" en la v2 desaparece. `PaymentMethodPeriodAggregate` vuelve a agruparse por `paymentMethodId` directamente — más simple, sin denormalizar nombres en los eventos.
 
 ---
 
 ## Entidades y Value Objects
 
-### `PaymentMethod` (Aggregate Root) — actualizado
+### `PaymentMethod` (Aggregate Root) — igual que la v1 original
 
 ```typescript
 // contexts/financial-tracking/domain/entities/payment-method.ts
 class PaymentMethod {
   private constructor(
     private readonly _id: PaymentMethodId,
-    private readonly _userId: UserId,   // antes era familyId
+    private readonly _familyId: FamilyId,
     private _name: PaymentMethodName,
-    private _status: CategoryStatus,    // reutilizado, mismo criterio que en v1
+    private _status: CategoryStatus,
   ) {}
 
   get id(): PaymentMethodId { return this._id; }
-  get userId(): UserId { return this._userId; }
+  get familyId(): FamilyId { return this._familyId; }
   get name(): PaymentMethodName { return this._name; }
   get status(): CategoryStatus { return this._status; }
 
-  static create(userId: UserId, name: PaymentMethodName): PaymentMethod {
-    return new PaymentMethod(PaymentMethodId.generate(), userId, name, CategoryStatus.Active);
+  static create(familyId: FamilyId, name: PaymentMethodName): PaymentMethod {
+    return new PaymentMethod(PaymentMethodId.generate(), familyId, name, CategoryStatus.Active);
   }
 
   static reconstitute(props: ReconstitutePaymentMethodProps): PaymentMethod {
     return new PaymentMethod(
       PaymentMethodId.of(props.id),
-      UserId.of(props.userId),
+      FamilyId.of(props.familyId),
       PaymentMethodName.of(props.name),
       props.status === "ACTIVE" ? CategoryStatus.Active : CategoryStatus.Deprecated,
     );
@@ -77,7 +75,7 @@ class PaymentMethod {
 
 interface ReconstitutePaymentMethodProps {
   id: string;
-  userId: string;
+  familyId: string;
   name: string;
   status: "ACTIVE" | "DEPRECATED";
 }
@@ -86,25 +84,31 @@ export { PaymentMethod };
 export type { ReconstitutePaymentMethodProps };
 ```
 
-### `UserPaymentMethodPreference` (Aggregate Root nuevo)
+### `UserPaymentMethodPreference` (Aggregate Root) — clave compuesta
 
 ```typescript
 // contexts/financial-tracking/domain/entities/user-payment-method-preference.ts
 class UserPaymentMethodPreference {
   private constructor(
     private readonly _userId: UserId,
+    private readonly _familyId: FamilyId,
     private _defaultPaymentMethodId: PaymentMethodId,
   ) {}
 
   get userId(): UserId { return this._userId; }
+  get familyId(): FamilyId { return this._familyId; }
   get defaultPaymentMethodId(): PaymentMethodId { return this._defaultPaymentMethodId; }
 
-  static create(userId: UserId, defaultPaymentMethodId: PaymentMethodId): UserPaymentMethodPreference {
-    return new UserPaymentMethodPreference(userId, defaultPaymentMethodId);
+  static create(userId: UserId, familyId: FamilyId, defaultPaymentMethodId: PaymentMethodId): UserPaymentMethodPreference {
+    return new UserPaymentMethodPreference(userId, familyId, defaultPaymentMethodId);
   }
 
-  static reconstitute(props: { userId: string; defaultPaymentMethodId: string }): UserPaymentMethodPreference {
-    return new UserPaymentMethodPreference(UserId.of(props.userId), PaymentMethodId.of(props.defaultPaymentMethodId));
+  static reconstitute(props: {
+    userId: string; familyId: string; defaultPaymentMethodId: string;
+  }): UserPaymentMethodPreference {
+    return new UserPaymentMethodPreference(
+      UserId.of(props.userId), FamilyId.of(props.familyId), PaymentMethodId.of(props.defaultPaymentMethodId),
+    );
   }
 
   changeDefault(newDefaultPaymentMethodId: PaymentMethodId): void {
@@ -115,28 +119,26 @@ class UserPaymentMethodPreference {
 export { UserPaymentMethodPreference };
 ```
 
-Este agregado no tiene `id` propio — su identidad **es** `userId` (una fila por usuario, igual que `Member` dentro de `Family` no tiene `MemberId` propio).
+Identidad = `(userId, familyId)`, sin `id` propio — igual que `Member` dentro de `Family`.
 
-### Value Objects — sin cambios respecto a v1
+### Value Objects — sin cambios
 
-`PaymentMethodId`, `PaymentMethodName` — mismo diseño que ya planteamos.
+`PaymentMethodId`, `PaymentMethodName` — igual que en versiones anteriores.
 
 ---
 
 ## `FinancialItem` — ajustes
 
-- `paymentMethodId` sigue siendo un campo obligatorio de la entidad.
-- La validación de "pertenece a quién" cambia: ya no se valida contra `familyId`, se valida que `paymentMethod.userId === recordedBy`.
-- `ItemRecorded` y el nuevo `ItemPaymentMethodChanged` llevan `paymentMethodId` **y** `paymentMethodName` (denormalizado, ver decisión 5).
+- `paymentMethodId` sigue siendo obligatorio en la entidad, opcional como input (resuelto vía `UserPaymentMethodPreference` si no se especifica).
+- La validación de pertenencia vuelve a ser contra `familyId` (como en la v1): `paymentMethod.familyId === item.familyId`.
+- `ItemRecorded`/`ItemPaymentMethodChanged` llevan `paymentMethodId` — **sin** necesidad de denormalizar el nombre (a diferencia de la v2).
 
 ```typescript
-changePaymentMethod(newPaymentMethodId: PaymentMethodId, newPaymentMethodName: string): void {
+changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
   const previousPaymentMethodId = this._paymentMethodId;
   this._paymentMethodId = newPaymentMethodId;
   this.domainEvents.push(
-    new ItemPaymentMethodChanged(
-      this.id, this.familyId, previousPaymentMethodId, newPaymentMethodId, newPaymentMethodName, this.amount, this.type,
-    ),
+    new ItemPaymentMethodChanged(this.id, this.familyId, previousPaymentMethodId, newPaymentMethodId, this.amount, this.type),
   );
 }
 ```
@@ -147,24 +149,25 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId, newPaymentMethodName: s
 
 ### En `Financial Tracking`
 
-1. **`CreateDefaultPaymentMethodsUseCase`** (interno) — crea los 4 `PaymentMethod` para un `userId`, y crea el `UserPaymentMethodPreference` inicial apuntando a "Efectivo" como default.
-2. **`OnUserRegisteredHandler`** — se suscribe a `UserRegistered` (de `Identity`), invoca el caso de uso anterior. *(Reemplaza al `OnFamilyCreatedHandler` de la v1.)*
-3. **`CreatePaymentMethodUseCase`** — entrada: `userId`, `name`. Rechaza nombre duplicado **dentro de los medios de pago de ese usuario** (no de toda la familia).
-4. **`RenamePaymentMethodUseCase`**, **`DeprecatePaymentMethodUseCase`**, **`DeletePaymentMethodUseCase`** — mismo patrón que v1, ahora scoped por `userId`.
-5. **`GetPaymentMethodsQuery`** — entrada: `userId` (no `familyId`).
-6. **`SetDefaultPaymentMethodUseCase`** (nuevo) — entrada: `userId`, `paymentMethodId`. Valida que el medio de pago pertenezca al usuario y esté `Active`, busca (o crea si no existiera) el `UserPaymentMethodPreference`, invoca `changeDefault()`.
+1. **`CreateDefaultPaymentMethodsUseCase`** (interno) — crea los 4 `PaymentMethod` de la familia, y crea el `UserPaymentMethodPreference` del creador apuntando a "Efectivo".
+2. **`OnFamilyCreatedHandler`** — se suscribe a `FamilyCreated`, invoca el caso de uso anterior.
+3. **`SetInitialPaymentMethodPreferenceUseCase`** (interno, nuevo) — crea el `UserPaymentMethodPreference` de un miembro nuevo, apuntando a "Efectivo" de esa familia.
+4. **`OnInvitationAcceptedHandler`** (nuevo, en `Financial Tracking`) — se suscribe a `InvitationAccepted` (de `Family & Access`), invoca el caso de uso anterior.
+4b. **`OnMemberRemovedHandler`** (nuevo, en `Financial Tracking`) — se suscribe a `MemberRemoved` (de `Family & Access`), elimina el `UserPaymentMethodPreference` de `(removedUserId, familyId)` si existía (limpieza, no falla si no había ninguna).
+5. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — scoped por `familyId`, mismo patrón que `Category` (idéntico a la v1 original). **Sin restricción de rol** — cualquier `Member` puede ejecutarlos.
+5b. **`DeprecatePaymentMethodUseCase`** — antes de invocar `deprecate()`, valida que ningún `UserPaymentMethodPreference` apunte a este medio de pago (`UserPaymentMethodPreferenceRepository.existsAnyForPaymentMethod()`, nuevo método del puerto); si alguno lo tiene como default, rechaza con `PaymentMethodIsSomeonesDefaultError`. Sin restricción de rol.
+5c. **`DeletePaymentMethodUseCase`** — usa `PaymentMethodDeletionService` (protección por items asociados, igual que `Category`) **y además** la misma validación de 5b antes de eliminar. Sin restricción de rol.
+6. **`SetDefaultPaymentMethodUseCase`** — entrada: `userId`, `familyId`, `paymentMethodId`. Valida que el medio de pago pertenezca a esa familia y esté `Active`; busca o crea el `UserPaymentMethodPreference` de `(userId, familyId)`.
 
 ### Modificados
 
-7. **`CreateFinancialItemUseCase`** — `paymentMethodId` pasa a **opcional** en la entrada:
-   - Si viene: valida que `paymentMethod.userId === recordedBy` y que esté `Active`.
-   - Si no viene: resuelve vía `UserPaymentMethodPreference` del `recordedBy`.
-8. **`UpdateFinancialItemUseCase`** — `paymentMethodId` opcional; si viene, misma validación de pertenencia al usuario que registró el item (no a quien lo está editando, si son distintos — ver pendiente #3).
+7. **`CreateFinancialItemUseCase`** — `paymentMethodId` opcional; si no viene, se resuelve vía `UserPaymentMethodPreferenceRepository.findByUserAndFamily(recordedBy, familyId)`.
+8. **`UpdateFinancialItemUseCase`** — `paymentMethodId` opcional; si viene, valida pertenencia a la familia del item (no al usuario que edita).
 
-### En `Reporting`
+### En `Reporting` — vuelve a la simplicidad de la v1
 
-9. **`GetExpensesByPaymentMethodQuery`** — sin cambios en la firma (`familyId`, `period`), pero internamente ahora agrupa por `paymentMethodName`.
-10. **Event handlers** (`OnItemRecordedHandler`, `OnItemAmountChangedHandler`, `OnItemPaymentMethodChangedHandler`, `OnItemDeletedHandler`) — actualizan `PaymentMethodPeriodAggregate` usando `paymentMethodName` del evento como clave de agrupación, no `paymentMethodId`.
+9. **`GetExpensesByPaymentMethodQuery`** — agrupa por `paymentMethodId` directamente.
+10. **Event handlers** — actualizan `PaymentMethodPeriodAggregate` (`familyId`, `paymentMethodId`, `period`) sin necesidad de nombres denormalizados.
 
 ---
 
@@ -173,12 +176,12 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId, newPaymentMethodName: s
 | Error | Notas |
 |---|---|
 | `InvalidPaymentMethodNameError` | sin cambios |
-| `DuplicatePaymentMethodNameError` | ahora valida unicidad dentro del usuario, no de la familia |
-| `PaymentMethodNotFoundError` | se usa también cuando el medio de pago existe pero pertenece a **otro usuario** — mismo criterio de seguridad que ya aplicamos en `GetFamilyMembership` (no revelar si algo existe pero no es tuyo vs. no existe en absoluto) |
+| `DuplicatePaymentMethodNameError` | unicidad dentro de la familia (como en v1) |
+| `PaymentMethodNotFoundError` | cubre también "existe pero es de otra familia" (mismo criterio de seguridad ya aplicado en otros lugares) |
 | `PaymentMethodNotActiveError` | sin cambios |
 | `PaymentMethodHasAssociatedItemsError` | sin cambios |
-
-Se **elimina** la necesidad de un error separado de "no pertenece a esta familia" — `PaymentMethodNotFoundError` cubre ambos casos por la razón de seguridad recién explicada.
+| `PaymentMethodIsSomeonesDefaultError` (nuevo) | se lanza en `DeprecatePaymentMethod`/`DeletePaymentMethod` si algún `UserPaymentMethodPreference` de la familia lo tiene marcado como default |
+| `NoDefaultPaymentMethodSetError` (nuevo) | caso excepcional: `CreateFinancialItemUseCase` no encuentra ninguna preferencia — no debería ocurrir en flujo normal (ver decisión 4), pero se maneja explícito en vez de fallar con un error genérico |
 
 ---
 
@@ -188,15 +191,22 @@ Se **elimina** la necesidad de un error separado de "no pertenece a esta familia
 // contexts/financial-tracking/infrastructure/persistence/schema.ts
 export const paymentMethods = pgTable("payment_methods", {
   id: uuid("id").primaryKey(),
-  userId: uuid("user_id").notNull(),   // antes family_id
+  familyId: uuid("family_id").notNull(),
   name: varchar("name", { length: 40 }).notNull(),
   status: categoryStatusEnum("status").notNull().default("ACTIVE"),
 });
 
-export const userPaymentMethodPreferences = pgTable("user_payment_method_preferences", {
-  userId: uuid("user_id").primaryKey(),
-  defaultPaymentMethodId: uuid("default_payment_method_id").notNull().references(() => paymentMethods.id),
-});
+export const userPaymentMethodPreferences = pgTable(
+  "user_payment_method_preferences",
+  {
+    userId: uuid("user_id").notNull(),
+    familyId: uuid("family_id").notNull(),
+    defaultPaymentMethodId: uuid("default_payment_method_id").notNull().references(() => paymentMethods.id),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.userId, table.familyId] }),
+  }),
+);
 
 export const financialItems = pgTable("financial_items", {
   // ... columnas existentes
@@ -209,7 +219,7 @@ export const financialItems = pgTable("financial_items", {
 export const paymentMethodPeriodAggregates = pgTable("payment_method_period_aggregates", {
   id: uuid("id").primaryKey(),
   familyId: uuid("family_id").notNull(),
-  paymentMethodName: varchar("payment_method_name", { length: 40 }).notNull(),  // clave de agrupación, no un FK
+  paymentMethodId: uuid("payment_method_id").notNull(),
   period: varchar("period", { length: 7 }).notNull(),
   totalExpense: numeric("total_expense", { precision: 14, scale: 2 }).notNull().default("0"),
   totalIncome: numeric("total_income", { precision: 14, scale: 2 }).notNull().default("0"),
@@ -217,54 +227,58 @@ export const paymentMethodPeriodAggregates = pgTable("payment_method_period_aggr
 });
 ```
 
-Nota que `paymentMethodName` en el read model de `Reporting` **no es un FK** — es intencional, es la clave de agrupación denormalizada, no una referencia a una fila específica de `payment_methods` (que ni siquiera tendría sentido, ya que agrupa varias filas distintas bajo el mismo nombre).
-
-`npm run db:reset` sigue siendo el camino más simple dado que no te importa perder los datos de prueba actuales.
+`npm run db:reset` sigue siendo el camino más simple.
 
 ---
 
 ## Endpoints HTTP
 
-Cambian de estar bajo `/families/:familyId/...` a estar bajo `/me/...` (igual que `GetFamiliesForUser`/`ReorderMyFamilies`), ya que son datos del usuario, no de una familia específica:
+Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "mi default", que es explícitamente personal dentro de esa familia:
 
-- `POST /me/payment-methods` (`CreatePaymentMethod`)
-- `GET /me/payment-methods` (`GetPaymentMethods`)
-- `PATCH /me/payment-methods/:paymentMethodId` (`RenamePaymentMethod`)
-- `POST /me/payment-methods/:paymentMethodId/deprecate` (`DeprecatePaymentMethod`)
-- `DELETE /me/payment-methods/:paymentMethodId` (`DeletePaymentMethod`)
-- `PUT /me/payment-methods/default` (`SetDefaultPaymentMethod`)
+- `POST /families/:familyId/payment-methods` (`CreatePaymentMethod`)
+- `GET /families/:familyId/payment-methods` (`GetPaymentMethods`)
+- `PATCH /families/:familyId/payment-methods/:paymentMethodId` (`RenamePaymentMethod`)
+- `POST /families/:familyId/payment-methods/:paymentMethodId/deprecate` (`DeprecatePaymentMethod`)
+- `DELETE /families/:familyId/payment-methods/:paymentMethodId` (`DeletePaymentMethod`)
+- `PUT /families/:familyId/me/default-payment-method` (`SetDefaultPaymentMethod`) — nota el `/me/` intermedio: es una preferencia del usuario autenticado, dentro del scope de esa familia.
 - `POST /families/:familyId/items` (`CreateFinancialItem`) — `paymentMethodId` opcional en el body.
 - `PATCH /families/:familyId/items/:itemId` (`UpdateFinancialItem`) — `paymentMethodId` opcional en el body.
-- `GET /families/:familyId/reports/by-payment-method` (`GetExpensesByPaymentMethod`) — sin cambios en la ruta.
+- `GET /families/:familyId/reports/by-payment-method` (`GetExpensesByPaymentMethod`).
 
 ---
 
 ## Plan de implementación (orden sugerido, con TDD)
 
-1. **`PaymentMethodId`, `PaymentMethodName`** — sin cambios respecto a v1.
-2. **Errores nuevos** (tabla de arriba).
-3. **`PaymentMethod`** — con `userId` en vez de `familyId`, tests actualizados.
-4. **`UserPaymentMethodPreference`** — entidad nueva, con tests (`create()`, `changeDefault()`, `reconstitute()`).
-5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + dobles in-memory.
+1. **`PaymentMethodId`, `PaymentMethodName`** — sin cambios.
+2. **Errores** (tabla de arriba).
+3. **`PaymentMethod`** — scoped por `familyId`, con tests.
+4. **`UserPaymentMethodPreference`** — con clave compuesta `(userId, familyId)`, con tests.
+5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + dobles in-memory. `UserPaymentMethodPreferenceRepository` incluye `findByUserAndFamily()`, `existsAnyForPaymentMethod(paymentMethodId)` y `delete(userId, familyId)`.
 6. **`PaymentMethodDeletionService`** — con tests.
-7. **`FinancialItemRepository.countByPaymentMethod()`** — nuevo método.
-8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()` con el evento actualizado (incluye nombre), tests.
-9. **`CreateDefaultPaymentMethodsUseCase`** — con test verificando los 4 medios de pago + la preferencia default inicial.
-10. **`OnUserRegisteredHandler`** — test de integración con `FakeEventBus`.
-11. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — TDD, scoped por `userId`.
-12. **`SetDefaultPaymentMethodUseCase`** — TDD, incluyendo el caso de crear la preferencia si no existía.
-13. **Actualizar `CreateFinancialItemUseCase`** — `paymentMethodId` opcional + resolución del default, tests actualizados.
-14. **Actualizar `UpdateFinancialItemUseCase`** — `paymentMethodId` opcional, tests actualizados.
-15. **`PaymentMethodPeriodAggregate`** (Reporting) — schema + los 4 event handlers, agrupando por `paymentMethodName`, con TDD.
-16. **`GetExpensesByPaymentMethodQuery`** — con TDD.
-17. **Schemas de Drizzle** — tablas/columnas nuevas, `npm run db:generate`, `npm run db:reset`.
-18. **Rutas HTTP** — los 8 endpoints listados arriba.
-19. **Actualizar la colección de Postman**.
-20. **Actualizar `casos-de-uso-financial-tracking.md` y `casos-de-uso-reporting.md`**.
+7. **`FinancialItemRepository.countByPaymentMethod()`**.
+8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()`, tests.
+9. **`CreateDefaultPaymentMethodsUseCase`** — con test de los 4 medios de pago + el default del creador.
+10. **`OnFamilyCreatedHandler`** — test de integración.
+11. **`SetInitialPaymentMethodPreferenceUseCase`** — con test.
+12. **`OnInvitationAcceptedHandler`** (en `Financial Tracking`) — test de integración, verificando que un nuevo miembro recibe su preferencia automáticamente al aceptar.
+12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — test de integración, verificando que la preferencia del miembro removido se elimina (y que no falla si no existía ninguna).
+13. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — TDD, mismo patrón que `Category`, sin chequeo de rol.
+13b. **`DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`** — TDD, incluyendo el caso rechazado por `PaymentMethodIsSomeonesDefaultError`.
+14. **`SetDefaultPaymentMethodUseCase`** — TDD.
+15. **Actualizar `CreateFinancialItemUseCase`** — `paymentMethodId` opcional + resolución de default + `NoDefaultPaymentMethodSetError` para el caso excepcional.
+16. **Actualizar `UpdateFinancialItemUseCase`** — `paymentMethodId` opcional.
+17. **`PaymentMethodPeriodAggregate`** (Reporting) — schema + los 4 event handlers, con TDD.
+18. **`GetExpensesByPaymentMethodQuery`** — con TDD.
+19. **Schemas de Drizzle** — tablas/columnas, `npm run db:generate`, `npm run db:reset`.
+20. **Rutas HTTP** — los 9 endpoints.
+21. **Actualizar la colección de Postman**.
+22. **Actualizar `casos-de-uso-financial-tracking.md` y `casos-de-uso-reporting.md`**.
 
-## Pendientes que quedan abiertos
+## Estado de los pendientes
 
-1. **Permisos**: mismo punto abierto de siempre, aunque acá cambia de forma — como los medios de pago son del usuario, no de la familia, probablemente no aplique ningún concepto de `Owner`/`Member` en absoluto (cada usuario gestiona los suyos sin restricción, ya que nadie más los ve). A confirmar que esa lectura es correcta.
-2. **¿Se puede deprecar/eliminar el medio de pago marcado como predeterminado?** Si se elimina o deprecia, `UserPaymentMethodPreference` queda apuntando a algo inválido/inactivo — hay que decidir: ¿se reasigna automáticamente a otro (cuál?), o se bloquea la eliminación/depreciación mientras sea el default?
-3. **Edición de un item por otro miembro de la familia**: si `UpdateFinancialItem` permite que cualquier miembro edite un item (no solo quien lo registró — pendiente ya abierto desde el documento original), y esa persona cambia el `paymentMethodId`, ¿debe poder elegir entre **sus propios** medios de pago, o solo entre los de quien registró el item originalmente? Con el diseño actual, la validación es contra `item.recordedBy`, no contra quien edita — a confirmar que es la semántica correcta.
-4. **`GetExpensesByPaymentMethod` con nombres editados a mitad de camino**: si un usuario renombra "Efectivo" a "Cash" después de tener movimientos históricos, los períodos pasados en el read model de `Reporting` quedaron agrupados bajo el nombre viejo (por el mismo motivo que `RenameCategory` no dispara evento hoy — pendiente ya heredado del documento de `Financial Tracking`). No es exclusivo de este plan, pero se vuelve más visible acá.
+Los dos pendientes que quedaban abiertos en la v3 ya se resolvieron:
+
+1. ~~`RemoveMember` deja huérfana la preferencia~~ → resuelto con `OnMemberRemovedHandler` (ver arriba).
+2. ~~Edición de un item por otro miembro~~ → confirmado que el comportamiento heredado (la validación es contra la familia, no contra la persona) es consistente con el resto del diseño y se mantiene tal cual.
+
+No quedan decisiones de producto pendientes en este plan — está listo para implementar en orden.
