@@ -16,6 +16,7 @@ import { DrizzleFinancialItemRepository } from "../contexts/financial-tracking/i
 import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
 import { InMemoryFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.js";
 import { InMemoryPaymentMethodRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { GetPaymentMethodsQuery } from "../contexts/financial-tracking/application/queries/get-payment-methods.query.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { GetUserIdByEmailQuery } from "../contexts/identity/application/queries/get-user-id-by-email.query.js";
 import {
@@ -66,6 +67,7 @@ const categoryRepository = usePostgres
 const financialItemRepository = usePostgres
   ? new DrizzleFinancialItemRepository()
   : new InMemoryFinancialItemRepository();
+const paymentMethodRepository = new InMemoryPaymentMethodRepository();
 const categoryPeriodAggregateRepository = usePostgres
   ? new DrizzleCategoryPeriodAggregateRepository()
   : new InMemoryCategoryPeriodAggregateRepository();
@@ -103,13 +105,14 @@ const app = buildApp({
   financialTracking: {
     categoryRepository,
     financialItemRepository,
-    paymentMethodRepository: new InMemoryPaymentMethodRepository(),
+    paymentMethodRepository,
     preferenceRepository: new InMemoryUserPaymentMethodPreferenceRepository(),
     eventBus,
   },
   reporting: {
     aggregateRepository: categoryPeriodAggregateRepository,
     paymentMethodAggregateRepository: paymentMethodPeriodAggregateRepository,
+    getPaymentMethodsQuery: new GetPaymentMethodsQuery(paymentMethodRepository),
     getCategoriesQuery: new GetCategoriesQuery(categoryRepository),
     getFinancialItemsQuery: new GetFinancialItemsQuery(financialItemRepository),
     eventBus,

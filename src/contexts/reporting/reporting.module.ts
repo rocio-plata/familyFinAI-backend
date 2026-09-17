@@ -5,6 +5,7 @@ import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
 import type { GetCategoriesQuery } from "../financial-tracking/application/queries/get-categories.query.js";
 import type { GetFinancialItemsQuery } from "../financial-tracking/application/queries/get-financial-items.query.js";
+import type { GetPaymentMethodsQuery } from "../financial-tracking/application/queries/get-payment-methods.query.js";
 import type { ItemAmountChanged } from "../financial-tracking/domain/events/item-amount-changed.event.js";
 import type { ItemDeleted } from "../financial-tracking/domain/events/item-deleted.event.js";
 import type { ItemPaymentMethodChanged } from "../financial-tracking/domain/events/item-payment-method-changed.event.js";
@@ -21,6 +22,7 @@ import { OnItemRecordedByPaymentMethodEventHandler } from "./application/event-h
 import { GetCategoryBreakdownQuery } from "./application/queries/get-category-breakdown.query.js";
 import { GetDashboardSummaryQuery } from "./application/queries/get-dashboard-summary.query.js";
 import { GetDrillDownQuery } from "./application/queries/get-drill-down.query.js";
+import { GetExpensesByPaymentMethodQuery } from "./application/queries/get-expenses-by-payment-method.query.js";
 import { GetPeriodComparisonQuery } from "./application/queries/get-period-comparison.query.js";
 import { GetTrendQuery } from "./application/queries/get-trend.query.js";
 import type { CategoryPeriodAggregateRepository } from "./domain/repositories/category-period-aggregate.repository.js";
@@ -30,6 +32,7 @@ import { registerReportingRoutes } from "./infrastructure/http/reporting.routes.
 interface ReportingModuleDependencies {
   aggregateRepository: CategoryPeriodAggregateRepository;
   paymentMethodAggregateRepository: PaymentMethodPeriodAggregateRepository;
+  getPaymentMethodsQuery: GetPaymentMethodsQuery;
   getCategoriesQuery: GetCategoriesQuery;
   getFinancialItemsQuery: GetFinancialItemsQuery;
   eventBus: EventBus;
@@ -46,6 +49,10 @@ function buildReportingModule(
   const getCategoryBreakdownQuery = new GetCategoryBreakdownQuery(
     deps.aggregateRepository,
     deps.getCategoriesQuery,
+  );
+  const getExpensesByPaymentMethodQuery = new GetExpensesByPaymentMethodQuery(
+    deps.paymentMethodAggregateRepository,
+    deps.getPaymentMethodsQuery,
   );
   const getFinancialItemsQuery = deps.getFinancialItemsQuery;
   const queries = {
@@ -113,6 +120,7 @@ function buildReportingModule(
         getPeriodComparisonQuery: queries.getPeriodComparison,
         getTrendQuery: queries.getTrend,
         getDrillDownQuery: queries.getDrillDown,
+        getExpensesByPaymentMethodQuery,
       });
     },
   };

@@ -8,24 +8,31 @@ import type { FamilyCreated } from "../family-access/domain/events/family-create
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
 import { CreateFinancialItemUseCase } from "./application/commands/create-financial-item.usecase.js";
+import { CreatePaymentMethodUseCase } from "./application/commands/create-payment-method.usecase.js";
 import { DeleteCategoryUseCase } from "./application/commands/delete-category.usecase.js";
 import { DeleteFinancialItemUseCase } from "./application/commands/delete-financial-item.usecase.js";
+import { DeletePaymentMethodUseCase } from "./application/commands/delete-payment-method.usecase.js";
 import { DeleteTagUseCase } from "./application/commands/delete-tag.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
+import { DeprecatePaymentMethodUseCase } from "./application/commands/deprecate-payment-method.usecase.js";
 import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
 import { ReclassifyFinancialItemUseCase } from "./application/commands/reclassify-financial-item.usecase.js";
 import { RenameCategoryUseCase } from "./application/commands/rename-category.usecase.js";
+import { RenamePaymentMethodUseCase } from "./application/commands/rename-payment-method.usecase.js";
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
+import { SetDefaultPaymentMethodUseCase } from "./application/commands/set-default-payment-method.usecase.js";
 import { UpdateFinancialItemUseCase } from "./application/commands/update-financial-item.usecase.js";
 import { CreateDefaultCategoriesOnFamilyCreatedEventHandler } from "./application/event-handlers/create-default-categories-on-family-created.event-handler.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import { GetFinancialItemsQuery } from "./application/queries/get-financial-items.query.js";
+import { GetPaymentMethodsQuery } from "./application/queries/get-payment-methods.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
 import type { FinancialItemRepository } from "./domain/repositories/financial-item.repository.js";
 import type { PaymentMethodRepository } from "./domain/repositories/payment-method.repository.js";
 import type { UserPaymentMethodPreferenceRepository } from "./domain/repositories/user-payment-method-preference.repository.js";
 import { CategoryDeletionService } from "./domain/services/category-deletion.service.js";
+import { PaymentMethodDeletionService } from "./domain/services/payment-method-deletion.service.js";
 import { TagDeletionService } from "./domain/services/tag-deletion.service.js";
 import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial-tracking.routes.js";
 
@@ -42,6 +49,9 @@ interface FinancialTrackingModule {
     addTagToCategory: AddTagToCategoryUseCase;
     createCategory: CreateCategoryUseCase;
     createFinancialItem: CreateFinancialItemUseCase;
+    createPaymentMethod: CreatePaymentMethodUseCase;
+    deletePaymentMethod: DeletePaymentMethodUseCase;
+    deprecatePaymentMethod: DeprecatePaymentMethodUseCase;
     deleteCategory: DeleteCategoryUseCase;
     deleteFinancialItem: DeleteFinancialItemUseCase;
     deleteTag: DeleteTagUseCase;
@@ -49,11 +59,14 @@ interface FinancialTrackingModule {
     deprecateTag: DeprecateTagUseCase;
     getCategories: GetCategoriesQuery;
     getFinancialItems: GetFinancialItemsQuery;
+    getPaymentMethods: GetPaymentMethodsQuery;
     renameCategory: RenameCategoryUseCase;
     renameTag: RenameTagUseCase;
     reclassifyFinancialItem: ReclassifyFinancialItemUseCase;
     reorderCategoryTags: ReorderCategoryTagsUseCase;
     updateFinancialItem: UpdateFinancialItemUseCase;
+    renamePaymentMethod: RenamePaymentMethodUseCase;
+    setDefaultPaymentMethod: SetDefaultPaymentMethodUseCase;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -76,6 +89,21 @@ function buildFinancialTrackingModule(
       deps.eventBus,
       deps.paymentMethodRepository,
       deps.preferenceRepository,
+    ),
+    createPaymentMethod: new CreatePaymentMethodUseCase(
+      deps.paymentMethodRepository,
+      getFamilyMembershipQuery,
+    ),
+    deletePaymentMethod: new DeletePaymentMethodUseCase(
+      deps.paymentMethodRepository,
+      deps.preferenceRepository,
+      new PaymentMethodDeletionService(deps.financialItemRepository),
+      getFamilyMembershipQuery,
+    ),
+    deprecatePaymentMethod: new DeprecatePaymentMethodUseCase(
+      deps.paymentMethodRepository,
+      deps.preferenceRepository,
+      getFamilyMembershipQuery,
     ),
     deleteCategory: new DeleteCategoryUseCase(
       deps.categoryRepository,
@@ -103,6 +131,7 @@ function buildFinancialTrackingModule(
     ),
     getCategories: new GetCategoriesQuery(deps.categoryRepository),
     getFinancialItems: new GetFinancialItemsQuery(deps.financialItemRepository),
+    getPaymentMethods: new GetPaymentMethodsQuery(deps.paymentMethodRepository),
     renameCategory: new RenameCategoryUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     renameTag: new RenameTagUseCase(deps.categoryRepository, getFamilyMembershipQuery),
     reclassifyFinancialItem: new ReclassifyFinancialItemUseCase(
@@ -115,6 +144,15 @@ function buildFinancialTrackingModule(
       deps.financialItemRepository,
       deps.eventBus,
       deps.paymentMethodRepository,
+    ),
+    renamePaymentMethod: new RenamePaymentMethodUseCase(
+      deps.paymentMethodRepository,
+      getFamilyMembershipQuery,
+    ),
+    setDefaultPaymentMethod: new SetDefaultPaymentMethodUseCase(
+      deps.paymentMethodRepository,
+      deps.preferenceRepository,
+      getFamilyMembershipQuery,
     ),
   };
 
@@ -132,6 +170,9 @@ function buildFinancialTrackingModule(
       registerFinancialTrackingRoutes(app, {
         authenticate,
         addTagToCategoryUseCase: useCases.addTagToCategory,
+        createPaymentMethodUseCase: useCases.createPaymentMethod,
+        deletePaymentMethodUseCase: useCases.deletePaymentMethod,
+        deprecatePaymentMethodUseCase: useCases.deprecatePaymentMethod,
         createCategoryUseCase: useCases.createCategory,
         createFinancialItemUseCase: useCases.createFinancialItem,
         deleteCategoryUseCase: useCases.deleteCategory,
@@ -141,10 +182,13 @@ function buildFinancialTrackingModule(
         deprecateTagUseCase: useCases.deprecateTag,
         getCategoriesQuery: useCases.getCategories,
         getFinancialItemsQuery: useCases.getFinancialItems,
+        getPaymentMethodsQuery: useCases.getPaymentMethods,
         renameCategoryUseCase: useCases.renameCategory,
         renameTagUseCase: useCases.renameTag,
         reclassifyFinancialItemUseCase: useCases.reclassifyFinancialItem,
         reorderCategoryTagsUseCase: useCases.reorderCategoryTags,
+        renamePaymentMethodUseCase: useCases.renamePaymentMethod,
+        setDefaultPaymentMethodUseCase: useCases.setDefaultPaymentMethod,
         updateFinancialItemUseCase: useCases.updateFinancialItem,
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(getFamilyMembershipQuery, minRole),

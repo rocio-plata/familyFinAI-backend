@@ -344,7 +344,7 @@ Crea un medio de pago compartido dentro de una familia.
   3. Se crea y persiste el `PaymentMethod` activo.
 - **Errores posibles**: `InsufficientRoleError`, `DuplicatePaymentMethodNameError`.
 - **Eventos disparados**: ninguno.
-- **Pendiente de integración**: exponer el caso de uso mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: implementada en `/families/:familyId/payment-methods`.
 
 ### 22. RenamePaymentMethod
 
@@ -359,7 +359,7 @@ Renombra un medio de pago compartido dentro de una familia.
   4. Se renombra y persiste el `PaymentMethod`.
 - **Errores posibles**: `InsufficientRoleError`, `PaymentMethodNotFoundError`, `DuplicatePaymentMethodNameError`.
 - **Eventos disparados**: ninguno.
-- **Pendiente de integración**: exponer el caso de uso mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: implementada en `/families/:familyId/payment-methods/:paymentMethodId`.
 
 ### 23. GetPaymentMethods
 
@@ -373,7 +373,7 @@ Lista los medios de pago de una familia.
   3. Si `includeDeprecated` es `true`, se incluyen medios activos y deprecados.
   4. Se devuelve un DTO con `id`, `familyId`, `name` y `status`.
 - **Errores posibles**: ninguno propio; una familia sin medios devuelve una lista vacía.
-- **Pendiente de integración**: exponer la query mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: implementada en `/families/:familyId/payment-methods`.
 
 ### 24. DeprecatePaymentMethod
 
@@ -388,7 +388,7 @@ Marca un medio de pago como deprecado sin eliminarlo, preservando su referencia 
   4. Se marca como `Deprecated` y se persiste.
 - **Errores posibles**: `InsufficientRoleError`, `PaymentMethodNotFoundError`, `PaymentMethodIsSomeonesDefaultError`.
 - **Eventos disparados**: ninguno definido.
-- **Pendiente de integración**: exponer el caso de uso mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: implementada en `/families/:familyId/payment-methods/:paymentMethodId/deprecate`.
 
 ### 25. DeletePaymentMethod
 
@@ -404,7 +404,7 @@ Elimina físicamente un medio de pago que ya no tiene referencias.
   5. Se elimina físicamente mediante `PaymentMethodRepository.delete()`.
 - **Errores posibles**: `InsufficientRoleError`, `PaymentMethodNotFoundError`, `PaymentMethodIsSomeonesDefaultError`, `PaymentMethodHasAssociatedItemsError`.
 - **Eventos disparados**: ninguno definido.
-- **Pendiente de integración**: exponer el caso de uso mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: implementada en `/families/:familyId/payment-methods/:paymentMethodId`.
 
 ### 26. SetDefaultPaymentMethod
 
@@ -417,7 +417,7 @@ Establece el medio de pago predeterminado de un usuario dentro de una familia.
   2. Se busca el medio y se valida que pertenezca a la familia y esté activo.
   3. Se crea o actualiza la preferencia identificada por `(userId, familyId)`.
 - **Errores posibles**: `InsufficientRoleError`, `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`.
-- **Pendiente de integración**: exponer el caso de uso mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: implementada en `/families/:familyId/me/default-payment-method`.
 
 ### 27. CreateFinancialItem con medio de pago predeterminado
 
@@ -455,7 +455,7 @@ Lista los gastos agrupados por medio de pago para una familia y período.
   5. Se ordena de mayor a menor importe.
 - **Salida**: `paymentMethodId`, `paymentMethodName` y `amount`.
 - **Errores posibles**: ninguno propio; una familia sin gastos devuelve una lista vacía.
-- **Pendiente de integración**: construir la query en `reporting.module.ts` y exponerla mediante la ruta HTTP correspondiente.
+- **Integración HTTP**: query construida en `reporting.module.ts` y ruta implementada en `/families/:familyId/reports/by-payment-method`.
 
 ## Resumen de errores nuevos a definir
 

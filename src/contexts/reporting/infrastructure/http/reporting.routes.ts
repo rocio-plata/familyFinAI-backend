@@ -9,6 +9,7 @@ import { TagId } from "../../../financial-tracking/domain/value-objects/tag-id.j
 import type { GetCategoryBreakdownQuery } from "../../application/queries/get-category-breakdown.query.js";
 import type { GetDashboardSummaryQuery } from "../../application/queries/get-dashboard-summary.query.js";
 import type { GetDrillDownQuery } from "../../application/queries/get-drill-down.query.js";
+import type { GetExpensesByPaymentMethodQuery } from "../../application/queries/get-expenses-by-payment-method.query.js";
 import type { GetPeriodComparisonQuery } from "../../application/queries/get-period-comparison.query.js";
 import type { GetTrendQuery } from "../../application/queries/get-trend.query.js";
 
@@ -20,6 +21,7 @@ interface ReportingRoutesDependencies {
   getPeriodComparisonQuery: GetPeriodComparisonQuery;
   getTrendQuery: GetTrendQuery;
   getDrillDownQuery: GetDrillDownQuery;
+  getExpensesByPaymentMethodQuery: GetExpensesByPaymentMethodQuery;
 }
 
 const periodSchema = { type: "string", pattern: "^[0-9]{4}-(0[1-9]|1[0-2])$" };
@@ -32,6 +34,31 @@ const familyParams = {
 
 function registerReportingRoutes(app: FastifyInstance, deps: ReportingRoutesDependencies): void {
   const preHandler = [deps.authenticate, deps.requireFamilyMembership()];
+
+  app.get(
+    "/families/:familyId/reports/by-payment-method",
+    {
+      preHandler,
+      schema: {
+        params: familyParams,
+        querystring: { type: "object", required: ["period"], properties: { period: periodSchema } },
+      },
+    },
+    async (request) => {
+      const { familyId } = request.params as { familyId: string };
+      const { period } = request.query as { period: string };
+      const expenses = await deps.getExpensesByPaymentMethodQuery.execute({
+        familyId: FamilyId.of(familyId),
+        period: parsePeriod(period),
+      });
+      return expenses.map((entry) => ({
+        paymentMethodId: entry.paymentMethodId.toString(),
+        paymentMethodName: entry.paymentMethodName.toString(),
+        amount: entry.amount.amount,
+        currency: entry.amount.currency.toString(),
+      }));
+    },
+  );
 
   app.get(
     "/families/:familyId/dashboard",

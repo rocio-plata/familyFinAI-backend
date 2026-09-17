@@ -7,18 +7,24 @@ import { Role } from "../../../family-access/domain/value-objects/role.js";
 import type { AddTagToCategoryUseCase } from "../../application/commands/add-tag-to-category.usecase.js";
 import type { CreateCategoryUseCase } from "../../application/commands/create-category.usecase.js";
 import type { CreateFinancialItemUseCase } from "../../application/commands/create-financial-item.usecase.js";
+import type { CreatePaymentMethodUseCase } from "../../application/commands/create-payment-method.usecase.js";
 import type { DeleteCategoryUseCase } from "../../application/commands/delete-category.usecase.js";
 import type { DeleteFinancialItemUseCase } from "../../application/commands/delete-financial-item.usecase.js";
+import type { DeletePaymentMethodUseCase } from "../../application/commands/delete-payment-method.usecase.js";
 import type { DeleteTagUseCase } from "../../application/commands/delete-tag.usecase.js";
 import type { DeprecateCategoryUseCase } from "../../application/commands/deprecate-category.usecase.js";
+import type { DeprecatePaymentMethodUseCase } from "../../application/commands/deprecate-payment-method.usecase.js";
 import type { DeprecateTagUseCase } from "../../application/commands/deprecate-tag.usecase.js";
 import type { ReclassifyFinancialItemUseCase } from "../../application/commands/reclassify-financial-item.usecase.js";
 import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
+import type { RenamePaymentMethodUseCase } from "../../application/commands/rename-payment-method.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
+import type { SetDefaultPaymentMethodUseCase } from "../../application/commands/set-default-payment-method.usecase.js";
 import type { UpdateFinancialItemUseCase } from "../../application/commands/update-financial-item.usecase.js";
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import type { GetFinancialItemsQuery } from "../../application/queries/get-financial-items.query.js";
+import type { GetPaymentMethodsQuery } from "../../application/queries/get-payment-methods.query.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
@@ -27,6 +33,7 @@ import { FinancialItemType } from "../../domain/value-objects/financial-item-typ
 import { Money } from "../../domain/value-objects/money.js";
 import { Note } from "../../domain/value-objects/note.js";
 import { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
+import { PaymentMethodName } from "../../domain/value-objects/payment-method-name.js";
 import { TagId } from "../../domain/value-objects/tag-id.js";
 import { TagName } from "../../domain/value-objects/tag-name.js";
 import { Title } from "../../domain/value-objects/title.js";
@@ -36,6 +43,9 @@ interface FinancialTrackingRoutesDependencies {
   authenticate: preHandlerHookHandler;
   requireFamilyMembership: (minRole?: Role) => preHandlerHookHandler;
   addTagToCategoryUseCase: AddTagToCategoryUseCase;
+  createPaymentMethodUseCase: CreatePaymentMethodUseCase;
+  deletePaymentMethodUseCase: DeletePaymentMethodUseCase;
+  deprecatePaymentMethodUseCase: DeprecatePaymentMethodUseCase;
   createCategoryUseCase: CreateCategoryUseCase;
   createFinancialItemUseCase: CreateFinancialItemUseCase;
   deleteCategoryUseCase: DeleteCategoryUseCase;
@@ -45,10 +55,13 @@ interface FinancialTrackingRoutesDependencies {
   deprecateTagUseCase: DeprecateTagUseCase;
   getCategoriesQuery: GetCategoriesQuery;
   getFinancialItemsQuery: GetFinancialItemsQuery;
+  getPaymentMethodsQuery: GetPaymentMethodsQuery;
   renameCategoryUseCase: RenameCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
   reclassifyFinancialItemUseCase: ReclassifyFinancialItemUseCase;
   reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
+  renamePaymentMethodUseCase: RenamePaymentMethodUseCase;
+  setDefaultPaymentMethodUseCase: SetDefaultPaymentMethodUseCase;
   updateFinancialItemUseCase: UpdateFinancialItemUseCase;
   getFamilyDefaultCurrencyQuery: GetFamilyDefaultCurrencyQuery;
 }
@@ -57,6 +70,185 @@ function registerFinancialTrackingRoutes(
   app: FastifyInstance,
   deps: FinancialTrackingRoutesDependencies,
 ): void {
+  app.post(
+    "/families/:familyId/payment-methods",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+        body: {
+          type: "object",
+          required: ["name"],
+          properties: { name: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { name } = request.body as { name: string };
+      const paymentMethod = await deps.createPaymentMethodUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        name: PaymentMethodName.of(name),
+      });
+      return reply.code(201).send(serializePaymentMethod(paymentMethod));
+    },
+  );
+
+  app.get(
+    "/families/:familyId/payment-methods",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+        querystring: {
+          type: "object",
+          properties: { includeDeprecated: { type: "boolean", default: false } },
+        },
+      },
+    },
+    async (request) => {
+      const { familyId } = request.params as { familyId: string };
+      const { includeDeprecated } = request.query as { includeDeprecated?: boolean };
+      const methods = await deps.getPaymentMethodsQuery.execute({
+        familyId: FamilyId.of(familyId),
+        ...(includeDeprecated === undefined ? {} : { includeDeprecated }),
+      });
+      return methods.map(serializePaymentMethodDTO);
+    },
+  );
+
+  app.patch(
+    "/families/:familyId/payment-methods/:paymentMethodId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "paymentMethodId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            paymentMethodId: { type: "string", minLength: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["name"],
+          properties: { name: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request) => {
+      const { familyId, paymentMethodId } = request.params as {
+        familyId: string;
+        paymentMethodId: string;
+      };
+      const { name } = request.body as { name: string };
+      const method = await deps.renamePaymentMethodUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        paymentMethodId: PaymentMethodId.of(paymentMethodId),
+        newName: PaymentMethodName.of(name),
+      });
+      return serializePaymentMethod(method);
+    },
+  );
+
+  app.post(
+    "/families/:familyId/payment-methods/:paymentMethodId/deprecate",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "paymentMethodId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            paymentMethodId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, paymentMethodId } = request.params as {
+        familyId: string;
+        paymentMethodId: string;
+      };
+      await deps.deprecatePaymentMethodUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        paymentMethodId: PaymentMethodId.of(paymentMethodId),
+      });
+      return reply.code(204).send();
+    },
+  );
+
+  app.delete(
+    "/families/:familyId/payment-methods/:paymentMethodId",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "paymentMethodId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            paymentMethodId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, paymentMethodId } = request.params as {
+        familyId: string;
+        paymentMethodId: string;
+      };
+      await deps.deletePaymentMethodUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        paymentMethodId: PaymentMethodId.of(paymentMethodId),
+      });
+      return reply.code(204).send();
+    },
+  );
+
+  app.put(
+    "/families/:familyId/me/default-payment-method",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+        body: {
+          type: "object",
+          required: ["paymentMethodId"],
+          properties: { paymentMethodId: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { paymentMethodId } = request.body as { paymentMethodId: string };
+      await deps.setDefaultPaymentMethodUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        userId: request.userId,
+        paymentMethodId: PaymentMethodId.of(paymentMethodId),
+      });
+      return reply.code(204).send();
+    },
+  );
+
   app.post(
     "/families/:familyId/categories",
     {
@@ -737,6 +929,29 @@ function registerFinancialTrackingRoutes(
       });
     },
   );
+}
+
+function serializePaymentMethod(paymentMethod: {
+  id: PaymentMethodId;
+  familyId: FamilyId;
+  name: PaymentMethodName;
+  status: string;
+}) {
+  return {
+    id: paymentMethod.id.toString(),
+    familyId: paymentMethod.familyId.toString(),
+    name: paymentMethod.name.toString(),
+    status: paymentMethod.status,
+  };
+}
+
+function serializePaymentMethodDTO(paymentMethod: {
+  id: PaymentMethodId;
+  familyId: FamilyId;
+  name: PaymentMethodName;
+  status: string;
+}) {
+  return serializePaymentMethod(paymentMethod);
 }
 
 export type { FinancialTrackingRoutesDependencies };
