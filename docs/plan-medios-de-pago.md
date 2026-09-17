@@ -266,7 +266,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 13b. **`DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`** — ✅ ambos implementados con tests TDD, incluyendo los rechazos por `PaymentMethodIsSomeonesDefaultError` y `PaymentMethodHasAssociatedItemsError`.
 14. **`SetDefaultPaymentMethodUseCase`** — ✅ implementado con tests TDD de creación, actualización, pertenencia y estado activo. La ruta HTTP queda pendiente.
 15. **Actualizar `CreateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional en el input; si no viene, se resuelve mediante `UserPaymentMethodPreferenceRepository.findByUserAndFamily(recordedBy, familyId)`. Valida familia/estado activo, lanza `NoDefaultPaymentMethodSetError` si no hay preferencia y propaga el ID resuelto al item y a `ItemRecorded`. La ruta HTTP también acepta el campo opcional.
-16. **Actualizar `UpdateFinancialItemUseCase`** — `paymentMethodId` opcional.
+16. **Actualizar `UpdateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional; si se informa, valida familia y estado activo, cambia el medio y publica `ItemPaymentMethodChanged`. La ruta PATCH y su respuesta también lo soportan.
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — schema + los 4 event handlers, con TDD.
 18. **`GetExpensesByPaymentMethodQuery`** — con TDD.
 19. **Schemas de Drizzle** — tablas/columnas, `npm run db:generate`, `npm run db:reset`.

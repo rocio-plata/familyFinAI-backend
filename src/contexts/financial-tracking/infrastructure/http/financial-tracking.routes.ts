@@ -265,6 +265,7 @@ function registerFinancialTrackingRoutes(
             },
             title: { type: "string", minLength: 1 },
             note: { type: ["string", "null"] },
+            paymentMethodId: { type: "string", minLength: 1 },
           },
           dependencies: {
             amount: ["currency"],
@@ -280,12 +281,13 @@ function registerFinancialTrackingRoutes(
     },
     async (request, reply) => {
       const { familyId, itemId } = request.params as { familyId: string; itemId: string };
-      const { amount, currency, occurredOn, title, note } = request.body as {
+      const { amount, currency, occurredOn, title, note, paymentMethodId } = request.body as {
         amount?: number;
         currency?: string;
         occurredOn?: string;
         title?: string;
         note?: string | null;
+        paymentMethodId?: string;
       };
       const item = await deps.updateFinancialItemUseCase.execute({
         familyId: FamilyId.of(familyId),
@@ -298,6 +300,9 @@ function registerFinancialTrackingRoutes(
           : { occurredOn: TransactionDate.of(new Date(occurredOn)) }),
         ...(title === undefined ? {} : { title: Title.of(title) }),
         ...(note === undefined ? {} : { note: note === null ? null : Note.of(note) }),
+        ...(paymentMethodId === undefined
+          ? {}
+          : { paymentMethodId: PaymentMethodId.of(paymentMethodId) }),
       });
 
       return reply.code(200).send({
@@ -307,6 +312,7 @@ function registerFinancialTrackingRoutes(
         currency: item.amount.currency.toString(),
         categoryId: item.categoryAssignment.categoryId.toString(),
         tagId: item.categoryAssignment.tagId?.toString() ?? null,
+        paymentMethodId: item.paymentMethodId.toString(),
         title: item.title.toString(),
         note: item.note?.toString() ?? null,
         occurredOn: item.occurredOn.value.toISOString(),

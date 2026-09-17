@@ -7,11 +7,14 @@ import { FamilyName } from "../../../../src/contexts/family-access/domain/value-
 import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
 import { CategoryAssignment } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { Title } from "../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
+import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
@@ -26,6 +29,7 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
   let familyId: string;
   let itemId: string;
   let memberAuthorization: string;
+  let paymentMethodId: string;
 
   beforeEach(async () => {
     const jwtService = new FakeJwtService();
@@ -33,6 +37,7 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
     const memberId = UserId.generate();
     const familyRepository = new InMemoryFamilyRepository();
     const financialItemRepository = new InMemoryFinancialItemRepository();
+    const paymentMethodRepository = new InMemoryPaymentMethodRepository();
     const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
     family.addMemberFromInvitationData(memberId, Role.member());
     family.pullDomainEvents();
@@ -41,6 +46,7 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
     const item = FinancialItem.create({
       familyId: family.id,
       recordedBy: ownerId,
+      paymentMethodId: PaymentMethod.create(family.id, PaymentMethodName.of("Efectivo")).id,
       amount: Money.of(5000, Currency.of("USD")),
       category: CategoryAssignment.of(CategoryId.generate()),
       title: Title.of("Compra semanal"),
@@ -48,15 +54,21 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
     });
     item.pullDomainEvents();
     await financialItemRepository.save(item);
+    const paymentMethod = PaymentMethod.create(family.id, PaymentMethodName.of("Tarjeta"));
+    await paymentMethodRepository.save(paymentMethod);
 
     familyId = family.id.toString();
     itemId = item.id.toString();
+    paymentMethodId = paymentMethod.id.toString();
     memberAuthorization = `Bearer ${await jwtService.sign(memberId)}`;
     app = buildApp({
       jwtService,
       identity: buildTestIdentityDependencies(),
       familyAccess: buildTestFamilyAccessDependencies({ familyRepository }),
-      financialTracking: buildTestFinancialTrackingDependencies({ financialItemRepository }),
+      financialTracking: buildTestFinancialTrackingDependencies({
+        financialItemRepository,
+        paymentMethodRepository,
+      }),
     });
   });
 
@@ -93,6 +105,18 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
 
     assert.equal(response.statusCode, 200);
     assert.equal(JSON.parse(response.body).note, null);
+  });
+
+  test("actualiza el medio de pago y lo devuelve en la respuesta", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/items/${itemId}`,
+      headers: { authorization: memberAuthorization },
+      payload: { paymentMethodId },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(JSON.parse(response.body).paymentMethodId, paymentMethodId);
   });
 
   test("rechaza cambios de categoría por esta ruta", async () => {

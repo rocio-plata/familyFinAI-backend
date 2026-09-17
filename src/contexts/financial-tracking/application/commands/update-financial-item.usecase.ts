@@ -3,9 +3,13 @@ import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { FinancialItem } from "../../domain/entities/financial-item.js";
 import { FinancialItemNotFoundError } from "../../domain/errors/financial-item-not-found.error.js";
+import { PaymentMethodNotActiveError } from "../../domain/errors/payment-method-not-active.error.js";
+import { PaymentMethodNotFoundError } from "../../domain/errors/payment-method-not-found.error.js";
 import type { FinancialItemRepository } from "../../domain/repositories/financial-item.repository.js";
+import type { PaymentMethodRepository } from "../../domain/repositories/payment-method.repository.js";
 import type { Money } from "../../domain/value-objects/money.js";
 import type { Note } from "../../domain/value-objects/note.js";
+import type { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
 import type { Title } from "../../domain/value-objects/title.js";
 import type { TransactionDate } from "../../domain/value-objects/transaction-date.js";
 
@@ -16,12 +20,14 @@ interface UpdateFinancialItemInput {
   occurredOn?: TransactionDate;
   title?: Title;
   note?: Note | null;
+  paymentMethodId?: PaymentMethodId;
 }
 
 class UpdateFinancialItemUseCase {
   constructor(
     private readonly itemRepository: FinancialItemRepository,
     private readonly eventBus: EventBus,
+    private readonly paymentMethodRepository: PaymentMethodRepository,
   ) {}
 
   async execute(input: UpdateFinancialItemInput): Promise<FinancialItem> {
@@ -34,6 +40,17 @@ class UpdateFinancialItemUseCase {
     // 2. Validar que pertenezca a la familia
     if (item.familyId.toString() !== input.familyId.toString()) {
       throw new FinancialItemNotFoundError(input.itemId.toString());
+    }
+
+    if (input.paymentMethodId) {
+      const paymentMethod = await this.paymentMethodRepository.findById(input.paymentMethodId);
+      if (!paymentMethod?.familyId.equals(input.familyId)) {
+        throw new PaymentMethodNotFoundError(input.paymentMethodId.toString());
+      }
+      if (paymentMethod.status !== "ACTIVE") {
+        throw new PaymentMethodNotActiveError(input.paymentMethodId.toString());
+      }
+      item.changePaymentMethod(input.paymentMethodId);
     }
 
     // 3. Aplicar cambios a cada campo presente

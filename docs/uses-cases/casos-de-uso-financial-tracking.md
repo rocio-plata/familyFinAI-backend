@@ -7,7 +7,7 @@ disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 17 casos de uso de este documento (1–27) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
+> **Estado de implementación**: los 17 casos de uso de este documento (1–28) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
 
 ---
 
@@ -429,6 +429,17 @@ Permite registrar un item sin enviar un medio de pago, resolviéndolo desde la p
   4. Se crea el item y `ItemRecorded` con el ID resuelto.
 - **Errores adicionales**: `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`, `NoDefaultPaymentMethodSetError`.
 
+### 28. UpdateFinancialItem con medio de pago
+
+Permite cambiar opcionalmente el medio de pago de un item existente.
+
+- **Entrada modificada**: `paymentMethodId` es opcional.
+- **Flujo adicional**:
+  1. Si no se indica, se conserva el medio actual.
+  2. Si se indica, se valida que exista, pertenezca a la familia y esté activo.
+  3. Se aplica el cambio y se publica `ItemPaymentMethodChanged`.
+- **Errores adicionales**: `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`.
+
 ## Resumen de errores nuevos a definir
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |
@@ -450,7 +461,7 @@ Permite registrar un item sin enviar un medio de pago, resolviéndolo desde la p
 
 ## Pendientes antes de implementar
 
-> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 27 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
+> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 28 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
 
 1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
 2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a renombrados en el futuro, sería una mejora posterior.
