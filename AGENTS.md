@@ -77,7 +77,7 @@ El proyecto sigue **Domain-Driven Design (DDD)** con **arquitectura hexagonal** 
 - **Síncrona** (llamada directa al caso de uso público de otro contexto): cuando el origen necesita el resultado para continuar. Ejemplo: `AI Assistance` confirmar sugerencia → llama a `CreateFinancialItemUseCase` de `Financial Tracking`.
 - **Asíncrona** (eventos de dominio vía `InProcessEventBus`): cuando el destino solo reacciona. Ejemplo: `ItemRecorded` es escuchado por `Budgeting` y `Reporting`.
 
-**Regla**: `Financial Tracking` (core domain) **nunca** se suscribe a eventos de otros contextos — solo los publica.
+**Regla**: `Financial Tracking` (core domain) publica los eventos financieros. Su módulo puede suscribir handlers de automatización para `FamilyCreated`, `InvitationAccepted` y `MemberRemoved`, sin introducir dependencias de infraestructura en el dominio.
 
 ---
 
@@ -240,7 +240,7 @@ Estas reglas deben respetarse siempre:
 3. `Family` gestiona su membresía y debe tener siempre **al menos un Owner**. La operación de remover el último Owner debe fallar.
 4. `AI Assistance` **nunca** persiste directamente en el dominio financiero — siempre pasa por `CreateFinancialItemUseCase`.
 5. La moneda por defecto de una familia es **CLP**. Cada `FinancialItem` guarda su propia moneda vía el VO `Currency` del shared-kernel.
-6. `Financial Tracking` (core domain) **no se suscribe** a eventos de otros contextos.
+6. `Financial Tracking` (core domain) publica eventos financieros y suscribe únicamente handlers de automatización de ciclo de vida definidos en su propia aplicación.
 
 ---
 

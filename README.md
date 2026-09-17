@@ -160,13 +160,13 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 ## e. Funcionalidades principales
 
 - **Economía familiar compartida**: múltiples usuarios de una misma familia, cada uno con su propio login, registrando y consultando la misma información financiera.
-- **Registro de gastos e ingresos**: cada movimiento (`FinancialItem`) tiene tipo, categoría obligatoria, tag opcional, título, observación, monto y fecha. Por defecto se asume gasto, para agilizar el registro.
+- **Registro de gastos e ingresos**: cada movimiento (`FinancialItem`) tiene tipo derivado de su categoría, categoría obligatoria, tag opcional, título, observación, monto, moneda y fecha. La moneda y el medio de pago pueden resolverse desde las preferencias/defaults de la familia y del usuario.
 - **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada).
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
-- **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso, rutas HTTP, read model por período y repositorios Drizzle implementados con pruebas; los handlers automáticos siguen pendientes de suscripción al event bus. La adopción del schema se hará reiniciando la base con `npm run db:reset`, sin backfill de datos anteriores.
+- **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso, rutas HTTP, tests unitarios HTTP, tests de integración PostgreSQL, read model por período y repositorios Drizzle. Al crear una familia se generan los medios por defecto y al aceptar una invitación se asigna el default del nuevo miembro. La migración está aplicada; `npm run db:reset` no conserva datos anteriores ni requiere backfill.
 - **Presupuestos**: cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle y seis rutas HTTP bajo `/families/:familyId/budgets`.
-- **Reportes**: read model materializado por categoría implementado con cinco queries, cuatro handlers, persistencia InMemory/Drizzle y cinco rutas HTTP. El agregado, la query y la ruta por medio de pago están implementados y probados; sus migraciones PostgreSQL siguen pendientes de aplicar.
+- **Reportes**: read models materializados por categoría y medio de pago, seis queries, ocho handlers, persistencia InMemory/Drizzle, seis rutas HTTP y tests HTTP/e2e, incluida `/families/:familyId/reports/by-payment-method`.
 - **Asistencia con IA**: contexto reservado; el diseño está documentado, pero todavía no forma parte de la API.
 - **Seguridad y aislamiento**: autenticación por JWT, refresh tokens rotables y autorización mediante pertenencia a la familia.
 
@@ -210,7 +210,7 @@ El backend sigue **Domain-Driven Design (DDD)** con **arquitectura hexagonal** (
 - **Síncrona** (llamada a caso de uso público de otro contexto): cuando el origen necesita el resultado para continuar. Ej.: `AI Assistance` confirmando una sugerencia llama al caso de uso `CreateFinancialItem` de `Financial Tracking`.
 - **Asíncrona** (eventos de dominio vía event bus in-process): cuando el destino solo reacciona. Ej.: `ItemRecorded` es escuchado por `Budgeting` y `Reporting`.
 
-`Financial Tracking`, como core domain, **nunca se suscribe a eventos de otros contextos** — solo los publica.
+`Financial Tracking`, como core domain, publica los eventos financieros. Además, su módulo compone handlers de automatización que reaccionan a `FamilyCreated`, `InvitationAccepted` y `MemberRemoved` para mantener las preferencias de medios de pago.
 
 #### Principales eventos publicados
 
@@ -254,17 +254,17 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 **Implementado (dominio, aplicación e infraestructura, con TDD y dobles in-memory):**
 
 - **Family & Access** — los casos de uso de familias, miembros, invitaciones, roles, moneda y orden de familias, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL.
-- **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías, tags y medios de pago, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL, todos compuestos en el módulo y expuestos por HTTP. `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` (medios de pago) suscritos al `EventBus`: al crear una familia se generan 4 medios de pago por defecto y se fija "Efectivo" como preferencia del creador; al aceptar una invitación se fija la preferencia inicial del nuevo miembro; al remover un miembro se borra su preferencia. Falta aún añadir tests HTTP dedicados a las rutas de medios de pago (hoy solo hay tests de los casos de uso y cobertura e2e).
-- **Reporting & Analytics** — read model `CategoryPeriodAggregate` y `PaymentMethodPeriodAggregate`, seis queries, ocho event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP (incluida `/reports/by-payment-method`). Migraciones PostgreSQL aplicadas.
+- **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías, tags y medios de pago, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL, todos compuestos en el módulo y expuestos por HTTP. Sus handlers de ciclo de vida de medios de pago están suscritos al `EventBus`, y las rutas tienen tests HTTP dedicados además de cobertura de integración/e2e.
+- **Reporting & Analytics** — read model `CategoryPeriodAggregate` y `PaymentMethodPeriodAggregate`, seis queries, ocho event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP (incluida `/reports/by-payment-method`). Migraciones PostgreSQL aplicadas; la ruta por medio de pago tiene tests HTTP y e2e dedicados.
 - Eventos de dominio entre contextos, event bus in-process (`platform/events`), y flujo de autenticación/autorización (JWT con rotación de refresh tokens, middlewares `authenticate`/`requireFamilyMembership`) en `platform/auth`.
 - Anticorruption layer de `AI Assistance` definida a nivel de diseño (puertos), sin adaptadores concretos todavía.
 
 **Pendiente:**
 
 - `Budgeting`: dominio, cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP implementados con pruebas; quedan pendientes únicamente los trabajos listados en la documentación de Budgeting.
-- Añadir tests HTTP dedicados para las rutas de medios de pago (hoy solo cubiertas por tests de casos de uso y por `tests/e2e/payment-method-lifecycle.test.ts`).
+- Automatizar en CI la ejecución de las suites PostgreSQL y la verificación reproducible de migraciones.
 - `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
 - Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
 - `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.
-- Resolución del `Currency` por defecto de la familia dentro de `CreateFinancialItem` (hoy recibe el monto ya construido con su moneda).
+- La ruta HTTP resuelve la moneda por defecto de la familia antes de invocar `CreateFinancialItem`; el caso de uso recibe un `Money` ya construido como contrato de aplicación.
 - Roles/permisos granulares para los casos de uso de `FinancialItem` (`CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem`, `DeleteFinancialItem` no validan rol todavía) y estrategia de despliegue.

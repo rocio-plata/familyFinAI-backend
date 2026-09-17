@@ -1,15 +1,15 @@
 # Financial Tracking — Casos de uso
 
 Documentación de los casos de uso del contexto `Financial Tracking` (core domain). Los casos de uso
-de categorías, tags e items están expuestos por HTTP; los casos de uso de medios de pago están
-implementados en código/tests, pero sus rutas y wiring de módulo siguen pendientes. Sigue la misma
+de categorías, tags, items y medios de pago están compuestos y expuestos por HTTP, con repositorios
+InMemory/Drizzle y tests unitarios HTTP, de integración y e2e. Sigue la misma
 convención usada en `casos-de-uso-family-access.md`: **actor**,
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
 disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests, pero los casos de medios de pago todavía no están compuestos en `financial-tracking.module.ts` ni expuestos por HTTP. Las secciones de "Errores" y "Pendientes" reflejan el estado operativo real.
+> **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests. Los casos de medios de pago están compuestos en `financial-tracking.module.ts`, expuestos por HTTP y cubiertos por tests de casos de uso, rutas HTTP, integración PostgreSQL y e2e.
 
 ---
 
@@ -318,7 +318,7 @@ Establece automáticamente la preferencia inicial de un miembro cuando acepta un
   2. Se invoca `SetInitialPaymentMethodPreferenceUseCase` con `familyId` y `acceptedBy`.
 - **Efecto**: el miembro recibe `Efectivo` como medio predeterminado inicial.
 - **Comportamiento repetido**: la idempotencia pertenece al caso de uso invocado.
-- **Pendiente de integración**: registrar el handler en el módulo de `Financial Tracking` cuando sus dependencias de medios de pago estén disponibles.
+- **Integración**: handler suscrito en `financial-tracking.module.ts`; asigna la preferencia inicial al aceptar una invitación.
 
 ### 20. OnMemberRemoved
 
@@ -330,7 +330,7 @@ Elimina la preferencia de medio de pago de un miembro cuando deja una familia.
   1. Se recibe el evento publicado por `Family & Access`.
   2. Se elimina la preferencia identificada por `(removedUserId, familyId)`.
 - **Comportamiento repetido**: no falla si el miembro no tenía una preferencia.
-- **Pendiente de integración**: registrar el handler en el módulo de `Financial Tracking` cuando sus dependencias de medios de pago estén disponibles.
+- **Integración**: handler suscrito en `financial-tracking.module.ts`; elimina la preferencia al remover un miembro.
 
 ### 21. CreatePaymentMethod
 
@@ -480,9 +480,9 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 | `PaymentMethodIsSomeonesDefaultError` | DeprecatePaymentMethod, DeletePaymentMethod | ✅ ya definido |
 | `NoDefaultPaymentMethodSetError` | CreateFinancialItem | ✅ ya definido |
 
-## Pendientes antes de implementar
+## Pendientes y mejoras futuras
 
-> Nota: los casos de uso están implementados y probados, pero la disponibilidad end-to-end de medios de pago sigue pendiente de wiring, rutas y persistencia PostgreSQL.
+> Nota: los casos de uso de medios de pago están disponibles end-to-end. Los pendientes de esta sección son mejoras futuras, no bloqueos de implementación.
 
 1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
 2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a renombrados en el futuro, sería una mejora posterior.

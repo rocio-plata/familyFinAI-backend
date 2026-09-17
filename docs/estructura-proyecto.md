@@ -50,11 +50,12 @@ casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos p
 
 ## Contextos reservados
 
-`Budgeting` tiene implementados sus cinco comandos/queries, cuatro handlers, persistencia InMemory
-y Drizzle, composición y rutas HTTP; queda pendiente la definición del evento `BudgetOverspent` y
-algunas decisiones de negocio secundarias. `Reporting` tiene implementados el read model
-`CategoryPeriodAggregate`, el value object `ItemCount`, cinco queries, cuatro event handlers,
-persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y rutas HTTP.
+`Budgeting` tiene implementados sus comandos/queries, handlers, persistencia InMemory y Drizzle,
+composición, rutas HTTP y cobertura e2e; queda pendiente la definición del evento `BudgetOverspent`
+y algunas decisiones de negocio secundarias. `Reporting` tiene implementados los read models
+`CategoryPeriodAggregate` y `PaymentMethodPeriodAggregate`, seis queries, ocho event handlers,
+persistencia InMemory y Drizzle, composición, suscripciones al `EventBus`, seis rutas HTTP y
+tests HTTP/e2e.
 `AI Assistance` conserva únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos
 de diseño no representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`.
 
@@ -91,5 +92,5 @@ de proveedores externos.
 | Financial Tracking | Implementado con memoria y PostgreSQL |
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
 | Budgeting | Completamente implementado con memoria y PostgreSQL; quedan pendientes decisiones funcionales y eventos secundarios |
-| Reporting | Queries, handlers, persistencia, composición y endpoints del read model `CategoryPeriodAggregate` implementados |
+| Reporting | Queries, handlers, persistencia, composición y endpoints de los read models por categoría y medio de pago implementados |
 | AI Assistance | Diseño/documentación parcial; implementación pendiente |

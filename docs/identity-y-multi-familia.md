@@ -136,7 +136,7 @@ class DisplayName {
 }
 ```
 
-`UserId` y `EmailAddress` se **reutilizan** de `family-access` — candidatas a moverse a `shared-kernel` (ver pendientes), mismo caso que `Money`/`Currency`/`Period`.
+`UserId` y `EmailAddress` se **reutilizan** de `family-access`; `EmailAddress`, `Money`, `Currency` y `Period` viven actualmente en `shared-kernel` cuando son value objects compartidos.
 
 ---
 
@@ -381,7 +381,7 @@ Como la familia personal es la **primera y única** en ese momento, no necesita 
 
 ## Pendientes antes de implementar
 
-1. **`EmailAddress` compartido**: mover a `shared-kernel`, igual que `Money`/`Currency`/`Period`.
+1. **Value objects compartidos**: `EmailAddress`, `Money`, `Currency` y `Period` ya están ubicados en `shared-kernel`; no queda este movimiento como pendiente de diseño.
 2. **Recuperación de contraseña**: fuera de alcance, depende de envío de emails.
 3. **`findAllByMemberUserId` en `FamilyRepository`**: nuevo método en la interfaz del puerto — agregar tanto a `InMemoryFamilyRepository` como a `DrizzleFamilyRepository` cuando se implemente.
 4. **Robustez de transacciones multi-agregado**: el patrón ya existe en `UnitOfWork`, pero si en el futuro se quiere forzar `tx` explícito en cada repositorio se puede refinar esta capa sin afectar la implementación actual.

@@ -160,7 +160,7 @@ Navega desde una vista general hacia los movimientos individuales que la compone
 ### Handlers de `PaymentMethodPeriodAggregate`
 
 > Estado de implementación: implementados y probados; la persistencia Drizzle está codificada y la
-> migración está generada. Su aplicación se hará mediante `npm run db:reset`.
+> migración `0006_icy_shriek.sql` está aplicada mediante `npm run db:reset`.
 
 Reaccionan a los eventos de `Financial Tracking`:
 

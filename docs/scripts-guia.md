@@ -12,7 +12,9 @@ Explicación de cada script definido en `package.json` y en qué orden usarlos s
 | `lint:fix` | `biome check --write src tests` | Calidad |
 | `build` | `tsc` | Build |
 | `start` | `node dist/platform/server.js` | Producción |
-| `test` | `node --import tsx/esm --test 'tests/**/*.test.ts'` | Testing |
+| `test` | `node --import tsx/esm --test 'tests/unit/**/*.test.ts'` | Testing unitario |
+| `test:integration` | `node --env-file-if-exists=.env --import tsx/esm --test 'tests/integration/**/*.test.ts'` | Integración PostgreSQL |
+| `test:e2e` | `node --env-file-if-exists=.env --import tsx/esm --test 'tests/e2e/**/*.test.ts'` | E2E PostgreSQL |
 | `db:generate` | `drizzle-kit generate` | Base de datos |
 | `db:migrate` | `drizzle-kit migrate` | Base de datos |
 | `db:studio` | `drizzle-kit studio` | Base de datos |
@@ -45,7 +47,13 @@ Compila todo el proyecto TypeScript a JavaScript plano en `dist/`, según lo con
 Corre el servidor ya compilado (`dist/platform/server.js`) con Node puro, sin `tsx`. Es el comando de **producción** — más rápido de arrancar que `dev`, sin overhead de transpilación en caliente.
 
 ### `test`
-Corre toda la suite de tests con el test runner nativo de Node (`node:test`), usando `tsx/esm` para poder ejecutar los archivos `.ts` directamente. Los tests usan repositorios en memoria — **no** requieren que la base de datos esté levantada.
+Corre los tests unitarios bajo `tests/unit/` con el test runner nativo de Node (`node:test`) y repositorios en memoria. No requiere que PostgreSQL esté levantado.
+
+### `test:integration`
+Corre los tests bajo `tests/integration/` contra PostgreSQL real usando la conexión Drizzle existente. Requiere `DATABASE_URL` y una base migrada; sin ella, los tests se omiten automáticamente.
+
+### `test:e2e`
+Corre los flujos HTTP completos bajo `tests/e2e/` con `buildApp()` y `app.inject()`, contra PostgreSQL real. Requiere `DATABASE_URL`; cada flujo limpia los datos que crea.
 
 ### `db:generate`
 Compara el estado actual de los `schema.ts` (de todos los contextos, re-exportados en `src/platform/db/schema.ts`) contra el histórico de migraciones ya generadas, y crea un nuevo archivo `.sql` en `src/platform/db/migrations/` con las diferencias. Se corre **cada vez que modificas un schema** (agregas una tabla, una columna, cambias un tipo, etc.) — nunca migra nada por sí solo, solo genera el archivo.
@@ -96,7 +104,9 @@ npm run dev
 En otra terminal, mientras desarrollas:
 
 ```bash
-npm run test                  # o dejarlo corriendo en modo watch si agregas ese script más adelante
+npm test                      # unitarios, sin PostgreSQL
+npm run test:integration      # repositorios Drizzle, con PostgreSQL
+npm run test:e2e              # flujos HTTP completos, con PostgreSQL
 ```
 
 ### 3. Modificaste un `schema.ts` (agregaste/cambiaste una tabla)

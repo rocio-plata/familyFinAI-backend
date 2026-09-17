@@ -189,7 +189,7 @@ Como `type` en `categories` va a ser `NOT NULL`, y ya tienes filas existentes (s
 
 ## Impacto en contextos que dependen de `Financial Tracking` (a revisar, no bloqueante ahora mismo)
 
-1. **`Budgeting`**: `CreateBudgetConfiguration` no valida hoy que la categoría sea de tipo `Expense` — conceptualmente, un presupuesto solo tiene sentido para gastos (según la especificación original). Con `Category.type` ya explícito, esto se puede (y probablemente deba) validar ahora con un nuevo error `CannotBudgetIncomeCategoryError`. **No implementado en este plan** — queda como ajuste natural a aplicar cuando se retome `Budgeting`.
+1. **`Budgeting`**: `CreateBudgetConfiguration` valida que la categoría sea de tipo `Expense` mediante `CategoryNotExpenseError`; una categoría de ingresos no puede recibir presupuesto.
 2. **`Reporting`**: `CategoryPeriodAggregate` hoy tiene `totalExpense` **y** `totalIncome` en la misma fila, pensado para cuando el tipo era ambiguo por categoría. Con el tipo fijo por categoría, cada agregado en la práctica solo va a usar uno de los dos campos (el otro siempre en cero) — podría simplificarse a un único campo `total`, pero **no es necesario para que funcione**, solo redundante. Simplificación opcional, no bloqueante.
 
 ---

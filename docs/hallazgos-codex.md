@@ -15,11 +15,11 @@ Este documento registra la inspección del repositorio realizada sin modificar e
 
 ## 2. Endpoint de referencia
 
-El endpoint de negocio HTTP disponible es `POST /families`, implementado en `src/contexts/family-access/infrastructure/http/family.routes.ts` y probado en `tests/contexts/family-access/http/create-family.route.test.ts`.
+El endpoint de negocio HTTP de referencia es `POST /families`, implementado en `src/contexts/family-access/infrastructure/http/family.routes.ts` y probado en `tests/unit/contexts/family-access/http/create-family.route.test.ts`.
 
 Es una referencia para registrar rutas por contexto, inyectar middleware y casos de uso, obtener `request.userId`, delegar al caso de uso, responder con `201` y probar mediante `app.inject`.
 
-No existe todavía una ruta que implemente la cadena completa `authenticate` + `requireFamilyMembership`. Para un recurso bajo `/families/:familyId/...`, se debe extender este patrón añadiendo ambos middlewares.
+Las rutas de familia bajo `/families/:familyId/...` implementan la cadena `authenticate` + `requireFamilyMembership`; las rutas nuevas deben seguir ese patrón.
 
 ## 3. Pasos para implementar un endpoint nuevo
 
