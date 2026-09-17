@@ -7,7 +7,7 @@ disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 17 casos de uso de este documento (1–20) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
+> **Estado de implementación**: los 17 casos de uso de este documento (1–21) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
 
 ---
 
@@ -330,6 +330,20 @@ Elimina la preferencia de medio de pago de un miembro cuando deja una familia.
 - **Comportamiento repetido**: no falla si el miembro no tenía una preferencia.
 - **Pendiente de integración**: registrar el handler en el módulo de `Financial Tracking` cuando sus dependencias de medios de pago estén disponibles.
 
+### 21. CreatePaymentMethod
+
+Crea un medio de pago compartido dentro de una familia.
+
+- **Actor**: cualquier `Member` de la familia.
+- **Entrada**: `familyId`, `requestedBy`, `name`.
+- **Flujo principal**:
+  1. Se valida que quien solicita pertenezca a la familia.
+  2. Se verifica que no exista otro medio con el mismo nombre, sin distinguir mayúsculas.
+  3. Se crea y persiste el `PaymentMethod` activo.
+- **Errores posibles**: `InsufficientRoleError`, `DuplicatePaymentMethodNameError`.
+- **Eventos disparados**: ninguno.
+- **Pendiente de integración**: exponer el caso de uso mediante la ruta HTTP correspondiente.
+
 ## Resumen de errores nuevos a definir
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |
@@ -351,7 +365,7 @@ Elimina la preferencia de medio de pago de un miembro cuando deja una familia.
 
 ## Pendientes antes de implementar
 
-> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 20 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
+> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 21 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
 
 1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
 2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a renombrados en el futuro, sería una mejora posterior.
