@@ -72,7 +72,7 @@ class Family {
       new Date(),
     );
     family._members.push(Member.createOwner(creator));
-    family.domainEvents.push(new FamilyCreated(family.id)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "FamilyCreated" aquí
+    family.domainEvents.push(new FamilyCreated(family.id, creator));
     return family;
   }
 

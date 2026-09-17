@@ -149,8 +149,8 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
 
 ### En `Financial Tracking`
 
-1. **`CreateDefaultPaymentMethodsUseCase`** (interno) — crea los 4 `PaymentMethod` de la familia, y crea el `UserPaymentMethodPreference` del creador apuntando a "Efectivo".
-2. **`OnFamilyCreatedHandler`** — se suscribe a `FamilyCreated`, invoca el caso de uso anterior.
+1. **`CreateDefaultPaymentMethodsUseCase`** (interno) — ✅ implementado en `src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.ts`, con tests TDD. Crea los 4 `PaymentMethod` de la familia y el `UserPaymentMethodPreference` del creador apuntando a "Efectivo"; el flujo es idempotente.
+2. **`OnFamilyCreatedHandler`** — ✅ implementado en `src/contexts/financial-tracking/application/event-handlers/on-family-created.handler.ts`. Recibe `FamilyCreated`, que transporta `familyId` y `creatorId`, e invoca `CreateDefaultPaymentMethodsUseCase` con ambos valores.
 3. **`SetInitialPaymentMethodPreferenceUseCase`** (interno, nuevo) — crea el `UserPaymentMethodPreference` de un miembro nuevo, apuntando a "Efectivo" de esa familia.
 4. **`OnInvitationAcceptedHandler`** (nuevo, en `Financial Tracking`) — se suscribe a `InvitationAccepted` (de `Family & Access`), invoca el caso de uso anterior.
 4b. **`OnMemberRemovedHandler`** (nuevo, en `Financial Tracking`) — se suscribe a `MemberRemoved` (de `Family & Access`), elimina el `UserPaymentMethodPreference` de `(removedUserId, familyId)` si existía (limpieza, no falla si no había ninguna).
@@ -257,8 +257,8 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 6. **`PaymentMethodDeletionService`** — con tests.
 7. **`FinancialItemRepository.countByPaymentMethod()`**.
 8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()`, tests.
-9. **`CreateDefaultPaymentMethodsUseCase`** — con test de los 4 medios de pago + el default del creador.
-10. **`OnFamilyCreatedHandler`** — test de integración.
+9. **`CreateDefaultPaymentMethodsUseCase`** — ✅ implementado con test de los 4 medios de pago, el default del creador y la ejecución idempotente.
+10. **`OnFamilyCreatedHandler`** — ✅ implementado con test en `tests/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts`. `FamilyCreated` fue actualizado para transportar también `creatorId` desde `Family.create()`.
 11. **`SetInitialPaymentMethodPreferenceUseCase`** — con test.
 12. **`OnInvitationAcceptedHandler`** (en `Financial Tracking`) — test de integración, verificando que un nuevo miembro recibe su preferencia automáticamente al aceptar.
 12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — test de integración, verificando que la preferencia del miembro removido se elimina (y que no falla si no existía ninguna).
