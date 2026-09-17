@@ -7,6 +7,7 @@ import type {
 } from "../../../../src/contexts/financial-tracking/domain/repositories/financial-item.repository.js";
 import type { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import type { FinancialItemId } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
+import type { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 import type { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 
 class InMemoryFinancialItemRepository implements FinancialItemRepository {
@@ -76,6 +77,14 @@ class InMemoryFinancialItemRepository implements FinancialItemRepository {
 
   async countByTag(tagId: TagId): Promise<number> {
     return this.tagCount.get(tagId.toString()) ?? 0;
+  }
+
+  async countByPaymentMethod(paymentMethodId: PaymentMethodId): Promise<number> {
+    let count = 0;
+    for (const item of this.items.values()) {
+      if (item.paymentMethodId.equals(paymentMethodId)) count++;
+    }
+    return count;
   }
 }
 

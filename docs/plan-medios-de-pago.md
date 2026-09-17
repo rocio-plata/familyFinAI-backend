@@ -255,8 +255,8 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 4. **`UserPaymentMethodPreference`** — ✅ implementado con clave compuesta `(userId, familyId)` y tests.
 5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + repositorios in-memory y dobles de test — ✅ implementados con tests de contrato. Incluyen `findByUserAndFamily()`, `findById()`, `existsAnyForPaymentMethod()` y `delete()`; ambas implementaciones in-memory mantienen upsert por identidad. Los adaptadores Drizzle corresponden al paso 19 y siguen pendientes.
 6. **`PaymentMethodDeletionService`** — ✅ implementado con tests. Valida mediante `PaymentMethodItemAssociationReader` que el medio no tenga items asociados; la eliminación física queda a cargo del futuro caso de uso.
-7. **`FinancialItemRepository.countByPaymentMethod()`**.
-8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()`, tests.
+7. **`FinancialItemRepository.countByPaymentMethod()`** — ✅ implementado en el puerto y en los repositorios in-memory y Drizzle, con tests. La migración de base de datos corresponde al paso 19 y sigue pendiente.
+8. **`FinancialItem`** — ✅ implementado con `paymentMethodId` obligatorio, `changePaymentMethod()`, `ItemPaymentMethodChanged` y tests. La resolución opcional mediante preferencia corresponde al paso 15.
 9. **`CreateDefaultPaymentMethodsUseCase`** — ✅ implementado con test de los 4 medios de pago, el default del creador y la ejecución idempotente.
 10. **`OnFamilyCreatedHandler`** — ✅ implementado con test en `tests/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts`. `FamilyCreated` fue actualizado para transportar también `creatorId` desde `Family.create()`.
 11. **`SetInitialPaymentMethodPreferenceUseCase`** — con test.

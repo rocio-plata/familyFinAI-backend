@@ -9,6 +9,7 @@ import { UserId } from "../../../../src/contexts/family-access/domain/value-obje
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
@@ -26,6 +27,7 @@ describe("POST /families/:familyId/items", () => {
   let tagId: string;
   let incomeCategoryId: string;
   let memberAuthorization: string;
+  let paymentMethodId: string;
 
   beforeEach(async () => {
     const jwtService = new FakeJwtService();
@@ -60,6 +62,7 @@ describe("POST /families/:familyId/items", () => {
     categoryId = category.id.toString();
     tagId = category.tags[0].id.toString();
     incomeCategoryId = incomeCategory.id.toString();
+    paymentMethodId = PaymentMethodId.generate().toString();
     memberAuthorization = `Bearer ${await jwtService.sign(memberId)}`;
     app = buildApp({
       jwtService,
@@ -77,6 +80,7 @@ describe("POST /families/:familyId/items", () => {
       payload: {
         amount: 25.5,
         categoryId,
+        paymentMethodId,
         tagId,
         title: "Compra semanal",
         note: "Oferta",
@@ -106,6 +110,7 @@ describe("POST /families/:familyId/items", () => {
         amount: 1000,
         currency: "CLP",
         categoryId: incomeCategoryId,
+        paymentMethodId,
         title: "Pago recibido",
         occurredOn: "2026-08-02T12:00:00.000Z",
       },
@@ -126,6 +131,7 @@ describe("POST /families/:familyId/items", () => {
       payload: {
         amount: 25000,
         categoryId,
+        paymentMethodId,
         title: "Compra semanal",
         occurredOn: "2026-09-01",
       },
@@ -147,6 +153,7 @@ describe("POST /families/:familyId/items", () => {
       payload: {
         amount: 25.5,
         categoryId,
+        paymentMethodId,
         title: "Compra semanal",
         occurredOn: "2026-08-01T12:00:00.000Z",
       },

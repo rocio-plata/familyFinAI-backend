@@ -5,6 +5,7 @@ import { FamilyId } from "../../../family-access/domain/value-objects/family-id.
 import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { CannotReclassifyAcrossTypesError } from "../errors/cannot-reclassify-across-types.error.js";
 import { ItemAmountChanged } from "../events/item-amount-changed.event.js";
+import { ItemPaymentMethodChanged } from "../events/item-payment-method-changed.event.js";
 import { ItemReclassified } from "../events/item-reclassified.event.js";
 import { ItemRecorded } from "../events/item-recorded.event.js";
 import { CategoryAssignment } from "../value-objects/category-assignment.js";
@@ -13,6 +14,7 @@ import { FinancialItemId } from "../value-objects/financial-item-id.js";
 import type { FinancialItemType } from "../value-objects/financial-item-type.js";
 import { Money } from "../value-objects/money.js";
 import { Note } from "../value-objects/note.js";
+import { PaymentMethodId } from "../value-objects/payment-method-id.js";
 import { TagId } from "../value-objects/tag-id.js";
 import { Title } from "../value-objects/title.js";
 import { TransactionDate } from "../value-objects/transaction-date.js";
@@ -20,6 +22,7 @@ import { TransactionDate } from "../value-objects/transaction-date.js";
 interface CreateFinancialItemProps {
   familyId: FamilyId;
   recordedBy: UserId;
+  paymentMethodId: PaymentMethodId;
   amount: Money;
   category: CategoryAssignment;
   title: Title;
@@ -31,6 +34,7 @@ interface ReconstituteFinancialItemProps {
   id: string;
   familyId: string;
   recordedBy: string;
+  paymentMethodId: string;
   type: FinancialItemType;
   amount: number;
   currency: string;
@@ -49,6 +53,7 @@ class FinancialItem {
     private readonly _id: FinancialItemId,
     private readonly _familyId: FamilyId,
     private readonly _recordedBy: UserId,
+    private _paymentMethodId: PaymentMethodId,
     private _type: FinancialItemType,
     private _amount: Money,
     private _category: CategoryAssignment,
@@ -66,6 +71,9 @@ class FinancialItem {
   }
   get recordedBy(): UserId {
     return this._recordedBy;
+  }
+  get paymentMethodId(): PaymentMethodId {
+    return this._paymentMethodId;
   }
   get type(): FinancialItemType {
     return this._type;
@@ -94,6 +102,7 @@ class FinancialItem {
       FinancialItemId.generate(),
       props.familyId,
       props.recordedBy,
+      props.paymentMethodId,
       resolvedType,
       props.amount,
       props.category,
@@ -113,6 +122,7 @@ class FinancialItem {
         item.type,
         item.occurredOn.value,
         item.amount.currency.toString(),
+        item.paymentMethodId,
       ),
     );
     return item;
@@ -123,6 +133,7 @@ class FinancialItem {
       FinancialItemId.of(props.id),
       FamilyId.of(props.familyId),
       UserId.of(props.recordedBy),
+      PaymentMethodId.of(props.paymentMethodId),
       props.type,
       Money.of(props.amount, Currency.of(props.currency)),
       CategoryAssignment.of(
@@ -154,6 +165,21 @@ class FinancialItem {
         this.occurredOn.value,
         this.amount.amount,
         this.amount.currency.toString(),
+      ),
+    );
+  }
+
+  changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
+    const previousPaymentMethodId = this._paymentMethodId;
+    this._paymentMethodId = newPaymentMethodId;
+    this.domainEvents.push(
+      new ItemPaymentMethodChanged(
+        this.id,
+        this.familyId.toString(),
+        previousPaymentMethodId,
+        newPaymentMethodId,
+        this.amount.amount,
+        this.type,
       ),
     );
   }
