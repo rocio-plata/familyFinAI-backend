@@ -18,6 +18,10 @@ describe("resolveHttpStatus", () => {
     );
     assert.equal(resolveHttpStatus({ code: "FINANCIAL_TRACKING.DUPLICATE_CATEGORY_NAME" }), 409);
     assert.equal(resolveHttpStatus({ code: "IDENTITY.EMAIL_ALREADY_REGISTERED" }), 409);
+    assert.equal(
+      resolveHttpStatus({ code: "FINANCIAL_TRACKING.PAYMENT_METHOD_IS_SOMEONES_DEFAULT" }),
+      409,
+    );
   });
 
   test("errores de permisos insuficientes devuelven 403", () => {
