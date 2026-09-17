@@ -12,6 +12,7 @@
     "start": "node --env-file-if-exists=.env dist/platform/server.js",
     "test": "node --import tsx/esm --test 'tests/unit/**/*.test.ts'",
     "test:integration": "node --env-file-if-exists=.env --import tsx/esm --test 'tests/integration/**/*.test.ts'",
+    "test:e2e": "node --env-file-if-exists=.env --import tsx/esm --test 'tests/e2e/**/*.test.ts'",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",

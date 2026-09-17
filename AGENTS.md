@@ -194,6 +194,7 @@ export { ItemRecorded };
 
 - Los tests unitarios se ubican en `tests/unit/`, espejando la estructura de `src/contexts/` (usan dobles in-memory, no requieren base de datos). Ejecutar con `npm test`.
 - Los tests de integración contra PostgreSQL real se ubican en `tests/integration/`, con el mismo mirroring de `src/contexts/`. Se ejecutan por separado con `npm run test:integration` (requiere `DATABASE_URL` y la base migrada); dentro de cada test se saltan automáticamente si `DATABASE_URL` no está definida.
+- Los tests end-to-end viven en `tests/e2e/`: levantan `buildApp()` con dependencias reales (Drizzle + Postgres) y ejercitan flujos completos vía `app.inject()` (nativo de Fastify, sin librerías adicionales). Se ejecutan con `npm run test:e2e`; igual que los de integración, requieren `DATABASE_URL` y se saltan automáticamente si no está definida.
 - Archivo de test: `<nombre>.usecase.test.ts`, `<nombre>.query.test.ts`, `<nombre>.test.ts`.
 - Dobles de prueba en `tests/unit/contexts/<contexto>/doubles/` (in-memory repositories, fake event bus, etc.).
 

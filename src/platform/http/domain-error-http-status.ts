@@ -6,6 +6,7 @@ const SUFFIX_RULES: Array<{ suffix: string; status: number }> = [
   { suffix: "ALREADY_MEMBER", status: 409 },
   { suffix: "ALREADY_REGISTERED", status: 409 },
   { suffix: "HAS_ASSOCIATED_ITEMS", status: 409 },
+  { suffix: "IS_SOMEONES_DEFAULT", status: 409 },
   { suffix: "DUPLICATE_", status: 409 },
   { suffix: "INSUFFICIENT_ROLE", status: 403 },
 ];
