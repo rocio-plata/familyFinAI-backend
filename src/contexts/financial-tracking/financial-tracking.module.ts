@@ -114,6 +114,7 @@ function buildFinancialTrackingModule(
     updateFinancialItem: new UpdateFinancialItemUseCase(
       deps.financialItemRepository,
       deps.eventBus,
+      deps.paymentMethodRepository,
     ),
   };
 
