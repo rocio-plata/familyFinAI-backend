@@ -1,6 +1,7 @@
 // src/contexts/financial-tracking/infrastructure/http/financial-tracking.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { GetFamilyDefaultCurrencyQuery } from "../../../family-access/application/queries/get-family-default-currency.query.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { Role } from "../../../family-access/domain/value-objects/role.js";
@@ -30,7 +31,6 @@ import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
 import { FinancialItemId } from "../../domain/value-objects/financial-item-id.js";
 import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
-import { Money } from "../../domain/value-objects/money.js";
 import { Note } from "../../domain/value-objects/note.js";
 import { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
 import { PaymentMethodName } from "../../domain/value-objects/payment-method-name.js";

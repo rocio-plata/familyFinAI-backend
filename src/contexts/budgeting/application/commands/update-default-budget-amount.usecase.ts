@@ -1,6 +1,7 @@
 // src/contexts/budgeting/application/commands/update-default-budget-amount.usecase.ts
+
+import type { Money } from "../../../../shared-kernel/domain/money.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
-import type { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { BudgetConfiguration } from "../../domain/entities/budget-configuration.js";
 import { BudgetConfigurationNotFoundError } from "../../domain/errors/budget-configuration-not-found.error.js";
 import type { BudgetConfigurationRepository } from "../../domain/repositories/budget-configuration.repository.js";

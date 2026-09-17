@@ -1,9 +1,9 @@
 // src/contexts/reporting/application/queries/get-period-comparison.query.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { CategoryPeriodAggregate } from "../../domain/entities/category-period-aggregate.js";
 import type { CategoryPeriodAggregateRepository } from "../../domain/repositories/category-period-aggregate.repository.js";
 

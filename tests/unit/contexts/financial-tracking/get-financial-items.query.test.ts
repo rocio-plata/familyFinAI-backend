@@ -8,10 +8,10 @@ import { FinancialItem } from "../../../../src/contexts/financial-tracking/domai
 import { CategoryAssignment } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { Title } from "../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { InMemoryFinancialItemRepository } from "./doubles/in-memory-financial-item.repository.js";
 
 describe("GetFinancialItemsQuery", () => {

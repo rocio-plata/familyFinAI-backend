@@ -1,5 +1,6 @@
 // /src/contexts/financial-tracking/application/commands/create-financial-item.usecase.ts
 import type { EventBus } from "../../../../platform/events/event-bus.js";
+import type { Money } from "../../../../shared-kernel/domain/money.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import {
@@ -20,7 +21,6 @@ import type { UserPaymentMethodPreferenceRepository } from "../../domain/reposit
 import { CategoryAssignment } from "../../domain/value-objects/category-assignment.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
-import type { Money } from "../../domain/value-objects/money.js";
 import type { Note } from "../../domain/value-objects/note.js";
 import type { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
 import type { TagId } from "../../domain/value-objects/tag-id.js";

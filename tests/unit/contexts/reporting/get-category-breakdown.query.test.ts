@@ -6,10 +6,10 @@ import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { GetCategoryBreakdownQuery } from "../../../../src/contexts/reporting/application/queries/get-category-breakdown.query.js";
 import { CategoryPeriodAggregate } from "../../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { Period } from "../../../../src/shared-kernel/domain/period.js";
 import { InMemoryCategoryRepository } from "../financial-tracking/doubles/in-memory-category.repository.js";
 import { InMemoryCategoryPeriodAggregateRepository } from "./doubles/in-memory-category-period-aggregate.repository.js";

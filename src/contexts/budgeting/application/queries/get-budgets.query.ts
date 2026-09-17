@@ -1,9 +1,10 @@
 // src/contexts/budgeting/application/queries/get-budgets.query.ts
+
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { GetCategoriesQuery } from "../../../financial-tracking/application/queries/get-categories.query.js";
 import type { CategoryName } from "../../../financial-tracking/domain/value-objects/category-name.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { BudgetConfigurationRepository } from "../../domain/repositories/budget-configuration.repository.js";
 import type { BudgetPeriodStatusRepository } from "../../domain/repositories/budget-period-status.repository.js";
 import type { BudgetBalance } from "../../domain/value-objects/budget-balance.js";

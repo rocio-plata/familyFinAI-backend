@@ -10,12 +10,12 @@ import { FinancialItem } from "../../../../../src/contexts/financial-tracking/do
 import { CategoryAssignment } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { TagId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { Title } from "../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
 import { buildApp } from "../../../../../src/platform/app.js";
 import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../../src/shared-kernel/domain/money.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestFamilyAccessDependencies } from "../../family-access/build-test-family-access-dependencies.js";
 import { InMemoryFamilyRepository } from "../../family-access/doubles/in-memory-family.repository.js";

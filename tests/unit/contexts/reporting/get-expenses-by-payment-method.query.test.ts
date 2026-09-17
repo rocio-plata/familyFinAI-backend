@@ -5,13 +5,13 @@ import { FamilyId } from "../../../../src/contexts/family-access/domain/value-ob
 import { GetPaymentMethodsQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-payment-methods.query.js";
 import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
 import { GetExpensesByPaymentMethodQuery } from "../../../../src/contexts/reporting/application/queries/get-expenses-by-payment-method.query.js";
 import { PaymentMethodPeriodAggregate } from "../../../../src/contexts/reporting/domain/entities/payment-method-period-aggregate.js";
 import { InMemoryPaymentMethodPeriodAggregateRepository } from "../../../../src/contexts/reporting/infrastructure/persistence/in-memory-payment-method-period-aggregate.repository.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { Period } from "../../../../src/shared-kernel/domain/period.js";
 
 describe("GetExpensesByPaymentMethodQuery", () => {

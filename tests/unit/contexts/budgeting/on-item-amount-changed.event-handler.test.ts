@@ -11,8 +11,8 @@ import { ItemAmountChanged } from "../../../../src/contexts/financial-tracking/d
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemId } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { Period } from "../../../../src/shared-kernel/domain/period.js";
 import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
 import { InMemoryBudgetPeriodStatusRepository } from "./doubles/in-memory-budget-period-status.repository.js";

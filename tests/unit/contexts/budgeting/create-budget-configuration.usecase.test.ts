@@ -11,7 +11,7 @@ import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { InMemoryFamilyRepository } from "../../contexts/family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "../../contexts/financial-tracking/doubles/in-memory-category.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";

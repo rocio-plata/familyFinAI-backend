@@ -1,11 +1,11 @@
 // src/contexts/budgeting/domain/entities/budget-configuration.ts
 
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
+import { InvalidMoneyError } from "../../../../shared-kernel/errors/invalid-money.error.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
-import { InvalidMoneyError } from "../../../financial-tracking/domain/errors/invalid-money.error.js";
 import { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { NoOverrideForPeriodError } from "../errors/no-override-for-period.error.js";
 import { BudgetConfigurationId } from "../value-objects/budget-configuration-id.js";
 

@@ -9,7 +9,6 @@ import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domai
 import { UserPaymentMethodPreference } from "../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
 import { CategoryNotActiveError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-active.error.js";
 import { CategoryNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
-import { InvalidMoneyError } from "../../../../src/contexts/financial-tracking/domain/errors/invalid-money.error.js";
 import { InvalidTitleError } from "../../../../src/contexts/financial-tracking/domain/errors/invalid-title.error.js";
 import { NoDefaultPaymentMethodSetError } from "../../../../src/contexts/financial-tracking/domain/errors/no-default-payment-method-set.error.js";
 import { PaymentMethodNotActiveError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-active.error.js";
@@ -20,7 +19,6 @@ import { ItemRecorded } from "../../../../src/contexts/financial-tracking/domain
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
@@ -29,6 +27,8 @@ import { TransactionDate } from "../../../../src/contexts/financial-tracking/dom
 import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
+import { InvalidMoneyError } from "../../../../src/shared-kernel/errors/invalid-money.error.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import {
   OrderRecordingEventBus,

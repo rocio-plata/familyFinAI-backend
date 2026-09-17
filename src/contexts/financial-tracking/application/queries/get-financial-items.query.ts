@@ -1,4 +1,6 @@
 // /src/contexts/financial-tracking/application/queries/get-financial-items.query.ts
+
+import type { Money } from "../../../../shared-kernel/domain/money.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import type {
@@ -8,7 +10,6 @@ import type {
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import type { FinancialItemId } from "../../domain/value-objects/financial-item-id.js";
 import type { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
-import type { Money } from "../../domain/value-objects/money.js";
 import type { Note } from "../../domain/value-objects/note.js";
 import type { TagId } from "../../domain/value-objects/tag-id.js";
 import type { Title } from "../../domain/value-objects/title.js";
