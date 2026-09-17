@@ -180,6 +180,8 @@ class FinancialItem {
         newPaymentMethodId,
         this.amount.amount,
         this.type,
+        this.occurredOn.value,
+        this.amount.currency.toString(),
       ),
     );
   }
@@ -197,6 +199,7 @@ class FinancialItem {
         previousAmount,
         newAmount.amount,
         newAmount.currency.toString(),
+        this.paymentMethodId,
       ),
     );
   }
