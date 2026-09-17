@@ -51,6 +51,7 @@ export const financialItems = pgTable(
     id: uuid("id").primaryKey(),
     familyId: uuid("family_id").notNull(),
     recordedBy: uuid("recorded_by").notNull(),
+    paymentMethodId: uuid("payment_method_id").notNull(),
     type: financialItemTypeEnum("type").notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
     currency: varchar("currency", { length: 3 }).notNull(),

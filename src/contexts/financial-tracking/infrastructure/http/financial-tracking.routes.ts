@@ -26,6 +26,7 @@ import { FinancialItemId } from "../../domain/value-objects/financial-item-id.js
 import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 import { Money } from "../../domain/value-objects/money.js";
 import { Note } from "../../domain/value-objects/note.js";
+import { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
 import { TagId } from "../../domain/value-objects/tag-id.js";
 import { TagName } from "../../domain/value-objects/tag-name.js";
 import { Title } from "../../domain/value-objects/title.js";
@@ -107,11 +108,12 @@ function registerFinancialTrackingRoutes(
         },
         body: {
           type: "object",
-          required: ["amount", "categoryId", "title", "occurredOn"],
+          required: ["amount", "categoryId", "paymentMethodId", "title", "occurredOn"],
           properties: {
             amount: { type: "number" },
             currency: { type: "string", minLength: 1 },
             categoryId: { type: "string", minLength: 1 },
+            paymentMethodId: { type: "string", minLength: 1 },
             tagId: { type: "string", minLength: 1 },
             title: { type: "string", minLength: 1 },
             note: { type: "string" },
@@ -125,15 +127,17 @@ function registerFinancialTrackingRoutes(
     },
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
-      const { amount, currency, categoryId, tagId, title, note, occurredOn } = request.body as {
-        amount: number;
-        currency?: string;
-        categoryId: string;
-        tagId?: string;
-        title: string;
-        note?: string;
-        occurredOn: string;
-      };
+      const { amount, currency, categoryId, paymentMethodId, tagId, title, note, occurredOn } =
+        request.body as {
+          amount: number;
+          currency?: string;
+          categoryId: string;
+          paymentMethodId: string;
+          tagId?: string;
+          title: string;
+          note?: string;
+          occurredOn: string;
+        };
       const parsedFamilyId = FamilyId.of(familyId);
       const resolvedCurrency = currency
         ? Currency.of(currency)
@@ -143,6 +147,7 @@ function registerFinancialTrackingRoutes(
         recordedBy: request.userId,
         amount: Money.of(amount, resolvedCurrency),
         categoryId: CategoryId.of(categoryId),
+        paymentMethodId: PaymentMethodId.of(paymentMethodId),
         tagId: tagId ? TagId.of(tagId) : null,
         title: Title.of(title),
         occurredOn: TransactionDate.of(new Date(occurredOn)),
@@ -156,6 +161,7 @@ function registerFinancialTrackingRoutes(
         currency: item.amount.currency.toString(),
         categoryId: item.categoryAssignment.categoryId.toString(),
         tagId: item.categoryAssignment.tagId?.toString() ?? null,
+        paymentMethodId: item.paymentMethodId.toString(),
         title: item.title.toString(),
         note: item.note?.toString() ?? null,
         occurredOn: item.occurredOn.value.toISOString(),

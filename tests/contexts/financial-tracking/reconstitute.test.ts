@@ -9,6 +9,7 @@ import { FinancialItem } from "../../../src/contexts/financial-tracking/domain/e
 import { CategoryAssignment } from "../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
 import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { PaymentMethodId } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 import { TagStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-status.js";
 import { Currency } from "../../../src/shared-kernel/domain/currency.js";
 
@@ -41,6 +42,7 @@ describe("reconstitución de financial-tracking", () => {
       id: "44444444-4444-4444-8444-444444444444",
       familyId: FamilyId.generate().toString(),
       recordedBy: UserId.generate().toString(),
+      paymentMethodId: PaymentMethodId.generate().toString(),
       type: FinancialItemType.Income,
       amount: 1250.5,
       currency: Currency.default().toString(),

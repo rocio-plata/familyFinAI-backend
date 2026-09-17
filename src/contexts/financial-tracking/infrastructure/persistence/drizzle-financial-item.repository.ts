@@ -11,6 +11,7 @@ import type {
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import type { FinancialItemId } from "../../domain/value-objects/financial-item-id.js";
 import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
+import type { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
 import type { TagId } from "../../domain/value-objects/tag-id.js";
 import { financialItems } from "./schema.js";
 
@@ -22,6 +23,7 @@ class DrizzleFinancialItemRepository implements FinancialItemRepository {
         id: item.id.toString(),
         familyId: item.familyId.toString(),
         recordedBy: item.recordedBy.toString(),
+        paymentMethodId: item.paymentMethodId.toString(),
         type: item.type,
         amount: item.amount.amount.toString(),
         currency: item.amount.currency.toString(),
@@ -39,6 +41,7 @@ class DrizzleFinancialItemRepository implements FinancialItemRepository {
           amount: item.amount.amount.toString(),
           currency: item.amount.currency.toString(),
           categoryId: item.categoryAssignment.categoryId.toString(),
+          paymentMethodId: item.paymentMethodId.toString(),
           tagId: item.categoryAssignment.tagId?.toString() ?? null,
           title: item.title.toString(),
           note: item.note?.toString() ?? null,
@@ -95,11 +98,20 @@ class DrizzleFinancialItemRepository implements FinancialItemRepository {
     return rows.length;
   }
 
+  async countByPaymentMethod(paymentMethodId: PaymentMethodId): Promise<number> {
+    const rows = await db
+      .select({ id: financialItems.id })
+      .from(financialItems)
+      .where(eq(financialItems.paymentMethodId, paymentMethodId.toString()));
+    return rows.length;
+  }
+
   private toDomain(row: typeof financialItems.$inferSelect): FinancialItem {
     return FinancialItem.reconstitute({
       id: row.id,
       familyId: row.familyId,
       recordedBy: row.recordedBy,
+      paymentMethodId: row.paymentMethodId,
       type: row.type === "EXPENSE" ? FinancialItemType.Expense : FinancialItemType.Income,
       amount: Number(row.amount),
       currency: row.currency,

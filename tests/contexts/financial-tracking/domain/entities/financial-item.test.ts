@@ -9,6 +9,7 @@ import { CategoryId } from "../../../../../src/contexts/financial-tracking/domai
 import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Note } from "../../../../../src/contexts/financial-tracking/domain/value-objects/note.js";
+import { PaymentMethodId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 import { Title } from "../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
 import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
@@ -21,6 +22,7 @@ describe("FinancialItem", () => {
     return {
       familyId: FamilyId.generate(),
       recordedBy: UserId.generate(),
+      paymentMethodId: PaymentMethodId.generate(),
       amount: Money.of(10_000, clp),
       category: CategoryAssignment.of(CategoryId.generate()),
       title: Title.of("Almuerzo"),
@@ -98,6 +100,28 @@ describe("FinancialItem", () => {
       const newCategory = CategoryAssignment.of(CategoryId.generate());
       assert.throws(() => item.reclassify(newCategory, FinancialItemType.Income));
       assert.ok(item.categoryAssignment.equals(originalCategory));
+    });
+  });
+
+  describe("changePaymentMethod()", () => {
+    it("actualiza el medio de pago", () => {
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
+      const newPaymentMethodId = PaymentMethodId.generate();
+
+      item.changePaymentMethod(newPaymentMethodId);
+
+      assert.ok(item.paymentMethodId.equals(newPaymentMethodId));
+    });
+
+    it("dispara ItemPaymentMethodChanged", () => {
+      const item = FinancialItem.create(makeProps(), FinancialItemType.Expense);
+      item.pullDomainEvents();
+
+      item.changePaymentMethod(PaymentMethodId.generate());
+
+      const events = item.pullDomainEvents();
+      assert.equal(events.length, 1);
+      assert.equal(events[0]?.eventName, "financial-tracking.item-payment-method-changed");
     });
   });
 

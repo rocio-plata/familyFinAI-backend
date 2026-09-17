@@ -17,6 +17,7 @@ import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
 import type { Money } from "../../domain/value-objects/money.js";
 import type { Note } from "../../domain/value-objects/note.js";
+import type { PaymentMethodId } from "../../domain/value-objects/payment-method-id.js";
 import type { TagId } from "../../domain/value-objects/tag-id.js";
 import { TagStatus } from "../../domain/value-objects/tag-status.js";
 import type { Title } from "../../domain/value-objects/title.js";
@@ -25,6 +26,7 @@ import type { TransactionDate } from "../../domain/value-objects/transaction-dat
 interface CreateFinancialItemInput {
   familyId: FamilyId;
   recordedBy: UserId;
+  paymentMethodId: PaymentMethodId;
   amount: Money;
   categoryId: CategoryId;
   tagId: TagId | null;
@@ -72,6 +74,7 @@ class CreateFinancialItemUseCase {
     const props: CreateFinancialItemProps = {
       familyId: input.familyId,
       recordedBy: input.recordedBy,
+      paymentMethodId: input.paymentMethodId,
       amount: input.amount,
       category: categoryAssignment,
       title: input.title,

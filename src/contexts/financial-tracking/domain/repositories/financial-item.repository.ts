@@ -5,6 +5,7 @@ import type { FinancialItem } from "../entities/financial-item.js";
 import type { CategoryId } from "../value-objects/category-id.js";
 import type { FinancialItemId } from "../value-objects/financial-item-id.js";
 import type { FinancialItemType } from "../value-objects/financial-item-type.js";
+import type { PaymentMethodId } from "../value-objects/payment-method-id.js";
 import type { TagId } from "../value-objects/tag-id.js";
 
 interface FinancialItemFilters {
@@ -21,6 +22,7 @@ interface FinancialItemRepository {
   delete(id: FinancialItemId): Promise<void>;
   countByCategory(categoryId: CategoryId): Promise<number>;
   countByTag(tagId: TagId): Promise<number>;
+  countByPaymentMethod(paymentMethodId: PaymentMethodId): Promise<number>;
 }
 
 export type { FinancialItemFilters, FinancialItemRepository };
