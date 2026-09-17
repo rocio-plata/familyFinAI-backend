@@ -254,7 +254,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 3. **`PaymentMethod`** — ✅ implementado, scoped por `familyId`, con tests.
 4. **`UserPaymentMethodPreference`** — ✅ implementado con clave compuesta `(userId, familyId)` y tests.
 5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + repositorios in-memory y dobles de test — ✅ implementados con tests de contrato. Incluyen `findByUserAndFamily()`, `findById()`, `existsAnyForPaymentMethod()` y `delete()`; ambas implementaciones in-memory mantienen upsert por identidad. Los adaptadores Drizzle corresponden al paso 19 y siguen pendientes.
-6. **`PaymentMethodDeletionService`** — con tests.
+6. **`PaymentMethodDeletionService`** — ✅ implementado con tests. Valida mediante `PaymentMethodItemAssociationReader` que el medio no tenga items asociados; la eliminación física queda a cargo del futuro caso de uso.
 7. **`FinancialItemRepository.countByPaymentMethod()`**.
 8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()`, tests.
 9. **`CreateDefaultPaymentMethodsUseCase`** — ✅ implementado con test de los 4 medios de pago, el default del creador y la ejecución idempotente.
