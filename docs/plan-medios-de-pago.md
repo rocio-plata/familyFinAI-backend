@@ -249,11 +249,11 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 
 ## Plan de implementación (orden sugerido, con TDD)
 
-1. **`PaymentMethodId`, `PaymentMethodName`** — sin cambios.
-2. **Errores** (tabla de arriba).
-3. **`PaymentMethod`** — scoped por `familyId`, con tests.
-4. **`UserPaymentMethodPreference`** — con clave compuesta `(userId, familyId)`, con tests.
-5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + dobles in-memory. `UserPaymentMethodPreferenceRepository` incluye `findByUserAndFamily()`, `existsAnyForPaymentMethod(paymentMethodId)` y `delete(userId, familyId)`.
+1. **`PaymentMethodId`, `PaymentMethodName`** — ✅ implementados con validación y tests.
+2. **Errores** — ✅ implementados con tests: `InvalidPaymentMethodIdError`, `InvalidPaymentMethodNameError`, `DuplicatePaymentMethodNameError`, `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`, `PaymentMethodHasAssociatedItemsError`, `PaymentMethodIsSomeonesDefaultError` y `NoDefaultPaymentMethodSetError`.
+3. **`PaymentMethod`** — ✅ implementado, scoped por `familyId`, con tests.
+4. **`UserPaymentMethodPreference`** — ✅ implementado con clave compuesta `(userId, familyId)` y tests.
+5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + dobles in-memory — ⚠️ parcialmente implementados. Existen los puertos y dobles, pero faltan métodos del contrato completo (`findById()`, `existsAnyForPaymentMethod()` y `delete()`) y los adaptadores Drizzle.
 6. **`PaymentMethodDeletionService`** — con tests.
 7. **`FinancialItemRepository.countByPaymentMethod()`**.
 8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()`, tests.
