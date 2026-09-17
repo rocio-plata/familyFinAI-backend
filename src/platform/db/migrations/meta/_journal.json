@@ -43,6 +43,13 @@
       "when": 1789174526981,
       "tag": "0005_acoustic_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789669804758,
+      "tag": "0006_icy_shriek",
+      "breakpoints": true
     }
   ]
 }

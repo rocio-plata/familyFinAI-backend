@@ -85,8 +85,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - Registrar `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` en el `EventBus`.
 - Implementar las rutas HTTP de medios de pago y la ruta de default por usuario.
 - Crear los repositorios Drizzle de `PaymentMethod` y `UserPaymentMethodPreference`.
-- Añadir migraciones para `payment_methods`, `user_payment_method_preferences` y `payment_method_period_aggregates`.
-- Añadir la foreign key de `financial_items.payment_method_id` cuando exista la tabla `payment_methods`.
+- Ejecutar `npm run db:reset` y verificar la migración `0006_icy_shriek.sql` desde una base vacía; no se conservarán datos anteriores ni se hará backfill.
 
 ## Reporting
 

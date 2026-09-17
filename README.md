@@ -164,7 +164,7 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 - **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada).
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
-- **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso y read model por período implementados con pruebas; el wiring de módulo, las rutas HTTP y la persistencia PostgreSQL todavía están pendientes.
+- **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso y read model por período implementados con pruebas; el wiring de módulo, las rutas HTTP y la persistencia PostgreSQL todavía están pendientes. La adopción del schema se hará reiniciando la base con `npm run db:reset`, sin backfill de datos anteriores.
 - **Presupuestos**: cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle y seis rutas HTTP bajo `/families/:familyId/budgets`.
 - **Reportes**: read model materializado por categoría implementado con cinco queries, cuatro handlers, persistencia InMemory/Drizzle y cinco rutas HTTP. El agregado y la query por medio de pago están implementados y probados, pero aún no están expuestos por HTTP y sus migraciones PostgreSQL están pendientes.
 - **Asistencia con IA**: contexto reservado; el diseño está documentado, pero todavía no forma parte de la API.
