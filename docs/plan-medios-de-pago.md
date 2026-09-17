@@ -189,12 +189,8 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
 
 ```typescript
 // Estado actual de financial-tracking/infrastructure/persistence/schema.ts:
-// todavía no declara paymentMethods ni userPaymentMethodPreferences.
-// financialItems sí declara paymentMethodId, pero aún sin foreign key:
-export const financialItems = pgTable("financial_items", {
-  // ... columnas existentes
-  paymentMethodId: uuid("payment_method_id").notNull(),
-});
+// paymentMethods, userPaymentMethodPreferences y financialItems.paymentMethodId
+// están declarados. paymentMethodId referencia paymentMethods.id.
 ```
 
 ```typescript
@@ -216,11 +212,12 @@ export const paymentMethodPeriodAggregates = pgTable(
 
 `npm run db:reset` sigue siendo el camino más simple.
 
-**Estado actual de persistencia**: las tablas de medios de pago y preferencias todavía no existen
-en el schema/migraciones de Financial Tracking. `financial_items.payment_method_id` existe, pero
-sin foreign key; el agregado de Reporting usa la clave natural
-`(familyId, paymentMethodId, period)` y conserva `currency`. Los repositorios Drizzle de
-`PaymentMethod` y `UserPaymentMethodPreference` aún no están implementados.
+**Estado actual de persistencia**: los schemas y la migración `0006_icy_shriek.sql` ya declaran
+las tablas de medios de pago, preferencias y el agregado de Reporting, además de las foreign keys
+correspondientes. Los repositorios Drizzle de `PaymentMethod` y
+`UserPaymentMethodPreference` aún no están implementados. La migración añade
+`financial_items.payment_method_id` como `NOT NULL`. La base se reiniciará con `npm run db:reset`,
+por lo que no se conservarán filas anteriores ni será necesario backfill.
 
 ---
 
@@ -262,7 +259,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 16. **Actualizar `UpdateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional; si se informa, valida familia y estado activo, cambia el medio y publica `ItemPaymentMethodChanged`. La ruta PATCH y su respuesta también lo soportan.
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — ✅ implementado con entidad, repositorios in-memory/Drizzle, schema y handlers para `ItemRecorded`, `ItemAmountChanged`, `ItemDeleted` e `ItemPaymentMethodChanged`, con tests unitarios. Los eventos fueron ampliados con los datos necesarios para mantener el agregado; la migración DB sigue pendiente del paso 19.
 18. **`GetExpensesByPaymentMethodQuery`** — ✅ implementado con tests TDD. Devuelve gastos por medio de pago para una familia y período, incluye medios deprecados para conservar históricos, ignora ingresos/montos cero y ordena de mayor a menor. La query todavía no está construida en `reporting.module.ts` ni expuesta por HTTP.
-19. **Schemas de Drizzle** — pendiente: crear tablas/columnas y migraciones para `payment_methods`, `user_payment_method_preferences` y `payment_method_period_aggregates`, añadir la foreign key de `financial_items.payment_method_id` y verificar `npm run db:generate`/`npm run db:reset`.
+19. **Schemas de Drizzle** — ✅ implementados y migración `0006_icy_shriek.sql` generada para `payment_methods`, `user_payment_method_preferences`, `payment_method_period_aggregates` y la foreign key de `financial_items.payment_method_id`. Pendiente ejecutar `npm run db:reset` para aplicar todo desde una base vacía; no se hará backfill.
 20. **Rutas HTTP** — pendiente: registrar los endpoints de medios de pago y `/families/:familyId/reports/by-payment-method`; actualmente no están expuestos.
 21. **Actualizar la colección de Postman**.
 22. **Actualizar `casos-de-uso-financial-tracking.md` y `casos-de-uso-reporting.md`**.
