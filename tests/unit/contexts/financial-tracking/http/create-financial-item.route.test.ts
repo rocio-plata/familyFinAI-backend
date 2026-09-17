@@ -1,0 +1,195 @@
+// tests/unit/contexts/financial-tracking/http/create-financial-item.route.test.ts
+import assert from "node:assert/strict";
+import { beforeEach, describe, test } from "node:test";
+import type { FastifyInstance } from "fastify";
+import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { PaymentMethod } from "../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
+import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { PaymentMethodName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { InMemoryPaymentMethodRepository } from "../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
+import { buildApp } from "../../../../../src/platform/app.js";
+import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
+import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
+import { buildTestFamilyAccessDependencies } from "../../family-access/build-test-family-access-dependencies.js";
+import { InMemoryFamilyRepository } from "../../family-access/doubles/in-memory-family.repository.js";
+import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
+import { buildTestFinancialTrackingDependencies } from "../build-test-financial-tracking-dependencies.js";
+import { InMemoryCategoryRepository } from "../doubles/in-memory-category.repository.js";
+
+describe("POST /families/:familyId/items", () => {
+  let app: FastifyInstance;
+  let familyId: string;
+  let categoryId: string;
+  let tagId: string;
+  let incomeCategoryId: string;
+  let memberAuthorization: string;
+  let paymentMethodId: string;
+
+  beforeEach(async () => {
+    const jwtService = new FakeJwtService();
+    const ownerId = UserId.generate();
+    const memberId = UserId.generate();
+    const familyRepository = new InMemoryFamilyRepository();
+    const categoryRepository = new InMemoryCategoryRepository();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    family.changeDefaultCurrency(Currency.of("USD"), ownerId);
+    family.addMemberFromInvitationData(memberId, Role.member());
+    family.pullDomainEvents();
+    await familyRepository.save(family);
+
+    const category = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    category.addTag(TagName.of("Supermercado"));
+    category.pullDomainEvents();
+    categoryRepository.add(category);
+
+    const incomeCategory = Category.create(
+      family.id,
+      FinancialItemType.Income,
+      CategoryName.of("Sueldo"),
+    );
+    incomeCategory.pullDomainEvents();
+    categoryRepository.add(incomeCategory);
+
+    familyId = family.id.toString();
+    categoryId = category.id.toString();
+    tagId = category.tags[0].id.toString();
+    incomeCategoryId = incomeCategory.id.toString();
+    const paymentMethodRepository = new InMemoryPaymentMethodRepository();
+    const preferenceRepository = new InMemoryUserPaymentMethodPreferenceRepository();
+    const defaultPaymentMethod = PaymentMethod.create(family.id, PaymentMethodName.of("Efectivo"));
+    await paymentMethodRepository.save(defaultPaymentMethod);
+    await preferenceRepository.save(
+      UserPaymentMethodPreference.create(memberId, family.id, defaultPaymentMethod.id),
+    );
+    paymentMethodId = defaultPaymentMethod.id.toString();
+    memberAuthorization = `Bearer ${await jwtService.sign(memberId)}`;
+    app = buildApp({
+      jwtService,
+      identity: buildTestIdentityDependencies(),
+      familyAccess: buildTestFamilyAccessDependencies({ familyRepository }),
+      financialTracking: buildTestFinancialTrackingDependencies({
+        categoryRepository,
+        paymentMethodRepository,
+        preferenceRepository,
+      }),
+    });
+  });
+
+  test("registra un gasto con la moneda predeterminada de la familia", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: memberAuthorization },
+      payload: {
+        amount: 25.5,
+        categoryId,
+        tagId,
+        title: "Compra semanal",
+        note: "Oferta",
+        occurredOn: "2026-08-01T12:00:00.000Z",
+      },
+    });
+
+    assert.equal(response.statusCode, 201);
+    const body = JSON.parse(response.body);
+    assert.ok(body.id);
+    assert.equal(body.type, "EXPENSE");
+    assert.equal(body.amount, 25.5);
+    assert.equal(body.currency, "USD");
+    assert.equal(body.categoryId, categoryId);
+    assert.equal(body.paymentMethodId, paymentMethodId);
+    assert.equal(body.tagId, tagId);
+    assert.equal(body.title, "Compra semanal");
+    assert.equal(body.note, "Oferta");
+    assert.equal(body.occurredOn, "2026-08-01T12:00:00.000Z");
+  });
+
+  test("hereda el type Income de la categoría al indicar una moneda explícita", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: memberAuthorization },
+      payload: {
+        amount: 1000,
+        currency: "CLP",
+        categoryId: incomeCategoryId,
+        paymentMethodId,
+        title: "Pago recibido",
+        occurredOn: "2026-08-02T12:00:00.000Z",
+      },
+    });
+
+    assert.equal(response.statusCode, 201);
+    const body = JSON.parse(response.body);
+    assert.equal(body.type, "INCOME");
+    assert.equal(body.currency, "CLP");
+    assert.equal(body.tagId, null);
+  });
+
+  test("acepta fecha solo en formato YYYY-MM-DD", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: memberAuthorization },
+      payload: {
+        amount: 25000,
+        categoryId,
+        paymentMethodId,
+        title: "Compra semanal",
+        occurredOn: "2026-09-01",
+      },
+    });
+
+    assert.equal(response.statusCode, 201);
+    const body = JSON.parse(response.body);
+    assert.equal(body.title, "Compra semanal");
+    assert.equal(body.occurredOn, "2026-09-01T00:00:00.000Z");
+  });
+
+  test("rechaza a quien no pertenece a la familia", async () => {
+    const jwtService = new FakeJwtService();
+    const outsiderAuthorization = `Bearer ${await jwtService.sign(UserId.generate())}`;
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: outsiderAuthorization },
+      payload: {
+        amount: 25.5,
+        categoryId,
+        paymentMethodId,
+        title: "Compra semanal",
+        occurredOn: "2026-08-01T12:00:00.000Z",
+      },
+    });
+
+    assert.equal(response.statusCode, 403);
+  });
+
+  test("rechaza un body sin monto", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: memberAuthorization },
+      payload: {
+        categoryId,
+        title: "Compra semanal",
+        occurredOn: "2026-08-01T12:00:00.000Z",
+      },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
+  });
+});

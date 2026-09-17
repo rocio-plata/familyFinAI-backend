@@ -20,13 +20,14 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
 - [ ] Implementar notificaciones reales por email para invitaciones.
-- [ ] Definir estrategia de pruebas de integración contra PostgreSQL en CI o base local de test.
+- [ ] Definir estrategia de pruebas de integración contra PostgreSQL en CI (aún no hay job de CI que las ejecute; localmente ya existe un primer ejemplo, ver más abajo).
 - [x] Ejecutar `npm run db:reset` y aplicar la migración inicial desde una base vacía.
 - [ ] Automatizar en CI la verificación reproducible de `db:reset`/`db:migrate`.
 - [ ] Añadir pruebas end-to-end que cubran creación, actualización, reclasificación y borrado de un movimiento y validen el read model de `Reporting`.
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
-- [ ] Añadir pruebas de integración para repositorios y migraciones en PostgreSQL.
+- [x] Primer test de integración contra PostgreSQL real: `tests/integration/contexts/financial-tracking/infrastructure/persistence/payment-method.repository.test.ts` cubre `DrizzlePaymentMethodRepository` y `DrizzleUserPaymentMethodPreferenceRepository` (save/find/delete). Los tests de integración viven en `tests/integration/` (mirroring de `src/contexts/`, separado de los unit tests) y se ejecutan con `npm run test:integration`; se saltan automáticamente dentro de `npm test` si `DATABASE_URL` no está definida.
+- [x] Patrón de test de integración extendido a los 11 repositorios Drizzle restantes: `category.repository.test.ts`, `financial-item.repository.test.ts` (financial-tracking); `family.repository.test.ts`, `invitation.repository.test.ts` (family-access); `user.repository.test.ts` (identity); `budget-configuration.repository.test.ts`, `budget-period-status.repository.test.ts` (budgeting); `category-period-aggregate.repository.test.ts`, `payment-method-period-aggregate.repository.test.ts` (reporting). 15 tests en total, todos verificados contra Postgres real sin dejar filas huérfanas.
 
 ### Opcional
 
