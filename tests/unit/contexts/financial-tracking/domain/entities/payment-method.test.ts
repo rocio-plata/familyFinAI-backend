@@ -1,10 +1,10 @@
-// tests/contexts/financial-tracking/domain/entities/payment-method.test.ts
+// tests/unit/contexts/financial-tracking/domain/entities/payment-method.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { PaymentMethod } from "../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { CategoryStatus } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
-import { PaymentMethodName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { PaymentMethod } from "../../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { CategoryStatus } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { PaymentMethodName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 
 describe("PaymentMethod", () => {
   const familyId = FamilyId.generate();

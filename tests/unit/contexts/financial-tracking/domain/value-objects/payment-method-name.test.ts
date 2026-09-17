@@ -1,8 +1,8 @@
-// tests/contexts/financial-tracking/domain/value-objects/payment-method-name.test.ts
+// tests/unit/contexts/financial-tracking/domain/value-objects/payment-method-name.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { InvalidPaymentMethodNameError } from "../../../../../src/contexts/financial-tracking/domain/errors/invalid-payment-method-name.error.js";
-import { PaymentMethodName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { InvalidPaymentMethodNameError } from "../../../../../../src/contexts/financial-tracking/domain/errors/invalid-payment-method-name.error.js";
+import { PaymentMethodName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 
 describe("PaymentMethodName", () => {
   it("crea una instancia para nombre válido", () => {

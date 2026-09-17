@@ -1,12 +1,12 @@
-// tests/contexts/identity/register-user.usecase.test.ts
+// tests/unit/contexts/identity/register-user.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { RegisterUserUseCase } from "../../../src/contexts/identity/application/commands/register-user.usecase.js";
-import { EmailAlreadyRegisteredError } from "../../../src/contexts/identity/domain/errors/email-already-registered.error.js";
-import { InvalidDisplayNameError } from "../../../src/contexts/identity/domain/errors/invalid-display-name.error.js";
-import { WeakPasswordError } from "../../../src/contexts/identity/domain/errors/weak-password.error.js";
-import { UserRegistered } from "../../../src/contexts/identity/domain/events/user-registered.event.js";
-import { TokenService } from "../../../src/platform/auth/tokens.js";
+import { RegisterUserUseCase } from "../../../../src/contexts/identity/application/commands/register-user.usecase.js";
+import { EmailAlreadyRegisteredError } from "../../../../src/contexts/identity/domain/errors/email-already-registered.error.js";
+import { InvalidDisplayNameError } from "../../../../src/contexts/identity/domain/errors/invalid-display-name.error.js";
+import { WeakPasswordError } from "../../../../src/contexts/identity/domain/errors/weak-password.error.js";
+import { UserRegistered } from "../../../../src/contexts/identity/domain/events/user-registered.event.js";
+import { TokenService } from "../../../../src/platform/auth/tokens.js";
 import { FakeJwtService } from "../../platform/auth/doubles/fake-jwt-service.js";
 import { InMemoryRefreshTokenRepository } from "../../platform/auth/doubles/in-memory-refresh-token.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";

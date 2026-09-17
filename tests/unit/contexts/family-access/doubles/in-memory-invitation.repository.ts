@@ -1,9 +1,9 @@
-// tests/contexts/family-access/doubles/in-memory-invitation.repository.ts
+// tests/unit/contexts/family-access/doubles/in-memory-invitation.repository.ts
 
-import type { Invitation } from "../../../../src/contexts/family-access/domain/entities/invitation.js";
-import type { InvitationRepository } from "../../../../src/contexts/family-access/domain/repositories/invitation.repository.js";
-import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import type { InvitationId } from "../../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
+import type { Invitation } from "../../../../../src/contexts/family-access/domain/entities/invitation.js";
+import type { InvitationRepository } from "../../../../../src/contexts/family-access/domain/repositories/invitation.repository.js";
+import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { InvitationId } from "../../../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
 
 class InMemoryInvitationRepository implements InvitationRepository {
   private readonly invitations = new Map<string, Invitation>();

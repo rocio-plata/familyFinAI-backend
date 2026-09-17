@@ -1,17 +1,17 @@
-// tests/contexts/financial-tracking/add-tag-to-category.usecase.test.ts
+// tests/unit/contexts/financial-tracking/add-tag-to-category.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { AddTagToCategoryUseCase } from "../../../src/contexts/financial-tracking/application/commands/add-tag-to-category.usecase.js";
-import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryNotActiveError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-active.error.js";
-import { CategoryNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
-import { DuplicateTagNameError } from "../../../src/contexts/financial-tracking/domain/errors/duplicate-tag-name.error.js";
-import { TagCreated } from "../../../src/contexts/financial-tracking/domain/events/tag-created.event.js";
-import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { AddTagToCategoryUseCase } from "../../../../src/contexts/financial-tracking/application/commands/add-tag-to-category.usecase.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryNotActiveError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-active.error.js";
+import { CategoryNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
+import { DuplicateTagNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-tag-name.error.js";
+import { TagCreated } from "../../../../src/contexts/financial-tracking/domain/events/tag-created.event.js";
+import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
 

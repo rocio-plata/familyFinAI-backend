@@ -1,12 +1,12 @@
-// tests/contexts/family-access/get-family-membership.query.test.ts
+// tests/unit/contexts/family-access/get-family-membership.query.test.ts
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { GetFamilyMembershipQuery } from "../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { GetFamilyMembershipQuery } from "../../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("GetFamilyMembershipQuery", () => {

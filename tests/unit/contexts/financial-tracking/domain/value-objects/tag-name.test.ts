@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { TagName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 
 describe("TagName", () => {
   it("crea una instancia para nombre válido", () => {

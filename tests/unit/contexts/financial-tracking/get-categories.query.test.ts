@@ -1,13 +1,13 @@
-// tests/contexts/financial-tracking/get-categories.query.test.ts
+// tests/unit/contexts/financial-tracking/get-categories.query.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { GetCategoriesQuery } from "../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
-import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { CategoryStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
-import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { CategoryStatus } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
 
 describe("GetCategoriesQuery", () => {

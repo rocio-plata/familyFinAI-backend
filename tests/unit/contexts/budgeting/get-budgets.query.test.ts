@@ -1,19 +1,19 @@
-// tests/contexts/budgeting/get-budgets.query.test.ts
+// tests/unit/contexts/budgeting/get-budgets.query.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { GetBudgetsQuery } from "../../../src/contexts/budgeting/application/queries/get-budgets.query.js";
-import { BudgetConfiguration } from "../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
-import { BudgetPeriodStatus } from "../../../src/contexts/budgeting/domain/entities/budget-period-status.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { GetCategoriesQuery } from "../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
-import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { Currency } from "../../../src/shared-kernel/domain/currency.js";
-import { Period } from "../../../src/shared-kernel/domain/period.js";
+import { GetBudgetsQuery } from "../../../../src/contexts/budgeting/application/queries/get-budgets.query.js";
+import { BudgetConfiguration } from "../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
+import { BudgetPeriodStatus } from "../../../../src/contexts/budgeting/domain/entities/budget-period-status.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Period } from "../../../../src/shared-kernel/domain/period.js";
 import { InMemoryCategoryRepository } from "../financial-tracking/doubles/in-memory-category.repository.js";
 import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
 import { InMemoryBudgetPeriodStatusRepository } from "./doubles/in-memory-budget-period-status.repository.js";

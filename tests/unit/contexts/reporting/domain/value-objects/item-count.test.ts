@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { ItemCount } from "../../../../../src/contexts/reporting/domain/value-objects/item-count.js";
+import { ItemCount } from "../../../../../../src/contexts/reporting/domain/value-objects/item-count.js";
 
 describe("ItemCount", () => {
   it("comienza en cero", () => {

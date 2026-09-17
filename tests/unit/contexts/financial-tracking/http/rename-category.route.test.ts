@@ -1,15 +1,15 @@
-// tests/contexts/financial-tracking/http/rename-category.route.test.ts
+// tests/unit/contexts/financial-tracking/http/rename-category.route.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { buildApp } from "../../../../src/platform/app.js";
+import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { buildApp } from "../../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestFamilyAccessDependencies } from "../../family-access/build-test-family-access-dependencies.js";
 import { InMemoryFamilyRepository } from "../../family-access/doubles/in-memory-family.repository.js";

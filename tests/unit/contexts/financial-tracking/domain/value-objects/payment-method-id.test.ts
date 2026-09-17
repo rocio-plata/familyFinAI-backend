@@ -1,8 +1,8 @@
-// tests/contexts/financial-tracking/domain/value-objects/payment-method-id.test.ts
+// tests/unit/contexts/financial-tracking/domain/value-objects/payment-method-id.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { InvalidPaymentMethodIdError } from "../../../../../src/contexts/financial-tracking/domain/errors/invalid-id.error.js";
-import { PaymentMethodId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+import { InvalidPaymentMethodIdError } from "../../../../../../src/contexts/financial-tracking/domain/errors/invalid-id.error.js";
+import { PaymentMethodId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 
 describe("PaymentMethodId", () => {
   it("genera un identificador válido", () => {

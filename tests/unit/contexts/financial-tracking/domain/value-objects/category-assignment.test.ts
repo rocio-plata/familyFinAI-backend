@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { CategoryAssignment } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
-import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { TagId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
+import { CategoryAssignment } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
+import { CategoryId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { TagId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 
 const UUID_A = "123e4567-e89b-12d3-a456-426614174000";
 const UUID_B = "223e4567-e89b-12d3-a456-426614174000";

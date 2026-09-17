@@ -1,23 +1,23 @@
-// tests/contexts/financial-tracking/rename-tag.usecase.test.ts
+// tests/unit/contexts/financial-tracking/rename-tag.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { GetFamilyMembershipQuery } from "../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import type { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { RenameTagUseCase } from "../../../src/contexts/financial-tracking/application/commands/rename-tag.usecase.js";
-import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
-import { DuplicateTagNameError } from "../../../src/contexts/financial-tracking/domain/errors/duplicate-tag-name.error.js";
-import { InsufficientRoleError } from "../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
-import { TagNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/tag-not-found.error.js";
-import { CategoryId } from "../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { TagId } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
-import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { GetFamilyMembershipQuery } from "../../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { RenameTagUseCase } from "../../../../src/contexts/financial-tracking/application/commands/rename-tag.usecase.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
+import { DuplicateTagNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-tag-name.error.js";
+import { InsufficientRoleError } from "../../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
+import { TagNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/tag-not-found.error.js";
+import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
+import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
 

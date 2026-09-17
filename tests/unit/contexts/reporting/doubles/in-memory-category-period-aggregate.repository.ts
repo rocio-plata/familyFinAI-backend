@@ -1,8 +1,8 @@
-// tests/contexts/reporting/doubles/in-memory-category-period-aggregate.repository.ts
-import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import type { CategoryPeriodAggregate } from "../../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";
-import type { CategoryPeriodAggregateRepository } from "../../../../src/contexts/reporting/domain/repositories/category-period-aggregate.repository.js";
-import type { Period } from "../../../../src/shared-kernel/domain/period.js";
+// tests/unit/contexts/reporting/doubles/in-memory-category-period-aggregate.repository.ts
+import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { CategoryPeriodAggregate } from "../../../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";
+import type { CategoryPeriodAggregateRepository } from "../../../../../src/contexts/reporting/domain/repositories/category-period-aggregate.repository.js";
+import type { Period } from "../../../../../src/shared-kernel/domain/period.js";
 
 class InMemoryCategoryPeriodAggregateRepository implements CategoryPeriodAggregateRepository {
   private readonly aggregates: CategoryPeriodAggregate[] = [];

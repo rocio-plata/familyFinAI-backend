@@ -1,9 +1,9 @@
-// tests/contexts/financial-tracking/create-default-payment-methods.usecase.test.ts
+// tests/unit/contexts/financial-tracking/create-default-payment-methods.usecase.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { CreateDefaultPaymentMethodsUseCase } from "../../../src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { CreateDefaultPaymentMethodsUseCase } from "../../../../src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.js";
 import { InMemoryPaymentMethodRepository } from "./doubles/in-memory-payment-method.repository.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "./doubles/in-memory-user-payment-method-preference.repository.js";
 

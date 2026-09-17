@@ -1,8 +1,8 @@
-// tests/shared-kernel/domain/email-address.test.ts
+// tests/unit/shared-kernel/domain/email-address.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
-import { InvalidEmailError } from "../../../src/shared-kernel/errors/invalid-email.error.js";
+import { EmailAddress } from "../../../../src/shared-kernel/domain/email-address.js";
+import { InvalidEmailError } from "../../../../src/shared-kernel/errors/invalid-email.error.js";
 
 describe("EmailAddress", () => {
   test("normaliza la dirección a minúsculas", () => {

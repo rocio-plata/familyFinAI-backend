@@ -1,8 +1,8 @@
-// tests/platform/auth/doubles/fake-jwt-service.ts
+// tests/unit/platform/auth/doubles/fake-jwt-service.ts
 
-import type { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import type { JwtPayload } from "../../../../src/platform/auth/jwt.js";
-import type { JwtSigner, SignOptions } from "../../../../src/platform/auth/jwt-signer.js";
+import type { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import type { JwtPayload } from "../../../../../src/platform/auth/jwt.js";
+import type { JwtSigner, SignOptions } from "../../../../../src/platform/auth/jwt-signer.js";
 
 class FakeJwtService implements JwtSigner {
   async sign(userId: UserId, _options?: SignOptions): Promise<string> {

@@ -1,12 +1,12 @@
-// tests/contexts/family-access/reorder-my-families.usecase.test.ts
+// tests/unit/contexts/family-access/reorder-my-families.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { ReorderMyFamiliesUseCase } from "../../../src/contexts/family-access/application/commands/reorder-my-families.usecase.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { InvalidFamilyOrderError } from "../../../src/contexts/family-access/domain/errors/invalid-family-order.error.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { ReorderMyFamiliesUseCase } from "../../../../src/contexts/family-access/application/commands/reorder-my-families.usecase.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { InvalidFamilyOrderError } from "../../../../src/contexts/family-access/domain/errors/invalid-family-order.error.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("ReorderMyFamiliesUseCase", () => {

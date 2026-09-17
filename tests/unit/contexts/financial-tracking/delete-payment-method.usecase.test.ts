@@ -1,20 +1,20 @@
-// tests/contexts/financial-tracking/delete-payment-method.usecase.test.ts
+// tests/unit/contexts/financial-tracking/delete-payment-method.usecase.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { GetFamilyMembershipQuery } from "../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { DeletePaymentMethodUseCase } from "../../../src/contexts/financial-tracking/application/commands/delete-payment-method.usecase.js";
-import { PaymentMethod } from "../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { UserPaymentMethodPreference } from "../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
-import { PaymentMethodHasAssociatedItemsError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-has-associated-items.error.js";
-import { PaymentMethodIsSomeonesDefaultError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-is-someones-default.error.js";
-import { PaymentMethodNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
-import { PaymentMethodDeletionService } from "../../../src/contexts/financial-tracking/domain/services/payment-method-deletion.service.js";
-import { PaymentMethodName } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { GetFamilyMembershipQuery } from "../../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { DeletePaymentMethodUseCase } from "../../../../src/contexts/financial-tracking/application/commands/delete-payment-method.usecase.js";
+import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
+import { PaymentMethodHasAssociatedItemsError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-has-associated-items.error.js";
+import { PaymentMethodIsSomeonesDefaultError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-is-someones-default.error.js";
+import { PaymentMethodNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
+import { PaymentMethodDeletionService } from "../../../../src/contexts/financial-tracking/domain/services/payment-method-deletion.service.js";
+import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { FakePaymentMethodItemAssociationReader } from "./doubles/fake-payment-method-item-association-reader.js";
 import { InMemoryPaymentMethodRepository } from "./doubles/in-memory-payment-method.repository.js";

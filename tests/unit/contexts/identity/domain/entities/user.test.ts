@@ -1,11 +1,11 @@
-// tests/contexts/identity/domain/entities/user.test.ts
+// tests/unit/contexts/identity/domain/entities/user.test.ts
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { User } from "../../../../../src/contexts/identity/domain/entities/user.js";
-import { UserRegistered } from "../../../../../src/contexts/identity/domain/events/user-registered.event.js";
-import { DisplayName } from "../../../../../src/contexts/identity/domain/value-objects/display-name.js";
-import { PasswordHash } from "../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
-import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
+import { User } from "../../../../../../src/contexts/identity/domain/entities/user.js";
+import { UserRegistered } from "../../../../../../src/contexts/identity/domain/events/user-registered.event.js";
+import { DisplayName } from "../../../../../../src/contexts/identity/domain/value-objects/display-name.js";
+import { PasswordHash } from "../../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
+import { EmailAddress } from "../../../../../../src/shared-kernel/domain/email-address.js";
 
 function registerUser() {
   return User.register(

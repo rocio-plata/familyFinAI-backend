@@ -1,8 +1,8 @@
-// tests/platform/auth/doubles/in-memory-refresh-token.repository.ts
+// tests/unit/platform/auth/doubles/in-memory-refresh-token.repository.ts
 
-import type { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import type { RefreshToken } from "../../../../src/platform/auth/refresh-token.js";
-import type { RefreshTokenRepository } from "../../../../src/platform/auth/refresh-token.repository.js";
+import type { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import type { RefreshToken } from "../../../../../src/platform/auth/refresh-token.js";
+import type { RefreshTokenRepository } from "../../../../../src/platform/auth/refresh-token.repository.js";
 
 class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   private readonly tokens = new Map<string, RefreshToken>();

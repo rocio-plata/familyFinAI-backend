@@ -1,22 +1,22 @@
-// tests/contexts/financial-tracking/http/create-financial-item.route.test.ts
+// tests/unit/contexts/financial-tracking/http/create-financial-item.route.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { UserPaymentMethodPreference } from "../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
-import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
-import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
-import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
-import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
-import { buildApp } from "../../../../src/platform/app.js";
-import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { PaymentMethod } from "../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
+import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { PaymentMethodName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { InMemoryPaymentMethodRepository } from "../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
+import { buildApp } from "../../../../../src/platform/app.js";
+import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestFamilyAccessDependencies } from "../../family-access/build-test-family-access-dependencies.js";
 import { InMemoryFamilyRepository } from "../../family-access/doubles/in-memory-family.repository.js";

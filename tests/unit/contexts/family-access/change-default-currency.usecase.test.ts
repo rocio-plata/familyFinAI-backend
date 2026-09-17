@@ -1,16 +1,16 @@
-// tests/contexts/family-access/change-default-currency.usecase.test.ts
+// tests/unit/contexts/family-access/change-default-currency.usecase.test.ts
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { ChangeDefaultCurrencyUseCase } from "../../../src/contexts/family-access/application/commands/change-default-currency.usecase.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
-import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { UnsupportedCurrencyError } from "../../../src/shared-kernel/errors/unsupported-currency.error.js";
+import { ChangeDefaultCurrencyUseCase } from "../../../../src/contexts/family-access/application/commands/change-default-currency.usecase.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyNotFoundError } from "../../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
+import { InsufficientRoleError } from "../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { UnsupportedCurrencyError } from "../../../../src/shared-kernel/errors/unsupported-currency.error.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 
 describe("ChangeDefaultCurrencyUseCase", () => {

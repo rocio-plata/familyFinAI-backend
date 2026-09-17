@@ -1,10 +1,10 @@
-// tests/platform/workflows/register-user-with-personal-family.workflow.test.ts
+// tests/unit/platform/workflows/register-user-with-personal-family.workflow.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { CreateFamilyUseCase } from "../../../src/contexts/family-access/application/commands/create-family.usecase.js";
-import { RegisterUserUseCase } from "../../../src/contexts/identity/application/commands/register-user.usecase.js";
-import { TokenService } from "../../../src/platform/auth/tokens.js";
-import { RegisterUserWithPersonalFamilyWorkflow } from "../../../src/platform/workflows/register-user-with-personal-family.workflow.js";
+import { CreateFamilyUseCase } from "../../../../src/contexts/family-access/application/commands/create-family.usecase.js";
+import { RegisterUserUseCase } from "../../../../src/contexts/identity/application/commands/register-user.usecase.js";
+import { TokenService } from "../../../../src/platform/auth/tokens.js";
+import { RegisterUserWithPersonalFamilyWorkflow } from "../../../../src/platform/workflows/register-user-with-personal-family.workflow.js";
 import { InMemoryFamilyRepository } from "../../contexts/family-access/doubles/in-memory-family.repository.js";
 import { InMemoryUserRepository } from "../../contexts/identity/doubles/in-memory-user.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";

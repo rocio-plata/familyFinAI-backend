@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Member } from "../../../../../src/contexts/family-access/domain/entities/member.js";
-import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { Member } from "../../../../../../src/contexts/family-access/domain/entities/member.js";
+import { Role } from "../../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 
 describe("Member", () => {
   const userId = UserId.generate();

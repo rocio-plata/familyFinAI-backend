@@ -1,11 +1,11 @@
-// tests/contexts/financial-tracking/get-payment-methods.query.test.ts
+// tests/unit/contexts/financial-tracking/get-payment-methods.query.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { GetPaymentMethodsQuery } from "../../../src/contexts/financial-tracking/application/queries/get-payment-methods.query.js";
-import { PaymentMethod } from "../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { CategoryStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
-import { PaymentMethodName } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { GetPaymentMethodsQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-payment-methods.query.js";
+import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { CategoryStatus } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { InMemoryPaymentMethodRepository } from "./doubles/in-memory-payment-method.repository.js";
 
 describe("GetPaymentMethodsQuery", () => {

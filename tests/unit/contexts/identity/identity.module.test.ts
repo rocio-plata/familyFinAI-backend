@@ -1,12 +1,12 @@
-// tests/contexts/identity/identity.module.test.ts
+// tests/unit/contexts/identity/identity.module.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { buildIdentityModule } from "../../../src/contexts/identity/identity.module.js";
+import { buildIdentityModule } from "../../../../src/contexts/identity/identity.module.js";
 import {
   hashPassword,
   verifyPassword,
-} from "../../../src/contexts/identity/infrastructure/password-hasher.js";
-import { TokenService } from "../../../src/platform/auth/tokens.js";
+} from "../../../../src/contexts/identity/infrastructure/password-hasher.js";
+import { TokenService } from "../../../../src/platform/auth/tokens.js";
 import { FakeJwtService } from "../../platform/auth/doubles/fake-jwt-service.js";
 import { InMemoryRefreshTokenRepository } from "../../platform/auth/doubles/in-memory-refresh-token.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";

@@ -1,11 +1,11 @@
-// tests/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts
+// tests/unit/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { FamilyCreated } from "../../../../src/contexts/family-access/domain/events/family-created.event.js";
-import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { CreateDefaultPaymentMethodsUseCase } from "../../../../src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.js";
-import { OnFamilyCreatedHandler } from "../../../../src/contexts/financial-tracking/application/event-handlers/on-family-created.handler.js";
+import { FamilyCreated } from "../../../../../src/contexts/family-access/domain/events/family-created.event.js";
+import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { CreateDefaultPaymentMethodsUseCase } from "../../../../../src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.js";
+import { OnFamilyCreatedHandler } from "../../../../../src/contexts/financial-tracking/application/event-handlers/on-family-created.handler.js";
 import { InMemoryPaymentMethodRepository } from "../doubles/in-memory-payment-method.repository.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "../doubles/in-memory-user-payment-method-preference.repository.js";
 

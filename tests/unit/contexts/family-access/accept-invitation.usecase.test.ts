@@ -1,18 +1,18 @@
-// tests/contexts/family-access/accept-invitation.usecase.test.ts
+// tests/unit/contexts/family-access/accept-invitation.usecase.test.ts
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { AcceptInvitationUseCase } from "../../../src/contexts/family-access/application/commands/accept-invitation.usecase.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { InvitationNotFoundError } from "../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
-import { InvitationNotPendingError } from "../../../src/contexts/family-access/domain/errors/invitation-not-pending.error.js";
-import { InvitationAccepted } from "../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { InvitationId } from "../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import type { UnitOfWork } from "../../../src/platform/db/unit-of-work.js";
-import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
+import { AcceptInvitationUseCase } from "../../../../src/contexts/family-access/application/commands/accept-invitation.usecase.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { InvitationNotFoundError } from "../../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
+import { InvitationNotPendingError } from "../../../../src/contexts/family-access/domain/errors/invitation-not-pending.error.js";
+import { InvitationAccepted } from "../../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { InvitationId } from "../../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import type { UnitOfWork } from "../../../../src/platform/db/unit-of-work.js";
+import { EmailAddress } from "../../../../src/shared-kernel/domain/email-address.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";
 import { InMemoryInvitationRepository } from "./doubles/in-memory-invitation.repository.js";

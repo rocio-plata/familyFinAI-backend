@@ -1,10 +1,10 @@
-// tests/contexts/family-access/http/create-family.route.test.ts
+// tests/unit/contexts/family-access/http/create-family.route.test.ts
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { buildApp } from "../../../../src/platform/app.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { buildApp } from "../../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { FakeEventBus } from "../../../shared/doubles/fake-event-bus.js";
 import { buildTestFinancialTrackingDependencies } from "../../financial-tracking/build-test-financial-tracking-dependencies.js";

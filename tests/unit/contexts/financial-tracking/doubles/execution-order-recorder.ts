@@ -1,7 +1,7 @@
-// tests/contexts/financial-tracking/doubles/execution-order-recorder.ts
-import type { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
-import type { EventBus } from "../../../../src/platform/events/event-bus.js";
-import type { DomainEvent } from "../../../../src/shared-kernel/domain/domain-event.js";
+// tests/unit/contexts/financial-tracking/doubles/execution-order-recorder.ts
+import type { FinancialItem } from "../../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import type { EventBus } from "../../../../../src/platform/events/event-bus.js";
+import type { DomainEvent } from "../../../../../src/shared-kernel/domain/domain-event.js";
 import { InMemoryFinancialItemRepository } from "./in-memory-financial-item.repository.js";
 
 class OrderRecordingFinancialItemRepository extends InMemoryFinancialItemRepository {

@@ -1,17 +1,17 @@
-// tests/contexts/budgeting/create-budget-configuration.usecase.test.ts
+// tests/unit/contexts/budgeting/create-budget-configuration.usecase.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { CreateBudgetConfigurationUseCase } from "../../../src/contexts/budgeting/application/commands/create-budget-configuration.usecase.js";
-import { BudgetConfiguration } from "../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
-import { BudgetCreated } from "../../../src/contexts/budgeting/domain/events/budget-created.event.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { GetCategoriesQuery } from "../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
-import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { CreateBudgetConfigurationUseCase } from "../../../../src/contexts/budgeting/application/commands/create-budget-configuration.usecase.js";
+import { BudgetConfiguration } from "../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
+import { BudgetCreated } from "../../../../src/contexts/budgeting/domain/events/budget-created.event.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { InMemoryFamilyRepository } from "../../contexts/family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "../../contexts/financial-tracking/doubles/in-memory-category.repository.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";

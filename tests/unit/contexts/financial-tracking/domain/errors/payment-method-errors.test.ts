@@ -1,12 +1,12 @@
-// tests/contexts/financial-tracking/domain/errors/payment-method-errors.test.ts
+// tests/unit/contexts/financial-tracking/domain/errors/payment-method-errors.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { DuplicatePaymentMethodNameError } from "../../../../../src/contexts/financial-tracking/domain/errors/duplicate-payment-method-name.error.js";
-import { NoDefaultPaymentMethodSetError } from "../../../../../src/contexts/financial-tracking/domain/errors/no-default-payment-method-set.error.js";
-import { PaymentMethodHasAssociatedItemsError } from "../../../../../src/contexts/financial-tracking/domain/errors/payment-method-has-associated-items.error.js";
-import { PaymentMethodIsSomeonesDefaultError } from "../../../../../src/contexts/financial-tracking/domain/errors/payment-method-is-someones-default.error.js";
-import { PaymentMethodNotActiveError } from "../../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-active.error.js";
-import { PaymentMethodNotFoundError } from "../../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
+import { DuplicatePaymentMethodNameError } from "../../../../../../src/contexts/financial-tracking/domain/errors/duplicate-payment-method-name.error.js";
+import { NoDefaultPaymentMethodSetError } from "../../../../../../src/contexts/financial-tracking/domain/errors/no-default-payment-method-set.error.js";
+import { PaymentMethodHasAssociatedItemsError } from "../../../../../../src/contexts/financial-tracking/domain/errors/payment-method-has-associated-items.error.js";
+import { PaymentMethodIsSomeonesDefaultError } from "../../../../../../src/contexts/financial-tracking/domain/errors/payment-method-is-someones-default.error.js";
+import { PaymentMethodNotActiveError } from "../../../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-active.error.js";
+import { PaymentMethodNotFoundError } from "../../../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
 
 describe("errores de medios de pago", () => {
   test("DuplicatePaymentMethodNameError expone su código y nombre", () => {

@@ -1,8 +1,8 @@
-// tests/platform/auth/auth.routes.test.ts
+// tests/unit/platform/auth/auth.routes.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { buildApp } from "../../../src/platform/app.js";
+import { buildApp } from "../../../../src/platform/app.js";
 import { buildTestFamilyAccessDependencies } from "../../contexts/family-access/build-test-family-access-dependencies.js";
 import { buildTestIdentityDependencies } from "../../contexts/identity/build-test-identity-dependencies.js";
 import { FakeJwtService } from "./doubles/fake-jwt-service.js";

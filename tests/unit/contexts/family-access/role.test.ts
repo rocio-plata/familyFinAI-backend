@@ -1,8 +1,8 @@
-// tests/contexts/family-access/role.test.ts
+// tests/unit/contexts/family-access/role.test.ts
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
 
 describe("Role.satisfies", () => {
   test("Owner satisface un mínimo de Member", () => {

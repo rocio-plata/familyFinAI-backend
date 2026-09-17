@@ -1,18 +1,18 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { FinancialItem } from "../../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
-import { CannotReclassifyAcrossTypesError } from "../../../../../src/contexts/financial-tracking/domain/errors/cannot-reclassify-across-types.error.js";
-import { CategoryAssignment } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
-import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { Note } from "../../../../../src/contexts/financial-tracking/domain/value-objects/note.js";
-import { PaymentMethodId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
-import { Title } from "../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
-import { TransactionDate } from "../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
-import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
+import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { FinancialItem } from "../../../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import { CannotReclassifyAcrossTypesError } from "../../../../../../src/contexts/financial-tracking/domain/errors/cannot-reclassify-across-types.error.js";
+import { CategoryAssignment } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
+import { CategoryId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { Note } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/note.js";
+import { PaymentMethodId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+import { Title } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
+import { TransactionDate } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
+import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
 
 describe("FinancialItem", () => {
   const clp = Currency.of("CLP");

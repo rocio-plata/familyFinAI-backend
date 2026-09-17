@@ -1,13 +1,13 @@
-// tests/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.test.ts
+// tests/unit/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { PaymentMethod } from "../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { UserPaymentMethodPreference } from "../../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
-import { PaymentMethodName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
-import { InMemoryPaymentMethodRepository } from "../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
-import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
+import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { PaymentMethod } from "../../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
+import { PaymentMethodName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { InMemoryPaymentMethodRepository } from "../../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 
 describe("InMemoryPaymentMethodRepository de infraestructura", () => {
   test("guarda, busca por id y filtra por familia", async () => {

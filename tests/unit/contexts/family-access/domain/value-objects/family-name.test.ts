@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { FamilyName } from "../../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 
 describe("FamilyName", () => {
   it("crea una instancia para un nombre válido", () => {

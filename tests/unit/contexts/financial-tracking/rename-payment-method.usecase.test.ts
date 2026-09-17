@@ -1,17 +1,17 @@
-// tests/contexts/financial-tracking/rename-payment-method.usecase.test.ts
+// tests/unit/contexts/financial-tracking/rename-payment-method.usecase.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { GetFamilyMembershipQuery } from "../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { RenamePaymentMethodUseCase } from "../../../src/contexts/financial-tracking/application/commands/rename-payment-method.usecase.js";
-import { PaymentMethod } from "../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { DuplicatePaymentMethodNameError } from "../../../src/contexts/financial-tracking/domain/errors/duplicate-payment-method-name.error.js";
-import { PaymentMethodNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
-import { PaymentMethodName } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { GetFamilyMembershipQuery } from "../../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { RenamePaymentMethodUseCase } from "../../../../src/contexts/financial-tracking/application/commands/rename-payment-method.usecase.js";
+import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { DuplicatePaymentMethodNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-payment-method-name.error.js";
+import { PaymentMethodNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
+import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { InMemoryPaymentMethodRepository } from "./doubles/in-memory-payment-method.repository.js";
 

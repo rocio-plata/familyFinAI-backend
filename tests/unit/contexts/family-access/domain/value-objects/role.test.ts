@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { Role } from "../../../../../../src/contexts/family-access/domain/value-objects/role.js";
 
 describe("Role", () => {
   describe("owner()", () => {

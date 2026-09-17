@@ -1,8 +1,8 @@
-// tests/shared/domain-error-http-status.test.ts
+// tests/unit/shared/domain-error-http-status.test.ts
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { resolveHttpStatus } from "../../src/platform/http/domain-error-http-status.js";
+import { resolveHttpStatus } from "../../../src/platform/http/domain-error-http-status.js";
 
 describe("resolveHttpStatus", () => {
   test("errores *_NOT_FOUND devuelven 404", () => {

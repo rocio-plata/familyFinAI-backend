@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { WeakPasswordError } from "../../../../../src/contexts/identity/domain/errors/weak-password.error.js";
-import { PasswordHash } from "../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
+import { WeakPasswordError } from "../../../../../../src/contexts/identity/domain/errors/weak-password.error.js";
+import { PasswordHash } from "../../../../../../src/contexts/identity/domain/value-objects/password-hash.js";
 
 describe("PasswordHash", () => {
   it("fromPlainText delega el hasheo en la función recibida", () => {

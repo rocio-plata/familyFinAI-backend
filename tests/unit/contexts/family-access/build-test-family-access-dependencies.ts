@@ -1,5 +1,5 @@
-// tests/contexts/family-access/build-test-family-access-dependencies.ts
-import type { FamilyAccessModuleDependencies } from "../../../src/contexts/family-access/family-access.module.js";
+// tests/unit/contexts/family-access/build-test-family-access-dependencies.ts
+import type { FamilyAccessModuleDependencies } from "../../../../src/contexts/family-access/family-access.module.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { FakeUserDirectory } from "./doubles/fake-user-directory.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";

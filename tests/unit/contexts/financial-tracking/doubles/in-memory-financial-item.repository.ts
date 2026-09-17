@@ -1,14 +1,14 @@
-// tests/contexts/financial-tracking/doubles/in-memory-financial-item.repository.ts
-import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import type { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+// tests/unit/contexts/financial-tracking/doubles/in-memory-financial-item.repository.ts
+import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { FinancialItem } from "../../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
 import type {
   FinancialItemFilters,
   FinancialItemRepository,
-} from "../../../../src/contexts/financial-tracking/domain/repositories/financial-item.repository.js";
-import type { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import type { FinancialItemId } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
-import type { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
-import type { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
+} from "../../../../../src/contexts/financial-tracking/domain/repositories/financial-item.repository.js";
+import type { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import type { FinancialItemId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-id.js";
+import type { PaymentMethodId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+import type { TagId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 
 class InMemoryFinancialItemRepository implements FinancialItemRepository {
   private items = new Map<string, FinancialItem>();

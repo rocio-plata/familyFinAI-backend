@@ -1,9 +1,9 @@
-// tests/platform/app.test.ts
+// tests/unit/platform/app.test.ts
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { buildApp } from "../../src/platform/app.js";
-import { DomainError } from "../../src/shared-kernel/errors/domain-error.js";
+import { buildApp } from "../../../src/platform/app.js";
+import { DomainError } from "../../../src/shared-kernel/errors/domain-error.js";
 import { buildTestFamilyAccessDependencies } from "../contexts/family-access/build-test-family-access-dependencies.js";
 import { buildTestIdentityDependencies } from "../contexts/identity/build-test-identity-dependencies.js";
 import { FakeJwtService } from "./auth/doubles/fake-jwt-service.js";

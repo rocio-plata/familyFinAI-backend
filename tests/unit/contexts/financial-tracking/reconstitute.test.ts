@@ -1,17 +1,17 @@
-// tests/contexts/financial-tracking/reconstitute.test.ts
+// tests/unit/contexts/financial-tracking/reconstitute.test.ts
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { FinancialItem } from "../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
-import { CategoryAssignment } from "../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
-import { CategoryStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
-import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { PaymentMethodId } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
-import { TagStatus } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-status.js";
-import { Currency } from "../../../src/shared-kernel/domain/currency.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
+import { CategoryAssignment } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
+import { CategoryStatus } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+import { TagStatus } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-status.js";
+import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 
 describe("reconstitución de financial-tracking", () => {
   test("reconstruye una categoría y sus tags sin eventos", () => {

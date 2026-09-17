@@ -1,5 +1,5 @@
-import type { EventBus } from "../../../src/platform/events/event-bus.js";
-import type { DomainEvent } from "../../../src/shared-kernel/domain/domain-event.js";
+import type { EventBus } from "../../../../src/platform/events/event-bus.js";
+import type { DomainEvent } from "../../../../src/shared-kernel/domain/domain-event.js";
 
 class FakeEventBus implements EventBus {
   readonly publishedEvents: DomainEvent[] = [];

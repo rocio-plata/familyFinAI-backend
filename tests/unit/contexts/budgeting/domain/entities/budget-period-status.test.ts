@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BudgetPeriodStatus } from "../../../../../src/contexts/budgeting/domain/entities/budget-period-status.js";
-import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
-import { Period } from "../../../../../src/shared-kernel/domain/period.js";
+import { BudgetPeriodStatus } from "../../../../../../src/contexts/budgeting/domain/entities/budget-period-status.js";
+import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { CategoryId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
+import { Period } from "../../../../../../src/shared-kernel/domain/period.js";
 
 describe("BudgetPeriodStatus", () => {
   const familyId = FamilyId.generate();

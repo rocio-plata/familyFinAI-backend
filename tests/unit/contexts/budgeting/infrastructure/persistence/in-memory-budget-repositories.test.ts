@@ -1,17 +1,17 @@
-// tests/contexts/budgeting/infrastructure/persistence/in-memory-budget-repositories.test.ts
+// tests/unit/contexts/budgeting/infrastructure/persistence/in-memory-budget-repositories.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { BudgetConfiguration } from "../../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
-import { BudgetPeriodStatus } from "../../../../../src/contexts/budgeting/domain/entities/budget-period-status.js";
-import { InMemoryBudgetConfigurationRepository } from "../../../../../src/contexts/budgeting/infrastructure/persistence/in-memory-budget-configuration.repository.js";
-import { InMemoryBudgetPeriodStatusRepository } from "../../../../../src/contexts/budgeting/infrastructure/persistence/in-memory-budget-period-status.repository.js";
-import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
-import { Period } from "../../../../../src/shared-kernel/domain/period.js";
+import { BudgetConfiguration } from "../../../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
+import { BudgetPeriodStatus } from "../../../../../../src/contexts/budgeting/domain/entities/budget-period-status.js";
+import { InMemoryBudgetConfigurationRepository } from "../../../../../../src/contexts/budgeting/infrastructure/persistence/in-memory-budget-configuration.repository.js";
+import { InMemoryBudgetPeriodStatusRepository } from "../../../../../../src/contexts/budgeting/infrastructure/persistence/in-memory-budget-period-status.repository.js";
+import { Family } from "../../../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyName } from "../../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { UserId } from "../../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { CategoryId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
+import { Period } from "../../../../../../src/shared-kernel/domain/period.js";
 
 describe("InMemory Budgeting repositories", () => {
   test("guarda y recupera configuraciones por familia", async () => {

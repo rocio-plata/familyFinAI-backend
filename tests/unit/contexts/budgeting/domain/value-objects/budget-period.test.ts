@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Period } from "../../../../../src/shared-kernel/domain/period.js";
+import { Period } from "../../../../../../src/shared-kernel/domain/period.js";
 
 describe("Period", () => {
   describe("of()", () => {

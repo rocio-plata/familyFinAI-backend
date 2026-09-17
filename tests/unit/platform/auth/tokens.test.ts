@@ -1,11 +1,11 @@
-// tests/platform/auth/tokens.test.ts
+// tests/unit/platform/auth/tokens.test.ts
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { InvalidRefreshTokenError } from "../../../src/platform/auth/errors/invalid-refresh-token.error.js";
-import { PossibleTokenTheftError } from "../../../src/platform/auth/errors/possible-token-theft.error.js";
-import { TokenService } from "../../../src/platform/auth/tokens.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { InvalidRefreshTokenError } from "../../../../src/platform/auth/errors/invalid-refresh-token.error.js";
+import { PossibleTokenTheftError } from "../../../../src/platform/auth/errors/possible-token-theft.error.js";
+import { TokenService } from "../../../../src/platform/auth/tokens.js";
 import { FakeJwtService } from "./doubles/fake-jwt-service.js";
 import { InMemoryRefreshTokenRepository } from "./doubles/in-memory-refresh-token.repository.js";
 

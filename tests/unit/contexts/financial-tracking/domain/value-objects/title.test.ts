@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Title } from "../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
+import { Title } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 
 describe("Title", () => {
   it("crea una instancia para título válido", () => {

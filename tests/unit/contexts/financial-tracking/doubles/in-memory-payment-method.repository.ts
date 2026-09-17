@@ -1,8 +1,8 @@
-// tests/contexts/financial-tracking/doubles/in-memory-payment-method.repository.ts
-import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import type { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import type { PaymentMethodRepository } from "../../../../src/contexts/financial-tracking/domain/repositories/payment-method.repository.js";
-import type { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+// tests/unit/contexts/financial-tracking/doubles/in-memory-payment-method.repository.ts
+import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { PaymentMethod } from "../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import type { PaymentMethodRepository } from "../../../../../src/contexts/financial-tracking/domain/repositories/payment-method.repository.js";
+import type { PaymentMethodId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 
 class InMemoryPaymentMethodRepository implements PaymentMethodRepository {
   private readonly paymentMethodsById = new Map<string, PaymentMethod>();

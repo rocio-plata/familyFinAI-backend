@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
-import { CannotRemoveLastOwnerError } from "../../../../../src/contexts/family-access/domain/errors/cannot-remove-last-owner.error.js";
-import { InsufficientRoleError } from "../../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
-import { MemberNotFoundError } from "../../../../../src/contexts/family-access/domain/errors/member-not-found.error.js";
-import { MemberRoleChanged } from "../../../../../src/contexts/family-access/domain/events/member-role-changed.event.js";
-import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { InvitationStatus } from "../../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
-import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
+import { Family } from "../../../../../../src/contexts/family-access/domain/entities/family.js";
+import { CannotRemoveLastOwnerError } from "../../../../../../src/contexts/family-access/domain/errors/cannot-remove-last-owner.error.js";
+import { InsufficientRoleError } from "../../../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { MemberNotFoundError } from "../../../../../../src/contexts/family-access/domain/errors/member-not-found.error.js";
+import { MemberRoleChanged } from "../../../../../../src/contexts/family-access/domain/events/member-role-changed.event.js";
+import { FamilyName } from "../../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { InvitationStatus } from "../../../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
+import { Role } from "../../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { EmailAddress } from "../../../../../../src/shared-kernel/domain/email-address.js";
 
 const familyName = FamilyName.of("Los García");
 

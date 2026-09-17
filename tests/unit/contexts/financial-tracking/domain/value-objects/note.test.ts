@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Note } from "../../../../../src/contexts/financial-tracking/domain/value-objects/note.js";
+import { Note } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/note.js";
 
 describe("Note", () => {
   it("crea una instancia para nota válida", () => {

@@ -1,11 +1,11 @@
-// tests/contexts/financial-tracking/repositories/payment-method.repository.test.ts
+// tests/unit/contexts/financial-tracking/repositories/payment-method.repository.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { UserPaymentMethodPreference } from "../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
-import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { PaymentMethod } from "../../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
+import { PaymentMethodName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { InMemoryPaymentMethodRepository } from "../doubles/in-memory-payment-method.repository.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "../doubles/in-memory-user-payment-method-preference.repository.js";
 

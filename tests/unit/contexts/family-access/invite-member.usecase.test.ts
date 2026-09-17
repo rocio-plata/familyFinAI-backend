@@ -1,18 +1,18 @@
-// tests/contexts/family-access/invite-member.usecase.test.ts
+// tests/unit/contexts/family-access/invite-member.usecase.test.ts
 
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
-import { InviteMemberUseCase } from "../../../src/contexts/family-access/application/commands/invite-member.usecase.js";
-import { Family } from "../../../src/contexts/family-access/domain/entities/family.js";
-import { AlreadyMemberError } from "../../../src/contexts/family-access/domain/errors/already-member.error.js";
-import { FamilyNotFoundError } from "../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
-import { InsufficientRoleError } from "../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
-import { MemberInvited } from "../../../src/contexts/family-access/domain/events/member-invited.event.js";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { EmailAddress } from "../../../src/shared-kernel/domain/email-address.js";
+import { InviteMemberUseCase } from "../../../../src/contexts/family-access/application/commands/invite-member.usecase.js";
+import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { AlreadyMemberError } from "../../../../src/contexts/family-access/domain/errors/already-member.error.js";
+import { FamilyNotFoundError } from "../../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
+import { InsufficientRoleError } from "../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { MemberInvited } from "../../../../src/contexts/family-access/domain/events/member-invited.event.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { EmailAddress } from "../../../../src/shared-kernel/domain/email-address.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { FakeUserDirectory } from "./doubles/fake-user-directory.js";
 import { InMemoryFamilyRepository } from "./doubles/in-memory-family.repository.js";

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Tag } from "../../../../../src/contexts/financial-tracking/domain/entities/tag.js";
-import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
-import { TagStatus } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-status.js";
+import { Tag } from "../../../../../../src/contexts/financial-tracking/domain/entities/tag.js";
+import { TagName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { TagStatus } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-status.js";
 
 describe("Tag", () => {
   const name = TagName.of("Supermercado");

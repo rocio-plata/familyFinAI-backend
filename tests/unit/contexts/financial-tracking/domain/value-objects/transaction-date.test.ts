@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { TransactionDate } from "../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
+import { TransactionDate } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
 
 describe("TransactionDate", () => {
   it("crea una instancia para una fecha pasada", () => {

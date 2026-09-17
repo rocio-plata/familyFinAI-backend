@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { InvalidDisplayNameError } from "../../../../../src/contexts/identity/domain/errors/invalid-display-name.error.js";
-import { DisplayName } from "../../../../../src/contexts/identity/domain/value-objects/display-name.js";
+import { InvalidDisplayNameError } from "../../../../../../src/contexts/identity/domain/errors/invalid-display-name.error.js";
+import { DisplayName } from "../../../../../../src/contexts/identity/domain/value-objects/display-name.js";
 
 describe("DisplayName", () => {
   it("acepta un nombre válido, recortando espacios", () => {

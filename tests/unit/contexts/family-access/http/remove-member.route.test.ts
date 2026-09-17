@@ -1,13 +1,13 @@
-// tests/contexts/family-access/http/remove-member.route.test.ts
+// tests/unit/contexts/family-access/http/remove-member.route.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
-import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
-import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { buildApp } from "../../../../src/platform/app.js";
+import { Family } from "../../../../../src/contexts/family-access/domain/entities/family.js";
+import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { buildApp } from "../../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
 import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";

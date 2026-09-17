@@ -1,24 +1,24 @@
-// tests/contexts/reporting/infrastructure/http/reporting.routes.test.ts
+// tests/unit/contexts/reporting/infrastructure/http/reporting.routes.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import Fastify, { type preHandlerHookHandler } from "fastify";
-import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { GetCategoriesQuery } from "../../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
-import { GetFinancialItemsQuery } from "../../../../../src/contexts/financial-tracking/application/queries/get-financial-items.query.js";
-import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { GetCategoryBreakdownQuery } from "../../../../../src/contexts/reporting/application/queries/get-category-breakdown.query.js";
-import { GetDashboardSummaryQuery } from "../../../../../src/contexts/reporting/application/queries/get-dashboard-summary.query.js";
-import { GetDrillDownQuery } from "../../../../../src/contexts/reporting/application/queries/get-drill-down.query.js";
-import { GetPeriodComparisonQuery } from "../../../../../src/contexts/reporting/application/queries/get-period-comparison.query.js";
-import { GetTrendQuery } from "../../../../../src/contexts/reporting/application/queries/get-trend.query.js";
-import { CategoryPeriodAggregate } from "../../../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";
-import { registerReportingRoutes } from "../../../../../src/contexts/reporting/infrastructure/http/reporting.routes.js";
-import { InMemoryCategoryPeriodAggregateRepository } from "../../../../../src/contexts/reporting/infrastructure/persistence/in-memory-category-period-aggregate.repository.js";
-import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
-import { Period } from "../../../../../src/shared-kernel/domain/period.js";
+import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { GetCategoriesQuery } from "../../../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
+import { GetFinancialItemsQuery } from "../../../../../../src/contexts/financial-tracking/application/queries/get-financial-items.query.js";
+import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { GetCategoryBreakdownQuery } from "../../../../../../src/contexts/reporting/application/queries/get-category-breakdown.query.js";
+import { GetDashboardSummaryQuery } from "../../../../../../src/contexts/reporting/application/queries/get-dashboard-summary.query.js";
+import { GetDrillDownQuery } from "../../../../../../src/contexts/reporting/application/queries/get-drill-down.query.js";
+import { GetPeriodComparisonQuery } from "../../../../../../src/contexts/reporting/application/queries/get-period-comparison.query.js";
+import { GetTrendQuery } from "../../../../../../src/contexts/reporting/application/queries/get-trend.query.js";
+import { CategoryPeriodAggregate } from "../../../../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";
+import { registerReportingRoutes } from "../../../../../../src/contexts/reporting/infrastructure/http/reporting.routes.js";
+import { InMemoryCategoryPeriodAggregateRepository } from "../../../../../../src/contexts/reporting/infrastructure/persistence/in-memory-category-period-aggregate.repository.js";
+import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
+import { Period } from "../../../../../../src/shared-kernel/domain/period.js";
 import { InMemoryCategoryRepository } from "../../../financial-tracking/doubles/in-memory-category.repository.js";
 import { InMemoryFinancialItemRepository } from "../../../financial-tracking/doubles/in-memory-financial-item.repository.js";
 

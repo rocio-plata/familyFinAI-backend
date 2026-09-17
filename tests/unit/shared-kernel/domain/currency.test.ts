@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Currency } from "../../../src/shared-kernel/domain/currency.js";
+import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 
 describe("Currency", () => {
   describe("default()", () => {

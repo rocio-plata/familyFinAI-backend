@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { BudgetBalance } from "../../../../../src/contexts/budgeting/domain/value-objects/budget-balance.js";
-import { Currency } from "../../../../../src/shared-kernel/domain/currency.js";
+import { BudgetBalance } from "../../../../../../src/contexts/budgeting/domain/value-objects/budget-balance.js";
+import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
 
 describe("BudgetBalance", () => {
   it("permite saldos negativos para representar un sobregiro", () => {

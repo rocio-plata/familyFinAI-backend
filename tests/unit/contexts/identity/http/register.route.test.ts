@@ -1,19 +1,19 @@
-// tests/contexts/identity/http/register.route.test.ts
+// tests/unit/contexts/identity/http/register.route.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import type { FastifyInstance } from "fastify";
-import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { InMemoryFamilyRepository } from "../../../../src/contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
-import { InMemoryInvitationRepository } from "../../../../src/contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
+import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { InMemoryFamilyRepository } from "../../../../../src/contexts/family-access/infrastructure/persistence/in-memory-family.repository.js";
+import { InMemoryInvitationRepository } from "../../../../../src/contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.js";
 import {
   hashPassword,
   verifyPassword,
-} from "../../../../src/contexts/identity/infrastructure/password-hasher.js";
-import { InMemoryUserRepository } from "../../../../src/contexts/identity/infrastructure/persistence/in-memory-user.repository.js";
-import { buildApp } from "../../../../src/platform/app.js";
-import { TokenService } from "../../../../src/platform/auth/tokens.js";
-import { InProcessEventBus } from "../../../../src/platform/events/in-process-event-bus.js";
+} from "../../../../../src/contexts/identity/infrastructure/password-hasher.js";
+import { InMemoryUserRepository } from "../../../../../src/contexts/identity/infrastructure/persistence/in-memory-user.repository.js";
+import { buildApp } from "../../../../../src/platform/app.js";
+import { TokenService } from "../../../../../src/platform/auth/tokens.js";
+import { InProcessEventBus } from "../../../../../src/platform/events/in-process-event-bus.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { InMemoryRefreshTokenRepository } from "../../../platform/auth/doubles/in-memory-refresh-token.repository.js";
 

@@ -1,11 +1,11 @@
-// tests/contexts/family-access/family-access.module.test.ts
+// tests/unit/contexts/family-access/family-access.module.test.ts
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import Fastify from "fastify";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { buildFamilyAccessModule } from "../../../src/contexts/family-access/family-access.module.js";
-import { authenticate } from "../../../src/platform/auth/authenticate.middleware.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { buildFamilyAccessModule } from "../../../../src/contexts/family-access/family-access.module.js";
+import { authenticate } from "../../../../src/platform/auth/authenticate.middleware.js";
 import { FakeJwtService } from "../../platform/auth/doubles/fake-jwt-service.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import { FakeUserDirectory } from "./doubles/fake-user-directory.js";

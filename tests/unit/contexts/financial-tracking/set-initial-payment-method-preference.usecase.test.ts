@@ -1,15 +1,15 @@
-// tests/contexts/financial-tracking/set-initial-payment-method-preference.usecase.test.ts
+// tests/unit/contexts/financial-tracking/set-initial-payment-method-preference.usecase.test.ts
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { SetInitialPaymentMethodPreferenceUseCase } from "../../../src/contexts/financial-tracking/application/commands/set-initial-payment-method-preference.usecase.js";
-import { PaymentMethod } from "../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import { UserPaymentMethodPreference } from "../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
-import { PaymentMethodNotActiveError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-not-active.error.js";
-import { PaymentMethodNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
-import { PaymentMethodName } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
-import { InMemoryPaymentMethodRepository } from "../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
+import { SetInitialPaymentMethodPreferenceUseCase } from "../../../../src/contexts/financial-tracking/application/commands/set-initial-payment-method-preference.usecase.js";
+import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
+import { PaymentMethodNotActiveError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-active.error.js";
+import { PaymentMethodNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
+import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
+import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
 import { InMemoryUserPaymentMethodPreferenceRepository } from "./doubles/in-memory-user-payment-method-preference.repository.js";
 
 describe("SetInitialPaymentMethodPreferenceUseCase", () => {

@@ -1,9 +1,9 @@
-// tests/contexts/budgeting/doubles/in-memory-budget-configuration.repository.ts
+// tests/unit/contexts/budgeting/doubles/in-memory-budget-configuration.repository.ts
 
-import type { BudgetConfiguration } from "../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
-import type { BudgetConfigurationRepository } from "../../../../src/contexts/budgeting/domain/repositories/budget-configuration.repository.js";
-import type { BudgetConfigurationId } from "../../../../src/contexts/budgeting/domain/value-objects/budget-configuration-id.js";
-import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { BudgetConfiguration } from "../../../../../src/contexts/budgeting/domain/entities/budget-configuration.js";
+import type { BudgetConfigurationRepository } from "../../../../../src/contexts/budgeting/domain/repositories/budget-configuration.repository.js";
+import type { BudgetConfigurationId } from "../../../../../src/contexts/budgeting/domain/value-objects/budget-configuration-id.js";
+import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 
 class InMemoryBudgetConfigurationRepository implements BudgetConfigurationRepository {
   private readonly budgets = new Map<string, BudgetConfiguration>();

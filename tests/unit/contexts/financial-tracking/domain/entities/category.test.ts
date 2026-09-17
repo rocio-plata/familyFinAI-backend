@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
-import { InvalidTagOrderError } from "../../../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
-import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
-import { CategoryStatus } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
-import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { TagId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
-import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { InvalidTagOrderError } from "../../../../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
+import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
+import { CategoryStatus } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
+import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { TagId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
+import { TagName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 
 describe("Category", () => {
   const familyId = FamilyId.generate();

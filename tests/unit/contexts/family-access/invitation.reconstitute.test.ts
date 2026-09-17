@@ -1,9 +1,9 @@
-// tests/contexts/family-access/invitation.reconstitute.test.ts
+// tests/unit/contexts/family-access/invitation.reconstitute.test.ts
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { Invitation } from "../../../src/contexts/family-access/domain/entities/invitation.js";
-import { InvitationStatus } from "../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
+import { Invitation } from "../../../../src/contexts/family-access/domain/entities/invitation.js";
+import { InvitationStatus } from "../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
 
 describe("Invitation.reconstitute", () => {
   test("reconstruye una invitación aceptada sin disparar eventos", () => {

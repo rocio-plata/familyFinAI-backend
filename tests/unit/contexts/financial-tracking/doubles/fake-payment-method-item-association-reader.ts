@@ -1,7 +1,7 @@
-// tests/contexts/financial-tracking/doubles/fake-payment-method-item-association-reader.ts
+// tests/unit/contexts/financial-tracking/doubles/fake-payment-method-item-association-reader.ts
 
-import type { PaymentMethodItemAssociationReader } from "../../../../src/contexts/financial-tracking/domain/repositories/payment-method-item-association-reader.js";
-import type { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+import type { PaymentMethodItemAssociationReader } from "../../../../../src/contexts/financial-tracking/domain/repositories/payment-method-item-association-reader.js";
+import type { PaymentMethodId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 
 class FakePaymentMethodItemAssociationReader implements PaymentMethodItemAssociationReader {
   private readonly itemCounts = new Map<string, number>();

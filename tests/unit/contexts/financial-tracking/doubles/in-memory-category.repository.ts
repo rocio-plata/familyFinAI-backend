@@ -1,8 +1,8 @@
-// tests/contexts/financial-tracking/doubles/in-memory-category.repository.ts
-import type { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
-import type { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
-import type { CategoryRepository } from "../../../../src/contexts/financial-tracking/domain/repositories/category.repository.js";
-import type { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+// tests/unit/contexts/financial-tracking/doubles/in-memory-category.repository.ts
+import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import type { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import type { CategoryRepository } from "../../../../../src/contexts/financial-tracking/domain/repositories/category.repository.js";
+import type { CategoryId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 
 class InMemoryCategoryRepository implements CategoryRepository {
   private categories = new Map<string, Category>();

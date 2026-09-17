@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { TagId } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
+import { TagId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 
 const VALID_UUID = "123e4567-e89b-12d3-a456-426614174000";
 

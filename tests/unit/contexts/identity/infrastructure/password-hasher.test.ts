@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import {
   hashPassword,
   verifyPassword,
-} from "../../../../src/contexts/identity/infrastructure/password-hasher.js";
+} from "../../../../../src/contexts/identity/infrastructure/password-hasher.js";
 
 describe("password-hasher", () => {
   it("verifyPassword retorna true para la contraseña correcta", () => {
