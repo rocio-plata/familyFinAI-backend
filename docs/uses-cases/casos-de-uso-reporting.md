@@ -1,13 +1,15 @@
 # Reporting & Analytics — Casos de uso
 
 Documentación de los casos de uso del contexto `Reporting`. El modelo de dominio inicial está
-implementado (`CategoryPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
+implementado (`CategoryPeriodAggregate`, `PaymentMethodPeriodAggregate`, `Period` compartido e `ItemCount`) y las queries
 `GetDashboardSummary`, `GetCategoryBreakdown`, `GetPeriodComparison`, `GetTrend` y `GetDrillDown`
 ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedHandler`,
-`OnItemReclassifiedHandler` y `OnItemDeletedHandler` también están implementados y probados. La
+`OnItemReclassifiedHandler`, `OnItemDeletedHandler` y los handlers equivalentes por medio de pago
+también están implementados y probados. La
 persistencia InMemory y Drizzle de `CategoryPeriodAggregate`, la composición del módulo, las
-suscripciones al `EventBus` y las rutas HTTP ya están implementadas. No quedan queries ni handlers
-del catálogo de este documento pendientes de implementación. Sigue la misma convención usada en
+suscripciones al `EventBus` y las rutas HTTP de categorías están implementadas. La query por medio
+de pago está implementada y probada, pero todavía no está compuesta en el módulo ni expuesta por
+HTTP. Sigue la misma convención usada en
 los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
 dominio disparados**.
@@ -34,6 +36,25 @@ Este read model es la base de `GetDashboardSummary`, `GetCategoryBreakdown` y `G
 ---
 
 ## Queries
+
+### 0. GetExpensesByPaymentMethod
+
+> Estado de implementación: query y tests implementados en
+> `src/contexts/reporting/application/queries/get-expenses-by-payment-method.query.ts`; falta
+> construirla en `reporting.module.ts` y registrar la ruta HTTP.
+
+Lista los gastos agrupados por medio de pago para una familia y período.
+
+- **Actor**: cualquier `Member` de la familia, con autorización pendiente de la capa HTTP.
+- **Entrada**: `familyId`, `period`.
+- **Flujo principal**:
+  1. Se consultan los `PaymentMethodPeriodAggregate` del período.
+  2. Se resuelven los nombres desde `GetPaymentMethodsQuery`, incluyendo medios deprecados para conservar históricos.
+  3. Se proyecta `totalExpense`; los ingresos no forman parte de este reporte.
+  4. Se descartan montos cero y medios ausentes del catálogo.
+  5. Se ordena de mayor a menor importe.
+- **Salida**: `paymentMethodId`, `paymentMethodName`, `amount`.
+- **Errores posibles**: ninguno propio.
 
 ### 1. GetDashboardSummary
 
@@ -136,6 +157,20 @@ Navega desde una vista general hacia los movimientos individuales que la compone
 ---
 
 ## Event Handlers (mantenimiento del read model)
+
+### Handlers de `PaymentMethodPeriodAggregate`
+
+> Estado de implementación: implementados y probados; la persistencia Drizzle está codificada,
+> pero las migraciones PostgreSQL siguen pendientes.
+
+Reaccionan a los eventos de `Financial Tracking`:
+
+- `ItemRecorded`: registra el importe en el medio de pago del item.
+- `ItemAmountChanged`: ajusta la diferencia del importe.
+- `ItemDeleted`: resta el importe del medio correspondiente.
+- `ItemPaymentMethodChanged`: resta del medio anterior y suma al nuevo.
+
+El agregado usa la clave natural `(familyId, paymentMethodId, period)` y conserva la moneda.
 
 Reaccionan a los eventos de `Financial Tracking`, actualizando `CategoryPeriodAggregate`. Estructuralmente muy similares a los handlers que ya definimos para `Budgeting`, pero sin lógica de límites/sobregiro — solo acumulación.
 

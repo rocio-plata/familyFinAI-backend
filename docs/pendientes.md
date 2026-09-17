@@ -79,12 +79,23 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
   membresía, pero no un rol `Owner`; revisar si el producto necesita permisos más granulares.
 - Añadir pruebas de integración contra PostgreSQL para repositorios y migraciones.
 
+### Medios de pago
+
+- Componer los casos de uso y handlers de medios de pago en `financial-tracking.module.ts`.
+- Registrar `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` en el `EventBus`.
+- Implementar las rutas HTTP de medios de pago y la ruta de default por usuario.
+- Crear los repositorios Drizzle de `PaymentMethod` y `UserPaymentMethodPreference`.
+- Añadir migraciones para `payment_methods`, `user_payment_method_preferences` y `payment_method_period_aggregates`.
+- Añadir la foreign key de `financial_items.payment_method_id` cuando exista la tabla `payment_methods`.
+
 ## Reporting
 
 ### Pendiente
 
 - Añadir pruebas end-to-end que cubran crear, actualizar, reclasificar y borrar un movimiento y
   verifiquen el read model de Reporting.
+- Componer `GetExpensesByPaymentMethodQuery` y exponer `/families/:familyId/reports/by-payment-method`.
+- Añadir pruebas end-to-end para `PaymentMethodPeriodAggregate` y el reporte por medio de pago.
 
 ### Decisiones cerradas
 

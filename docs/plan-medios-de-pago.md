@@ -150,10 +150,10 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
 ### En `Financial Tracking`
 
 1. **`CreateDefaultPaymentMethodsUseCase`** (interno) — ✅ implementado en `src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.ts`, con tests TDD. Crea los 4 `PaymentMethod` de la familia y el `UserPaymentMethodPreference` del creador apuntando a "Efectivo"; el flujo es idempotente.
-2. **`OnFamilyCreatedHandler`** — ✅ implementado en `src/contexts/financial-tracking/application/event-handlers/on-family-created.handler.ts`. Recibe `FamilyCreated`, que transporta `familyId` y `creatorId`, e invoca `CreateDefaultPaymentMethodsUseCase` con ambos valores.
+2. **`OnFamilyCreatedHandler`** — ✅ implementado y probado en `src/contexts/financial-tracking/application/event-handlers/on-family-created.handler.ts`, pero todavía no está suscrito en `financial-tracking.module.ts`; el flujo automático de producción sigue pendiente.
 3. **`SetInitialPaymentMethodPreferenceUseCase`** (interno, nuevo) — ✅ implementado en `src/contexts/financial-tracking/application/commands/set-initial-payment-method-preference.usecase.ts`, con tests. Crea la preferencia de un miembro nuevo apuntando a `Efectivo`, es idempotente y valida que el medio pertenezca a la familia y esté activo.
-4. **`OnInvitationAcceptedHandler`** (nuevo, en `Financial Tracking`) — ✅ implementado en `src/contexts/financial-tracking/application/event-handlers/on-invitation-accepted.handler.ts`, con test. Recibe `InvitationAccepted`, usa `acceptedBy` y `familyId` para invocar el caso de uso anterior. Su registro en el módulo/event bus queda pendiente de ampliar las dependencias de medios de pago.
-4b. **`OnMemberRemovedHandler`** (nuevo, en `Financial Tracking`) — ✅ implementado en `src/contexts/financial-tracking/application/event-handlers/on-member-removed.handler.ts`, con tests. Consume `MemberRemoved` y elimina la preferencia de `(removedUserId, familyId)` de forma idempotente. Su registro en el módulo/event bus queda pendiente de ampliar las dependencias de medios de pago.
+4. **`OnInvitationAcceptedHandler`** (nuevo, en `Financial Tracking`) — ✅ implementado y probado en `src/contexts/financial-tracking/application/event-handlers/on-invitation-accepted.handler.ts`, pero todavía no está suscrito en el módulo/event bus.
+4b. **`OnMemberRemovedHandler`** (nuevo, en `Financial Tracking`) — ✅ implementado y probado en `src/contexts/financial-tracking/application/event-handlers/on-member-removed.handler.ts`, pero todavía no está suscrito en el módulo/event bus.
 5. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — ✅ los tres implementados con tests. `GetPaymentMethodsQuery` está en `src/contexts/financial-tracking/application/queries/get-payment-methods.query.ts`, filtra por `familyId` y excluye medios deprecados por defecto; `includeDeprecated: true` los incluye.
 5b. **`DeprecatePaymentMethodUseCase`** — ✅ implementado en `src/contexts/financial-tracking/application/commands/deprecate-payment-method.usecase.ts`, con tests. Cualquier `Member` puede ejecutarlo; valida familia y rechaza si alguna preferencia apunta al medio mediante `PaymentMethodIsSomeonesDefaultError`. No publica eventos porque el agregado no define un evento de deprecación.
 5c. **`DeletePaymentMethodUseCase`** — ✅ implementado en `src/contexts/financial-tracking/application/commands/delete-payment-method.usecase.ts`, con tests. Cualquier `Member` puede ejecutarlo; valida familia, defaults y items asociados antes del borrado físico. No publica eventos ni elimina preferencias.
@@ -188,46 +188,39 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
 ## Base de datos
 
 ```typescript
-// contexts/financial-tracking/infrastructure/persistence/schema.ts
-export const paymentMethods = pgTable("payment_methods", {
-  id: uuid("id").primaryKey(),
-  familyId: uuid("family_id").notNull(),
-  name: varchar("name", { length: 40 }).notNull(),
-  status: categoryStatusEnum("status").notNull().default("ACTIVE"),
-});
-
-export const userPaymentMethodPreferences = pgTable(
-  "user_payment_method_preferences",
-  {
-    userId: uuid("user_id").notNull(),
-    familyId: uuid("family_id").notNull(),
-    defaultPaymentMethodId: uuid("default_payment_method_id").notNull().references(() => paymentMethods.id),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.userId, table.familyId] }),
-  }),
-);
-
+// Estado actual de financial-tracking/infrastructure/persistence/schema.ts:
+// todavía no declara paymentMethods ni userPaymentMethodPreferences.
+// financialItems sí declara paymentMethodId, pero aún sin foreign key:
 export const financialItems = pgTable("financial_items", {
   // ... columnas existentes
-  paymentMethodId: uuid("payment_method_id").notNull().references(() => paymentMethods.id),
+  paymentMethodId: uuid("payment_method_id").notNull(),
 });
 ```
 
 ```typescript
 // contexts/reporting/infrastructure/persistence/schema.ts
-export const paymentMethodPeriodAggregates = pgTable("payment_method_period_aggregates", {
-  id: uuid("id").primaryKey(),
-  familyId: uuid("family_id").notNull(),
-  paymentMethodId: uuid("payment_method_id").notNull(),
-  period: varchar("period", { length: 7 }).notNull(),
-  totalExpense: numeric("total_expense", { precision: 14, scale: 2 }).notNull().default("0"),
-  totalIncome: numeric("total_income", { precision: 14, scale: 2 }).notNull().default("0"),
-  itemCount: integer("item_count").notNull().default(0),
-});
+export const paymentMethodPeriodAggregates = pgTable(
+  "payment_method_period_aggregates",
+  {
+    familyId: uuid("family_id").notNull(),
+    paymentMethodId: uuid("payment_method_id").notNull(),
+    period: varchar("period", { length: 7 }).notNull(),
+    totalExpense: numeric("total_expense", { precision: 14, scale: 2 }).notNull().default("0"),
+    totalIncome: numeric("total_income", { precision: 14, scale: 2 }).notNull().default("0"),
+    currency: varchar("currency", { length: 3 }).notNull(),
+    itemCount: integer("item_count").notNull().default(0),
+  },
+  // clave natural única: (familyId, paymentMethodId, period)
+);
 ```
 
 `npm run db:reset` sigue siendo el camino más simple.
+
+**Estado actual de persistencia**: las tablas de medios de pago y preferencias todavía no existen
+en el schema/migraciones de Financial Tracking. `financial_items.payment_method_id` existe, pero
+sin foreign key; el agregado de Reporting usa la clave natural
+`(familyId, paymentMethodId, period)` y conserva `currency`. Los repositorios Drizzle de
+`PaymentMethod` y `UserPaymentMethodPreference` aún no están implementados.
 
 ---
 
@@ -260,17 +253,17 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 9. **`CreateDefaultPaymentMethodsUseCase`** — ✅ implementado con test de los 4 medios de pago, el default del creador y la ejecución idempotente.
 10. **`OnFamilyCreatedHandler`** — ✅ implementado con test en `tests/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts`. `FamilyCreated` fue actualizado para transportar también `creatorId` desde `Family.create()`.
 11. **`SetInitialPaymentMethodPreferenceUseCase`** — ✅ implementado con tests de creación, idempotencia, aislamiento por familia y validación del estado de `Efectivo`.
-12. **`OnInvitationAcceptedHandler`** (en `Financial Tracking`) — ✅ implementado con test verificando que un nuevo miembro recibe su preferencia automáticamente al aceptar. El cableado en el módulo queda pendiente.
-12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — ✅ implementado con tests verificando la eliminación de la preferencia y el comportamiento tolerante cuando no existe. El cableado en el módulo queda pendiente.
+12. **`OnInvitationAcceptedHandler`** (en `Financial Tracking`) — ✅ implementado con test; el cableado en el módulo/event bus sigue pendiente.
+12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — ✅ implementado con tests; el cableado en el módulo/event bus sigue pendiente.
 13. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — ✅ implementados con tests TDD. `GetPaymentMethodsQuery` filtra medios activos por defecto y permite incluir deprecados explícitamente.
 13b. **`DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`** — ✅ ambos implementados con tests TDD, incluyendo los rechazos por `PaymentMethodIsSomeonesDefaultError` y `PaymentMethodHasAssociatedItemsError`.
 14. **`SetDefaultPaymentMethodUseCase`** — ✅ implementado con tests TDD de creación, actualización, pertenencia y estado activo. La ruta HTTP queda pendiente.
 15. **Actualizar `CreateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional en el input; si no viene, se resuelve mediante `UserPaymentMethodPreferenceRepository.findByUserAndFamily(recordedBy, familyId)`. Valida familia/estado activo, lanza `NoDefaultPaymentMethodSetError` si no hay preferencia y propaga el ID resuelto al item y a `ItemRecorded`. La ruta HTTP también acepta el campo opcional.
 16. **Actualizar `UpdateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional; si se informa, valida familia y estado activo, cambia el medio y publica `ItemPaymentMethodChanged`. La ruta PATCH y su respuesta también lo soportan.
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — ✅ implementado con entidad, repositorios in-memory/Drizzle, schema y handlers para `ItemRecorded`, `ItemAmountChanged`, `ItemDeleted` e `ItemPaymentMethodChanged`, con tests unitarios. Los eventos fueron ampliados con los datos necesarios para mantener el agregado; la migración DB sigue pendiente del paso 19.
-18. **`GetExpensesByPaymentMethodQuery`** — ✅ implementado con tests TDD. Devuelve gastos por medio de pago para una familia y período, incluye medios deprecados para conservar históricos, ignora ingresos/montos cero y ordena de mayor a menor.
-19. **Schemas de Drizzle** — tablas/columnas, `npm run db:generate`, `npm run db:reset`.
-20. **Rutas HTTP** — los 9 endpoints.
+18. **`GetExpensesByPaymentMethodQuery`** — ✅ implementado con tests TDD. Devuelve gastos por medio de pago para una familia y período, incluye medios deprecados para conservar históricos, ignora ingresos/montos cero y ordena de mayor a menor. La query todavía no está construida en `reporting.module.ts` ni expuesta por HTTP.
+19. **Schemas de Drizzle** — pendiente: crear tablas/columnas y migraciones para `payment_methods`, `user_payment_method_preferences` y `payment_method_period_aggregates`, añadir la foreign key de `financial_items.payment_method_id` y verificar `npm run db:generate`/`npm run db:reset`.
+20. **Rutas HTTP** — pendiente: registrar los endpoints de medios de pago y `/families/:familyId/reports/by-payment-method`; actualmente no están expuestos.
 21. **Actualizar la colección de Postman**.
 22. **Actualizar `casos-de-uso-financial-tracking.md` y `casos-de-uso-reporting.md`**.
 

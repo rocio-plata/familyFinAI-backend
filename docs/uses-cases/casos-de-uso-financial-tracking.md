@@ -1,13 +1,15 @@
 # Financial Tracking — Casos de uso
 
-Documentación de los casos de uso del contexto `Financial Tracking` (core domain), ya implementado
-y expuesto por HTTP. Sigue la misma convención usada en `casos-de-uso-family-access.md`: **actor**,
+Documentación de los casos de uso del contexto `Financial Tracking` (core domain). Los casos de uso
+de categorías, tags e items están expuestos por HTTP; los casos de uso de medios de pago están
+implementados en código/tests, pero sus rutas y wiring de módulo siguen pendientes. Sigue la misma
+convención usada en `casos-de-uso-family-access.md`: **actor**,
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
 disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 17 casos de uso de este documento (1–29) ya están implementados en `src/contexts/financial-tracking/application/`, con sus tests correspondientes en `tests/contexts/financial-tracking/`. Las secciones de "Errores" y "Pendientes" al final de este documento reflejan las decisiones ya tomadas durante la implementación.
+> **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests, pero los casos de medios de pago todavía no están compuestos en `financial-tracking.module.ts` ni expuestos por HTTP. Las secciones de "Errores" y "Pendientes" reflejan el estado operativo real.
 
 ---
 
@@ -453,7 +455,7 @@ Lista los gastos agrupados por medio de pago para una familia y período.
   5. Se ordena de mayor a menor importe.
 - **Salida**: `paymentMethodId`, `paymentMethodName` y `amount`.
 - **Errores posibles**: ninguno propio; una familia sin gastos devuelve una lista vacía.
-- **Pendiente de integración**: exponer la query mediante la ruta HTTP correspondiente.
+- **Pendiente de integración**: construir la query en `reporting.module.ts` y exponerla mediante la ruta HTTP correspondiente.
 
 ## Resumen de errores nuevos a definir
 
@@ -473,10 +475,14 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 | `TagHasAssociatedItemsError` | DeleteTag | ✅ ya definido |
 | `CannotReclassifyAcrossTypesError` | ReclassifyFinancialItem | ✅ ya definido (reajuste tipo-categoría) |
 | `InvalidMoneyError`, `InvalidTitleError`, `InvalidNoteError`, `FutureTransactionDateError`, `InvalidCategoryNameError`, `InvalidTagNameError` | CreateFinancialItem y afines | ✅ ya definidos |
+| `InvalidPaymentMethodNameError`, `DuplicatePaymentMethodNameError`, `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError` | PaymentMethod y FinancialItem | ✅ ya definidos |
+| `PaymentMethodHasAssociatedItemsError` | DeletePaymentMethod | ✅ ya definido |
+| `PaymentMethodIsSomeonesDefaultError` | DeprecatePaymentMethod, DeletePaymentMethod | ✅ ya definido |
+| `NoDefaultPaymentMethodSetError` | CreateFinancialItem | ✅ ya definido |
 
 ## Pendientes antes de implementar
 
-> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 29 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
+> Nota: los casos de uso están implementados y probados, pero la disponibilidad end-to-end de medios de pago sigue pendiente de wiring, rutas y persistencia PostgreSQL.
 
 1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
 2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a renombrados en el futuro, sería una mejora posterior.
