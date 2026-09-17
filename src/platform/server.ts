@@ -25,7 +25,9 @@ import {
 import { DrizzleUserRepository } from "../contexts/identity/infrastructure/persistence/drizzle-user.repository.js";
 import { InMemoryUserRepository } from "../contexts/identity/infrastructure/persistence/in-memory-user.repository.js";
 import { DrizzleCategoryPeriodAggregateRepository } from "../contexts/reporting/infrastructure/persistence/drizzle-category-period-aggregate.repository.js";
+import { DrizzlePaymentMethodPeriodAggregateRepository } from "../contexts/reporting/infrastructure/persistence/drizzle-payment-method-period-aggregate.repository.js";
 import { InMemoryCategoryPeriodAggregateRepository } from "../contexts/reporting/infrastructure/persistence/in-memory-category-period-aggregate.repository.js";
+import { InMemoryPaymentMethodPeriodAggregateRepository } from "../contexts/reporting/infrastructure/persistence/in-memory-payment-method-period-aggregate.repository.js";
 import { buildApp } from "./app.js";
 import { JwtService } from "./auth/jwt.js";
 import { DrizzleRefreshTokenRepository } from "./auth/persistence/drizzle-refresh-token.repository.js";
@@ -67,6 +69,9 @@ const financialItemRepository = usePostgres
 const categoryPeriodAggregateRepository = usePostgres
   ? new DrizzleCategoryPeriodAggregateRepository()
   : new InMemoryCategoryPeriodAggregateRepository();
+const paymentMethodPeriodAggregateRepository = usePostgres
+  ? new DrizzlePaymentMethodPeriodAggregateRepository()
+  : new InMemoryPaymentMethodPeriodAggregateRepository();
 const budgetConfigurationRepository = usePostgres
   ? new DrizzleBudgetConfigurationRepository()
   : new InMemoryBudgetConfigurationRepository();
@@ -104,6 +109,7 @@ const app = buildApp({
   },
   reporting: {
     aggregateRepository: categoryPeriodAggregateRepository,
+    paymentMethodAggregateRepository: paymentMethodPeriodAggregateRepository,
     getCategoriesQuery: new GetCategoriesQuery(categoryRepository),
     getFinancialItemsQuery: new GetFinancialItemsQuery(financialItemRepository),
     eventBus,

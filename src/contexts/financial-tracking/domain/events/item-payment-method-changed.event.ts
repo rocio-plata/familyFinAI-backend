@@ -14,6 +14,8 @@ class ItemPaymentMethodChanged extends DomainEvent {
     readonly paymentMethodId: PaymentMethodId,
     readonly amount: number,
     readonly type: FinancialItemType,
+    readonly occurredOn: Date,
+    readonly currency: string,
   ) {
     super();
   }

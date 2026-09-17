@@ -38,6 +38,7 @@ class DeleteFinancialItemUseCase {
         item.type,
         item.occurredOn.value,
         item.amount.currency.toString(),
+        item.paymentMethodId,
       ),
     );
   }
