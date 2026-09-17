@@ -19,8 +19,7 @@ class InMemoryUserPaymentMethodPreferenceRepository
   ): Promise<UserPaymentMethodPreference | null> {
     return (
       this.preferences.find(
-        (preference) =>
-          preference.userId.equals(userId) && preference.familyId.equals(familyId),
+        (preference) => preference.userId.equals(userId) && preference.familyId.equals(familyId),
       ) ?? null
     );
   }
