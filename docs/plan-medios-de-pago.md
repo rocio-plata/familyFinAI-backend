@@ -265,7 +265,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 13. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — ✅ implementados con tests TDD. `GetPaymentMethodsQuery` filtra medios activos por defecto y permite incluir deprecados explícitamente.
 13b. **`DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`** — ✅ ambos implementados con tests TDD, incluyendo los rechazos por `PaymentMethodIsSomeonesDefaultError` y `PaymentMethodHasAssociatedItemsError`.
 14. **`SetDefaultPaymentMethodUseCase`** — ✅ implementado con tests TDD de creación, actualización, pertenencia y estado activo. La ruta HTTP queda pendiente.
-15. **Actualizar `CreateFinancialItemUseCase`** — `paymentMethodId` opcional + resolución de default + `NoDefaultPaymentMethodSetError` para el caso excepcional.
+15. **Actualizar `CreateFinancialItemUseCase`** — ✅ implementado con tests. `paymentMethodId` es opcional en el input; si no viene, se resuelve mediante `UserPaymentMethodPreferenceRepository.findByUserAndFamily(recordedBy, familyId)`. Valida familia/estado activo, lanza `NoDefaultPaymentMethodSetError` si no hay preferencia y propaga el ID resuelto al item y a `ItemRecorded`. La ruta HTTP también acepta el campo opcional.
 16. **Actualizar `UpdateFinancialItemUseCase`** — `paymentMethodId` opcional.
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — schema + los 4 event handlers, con TDD.
 18. **`GetExpensesByPaymentMethodQuery`** — con TDD.
