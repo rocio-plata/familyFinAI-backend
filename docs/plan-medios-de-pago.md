@@ -253,7 +253,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 2. **Errores** — ✅ implementados con tests: `InvalidPaymentMethodIdError`, `InvalidPaymentMethodNameError`, `DuplicatePaymentMethodNameError`, `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`, `PaymentMethodHasAssociatedItemsError`, `PaymentMethodIsSomeonesDefaultError` y `NoDefaultPaymentMethodSetError`.
 3. **`PaymentMethod`** — ✅ implementado, scoped por `familyId`, con tests.
 4. **`UserPaymentMethodPreference`** — ✅ implementado con clave compuesta `(userId, familyId)` y tests.
-5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + dobles in-memory — ⚠️ parcialmente implementados. Existen los puertos y dobles, pero faltan métodos del contrato completo (`findById()`, `existsAnyForPaymentMethod()` y `delete()`) y los adaptadores Drizzle.
+5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + repositorios in-memory y dobles de test — ✅ implementados con tests de contrato. Incluyen `findByUserAndFamily()`, `findById()`, `existsAnyForPaymentMethod()` y `delete()`; ambas implementaciones in-memory mantienen upsert por identidad. Los adaptadores Drizzle corresponden al paso 19 y siguen pendientes.
 6. **`PaymentMethodDeletionService`** — con tests.
 7. **`FinancialItemRepository.countByPaymentMethod()`**.
 8. **`FinancialItem`** — `paymentMethodId`, `changePaymentMethod()`, tests.
