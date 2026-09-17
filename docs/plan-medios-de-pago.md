@@ -157,7 +157,7 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
 5. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — ✅ los tres implementados con tests. `GetPaymentMethodsQuery` está en `src/contexts/financial-tracking/application/queries/get-payment-methods.query.ts`, filtra por `familyId` y excluye medios deprecados por defecto; `includeDeprecated: true` los incluye.
 5b. **`DeprecatePaymentMethodUseCase`** — ✅ implementado en `src/contexts/financial-tracking/application/commands/deprecate-payment-method.usecase.ts`, con tests. Cualquier `Member` puede ejecutarlo; valida familia y rechaza si alguna preferencia apunta al medio mediante `PaymentMethodIsSomeonesDefaultError`. No publica eventos porque el agregado no define un evento de deprecación.
 5c. **`DeletePaymentMethodUseCase`** — ✅ implementado en `src/contexts/financial-tracking/application/commands/delete-payment-method.usecase.ts`, con tests. Cualquier `Member` puede ejecutarlo; valida familia, defaults y items asociados antes del borrado físico. No publica eventos ni elimina preferencias.
-6. **`SetDefaultPaymentMethodUseCase`** — entrada: `userId`, `familyId`, `paymentMethodId`. Valida que el medio de pago pertenezca a esa familia y esté `Active`; busca o crea el `UserPaymentMethodPreference` de `(userId, familyId)`.
+6. **`SetDefaultPaymentMethodUseCase`** — ✅ implementado en `src/contexts/financial-tracking/application/commands/set-default-payment-method.usecase.ts`, con tests. Valida membresía, pertenencia y estado `Active`; crea o actualiza la preferencia de `(userId, familyId)`.
 
 ### Modificados
 
@@ -264,7 +264,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — ✅ implementado con tests verificando la eliminación de la preferencia y el comportamiento tolerante cuando no existe. El cableado en el módulo queda pendiente.
 13. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — ✅ implementados con tests TDD. `GetPaymentMethodsQuery` filtra medios activos por defecto y permite incluir deprecados explícitamente.
 13b. **`DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`** — ✅ ambos implementados con tests TDD, incluyendo los rechazos por `PaymentMethodIsSomeonesDefaultError` y `PaymentMethodHasAssociatedItemsError`.
-14. **`SetDefaultPaymentMethodUseCase`** — TDD.
+14. **`SetDefaultPaymentMethodUseCase`** — ✅ implementado con tests TDD de creación, actualización, pertenencia y estado activo. La ruta HTTP queda pendiente.
 15. **Actualizar `CreateFinancialItemUseCase`** — `paymentMethodId` opcional + resolución de default + `NoDefaultPaymentMethodSetError` para el caso excepcional.
 16. **Actualizar `UpdateFinancialItemUseCase`** — `paymentMethodId` opcional.
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — schema + los 4 event handlers, con TDD.
