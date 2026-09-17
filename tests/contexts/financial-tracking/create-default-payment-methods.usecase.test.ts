@@ -4,43 +4,8 @@ import { describe, it } from "node:test";
 import { FamilyId } from "../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { CreateDefaultPaymentMethodsUseCase } from "../../../src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.js";
-import type { PaymentMethod } from "../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
-import type { UserPaymentMethodPreference } from "../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
-import type { PaymentMethodRepository } from "../../../src/contexts/financial-tracking/domain/repositories/payment-method.repository.js";
-import type { UserPaymentMethodPreferenceRepository } from "../../../src/contexts/financial-tracking/domain/repositories/user-payment-method-preference.repository.js";
-
-class InMemoryPaymentMethodRepository implements PaymentMethodRepository {
-  readonly paymentMethods: PaymentMethod[] = [];
-
-  async save(paymentMethod: PaymentMethod): Promise<void> {
-    this.paymentMethods.push(paymentMethod);
-  }
-
-  async findByFamilyId(familyId: FamilyId): Promise<PaymentMethod[]> {
-    return this.paymentMethods.filter((paymentMethod) => paymentMethod.familyId.equals(familyId));
-  }
-}
-
-class InMemoryUserPaymentMethodPreferenceRepository
-  implements UserPaymentMethodPreferenceRepository
-{
-  readonly preferences: UserPaymentMethodPreference[] = [];
-
-  async save(preference: UserPaymentMethodPreference): Promise<void> {
-    this.preferences.push(preference);
-  }
-
-  async findByUserAndFamily(
-    userId: UserId,
-    familyId: FamilyId,
-  ): Promise<UserPaymentMethodPreference | null> {
-    return (
-      this.preferences.find(
-        (preference) => preference.userId.equals(userId) && preference.familyId.equals(familyId),
-      ) ?? null
-    );
-  }
-}
+import { InMemoryPaymentMethodRepository } from "./doubles/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "./doubles/in-memory-user-payment-method-preference.repository.js";
 
 describe("CreateDefaultPaymentMethodsUseCase", () => {
   it("crea los cuatro medios y el default del creador en Efectivo", async () => {

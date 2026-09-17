@@ -289,6 +289,7 @@ Crea los medios de pago iniciales de una familia y establece el medio predetermi
   4. Si no existe, se crea apuntando a `Efectivo`.
 - **Comportamiento repetido**: es idempotente; no duplica medios ni reemplaza una preferencia existente.
 - **Eventos disparados**: ninguno.
+- **Integración**: `OnFamilyCreatedHandler` consume `FamilyCreated` y ejecuta este caso de uso con el `familyId` y `creatorId` transportados por el evento.
 
 ## Resumen de errores nuevos a definir
 
@@ -311,7 +312,7 @@ Crea los medios de pago iniciales de una familia y establece el medio predetermi
 
 ## Pendientes antes de implementar
 
-> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 16 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
+> Nota: los puntos 1–5 quedaron resueltos durante la implementación de los 17 casos de uso; se dejan documentados como registro de la decisión tomada. El punto 6 sigue abierto.
 
 1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
 2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a renombrados en el futuro, sería una mejora posterior.

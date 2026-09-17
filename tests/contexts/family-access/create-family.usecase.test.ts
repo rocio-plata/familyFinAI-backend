@@ -64,12 +64,14 @@ describe("CreateFamilyUseCase", () => {
   });
 
   test("publica el evento FamilyCreated al crear la familia", async () => {
-    const family = await useCase.execute({ name: "Familia Pérez", createdBy: UserId.generate() });
+    const creatorId = UserId.generate();
+    const family = await useCase.execute({ name: "Familia Pérez", createdBy: creatorId });
 
     assert.equal(eventBus.publishedEvents.length, 1);
 
     const publishedEvent = eventBus.publishedEvents[0];
     assert.ok(publishedEvent instanceof FamilyCreated);
     assert.ok((publishedEvent as FamilyCreated).familyId.equals(family.id));
+    assert.ok((publishedEvent as FamilyCreated).creatorId.equals(creatorId));
   });
 });
