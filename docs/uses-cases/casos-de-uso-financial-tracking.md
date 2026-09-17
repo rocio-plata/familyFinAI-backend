@@ -291,6 +291,20 @@ Crea los medios de pago iniciales de una familia y establece el medio predetermi
 - **Eventos disparados**: ninguno.
 - **Integración**: `OnFamilyCreatedHandler` consume `FamilyCreated` y ejecuta este caso de uso con el `familyId` y `creatorId` transportados por el evento.
 
+### 18. SetInitialPaymentMethodPreference
+
+Establece el medio de pago predeterminado inicial de un miembro dentro de una familia.
+
+- **Actor**: proceso interno ejecutado al aceptar una membresía.
+- **Entrada**: `userId`, `familyId`.
+- **Flujo principal**:
+  1. Se busca una preferencia existente para `(userId, familyId)`.
+  2. Si no existe, se busca `Efectivo` dentro de la familia.
+  3. Se valida que `Efectivo` esté activo.
+  4. Se crea la preferencia apuntando al medio encontrado.
+- **Comportamiento repetido**: es idempotente y no reemplaza una preferencia existente.
+- **Errores posibles**: `PaymentMethodNotFoundError`, `PaymentMethodNotActiveError`.
+
 ## Resumen de errores nuevos a definir
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |

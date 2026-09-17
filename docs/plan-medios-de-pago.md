@@ -151,7 +151,7 @@ changePaymentMethod(newPaymentMethodId: PaymentMethodId): void {
 
 1. **`CreateDefaultPaymentMethodsUseCase`** (interno) — ✅ implementado en `src/contexts/financial-tracking/application/commands/create-default-payment-methods.usecase.ts`, con tests TDD. Crea los 4 `PaymentMethod` de la familia y el `UserPaymentMethodPreference` del creador apuntando a "Efectivo"; el flujo es idempotente.
 2. **`OnFamilyCreatedHandler`** — ✅ implementado en `src/contexts/financial-tracking/application/event-handlers/on-family-created.handler.ts`. Recibe `FamilyCreated`, que transporta `familyId` y `creatorId`, e invoca `CreateDefaultPaymentMethodsUseCase` con ambos valores.
-3. **`SetInitialPaymentMethodPreferenceUseCase`** (interno, nuevo) — crea el `UserPaymentMethodPreference` de un miembro nuevo, apuntando a "Efectivo" de esa familia.
+3. **`SetInitialPaymentMethodPreferenceUseCase`** (interno, nuevo) — ✅ implementado en `src/contexts/financial-tracking/application/commands/set-initial-payment-method-preference.usecase.ts`, con tests. Crea la preferencia de un miembro nuevo apuntando a `Efectivo`, es idempotente y valida que el medio pertenezca a la familia y esté activo.
 4. **`OnInvitationAcceptedHandler`** (nuevo, en `Financial Tracking`) — se suscribe a `InvitationAccepted` (de `Family & Access`), invoca el caso de uso anterior.
 4b. **`OnMemberRemovedHandler`** (nuevo, en `Financial Tracking`) — se suscribe a `MemberRemoved` (de `Family & Access`), elimina el `UserPaymentMethodPreference` de `(removedUserId, familyId)` si existía (limpieza, no falla si no había ninguna).
 5. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — scoped por `familyId`, mismo patrón que `Category` (idéntico a la v1 original). **Sin restricción de rol** — cualquier `Member` puede ejecutarlos.
@@ -259,7 +259,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 8. **`FinancialItem`** — ✅ implementado con `paymentMethodId` obligatorio, `changePaymentMethod()`, `ItemPaymentMethodChanged` y tests. La resolución opcional mediante preferencia corresponde al paso 15.
 9. **`CreateDefaultPaymentMethodsUseCase`** — ✅ implementado con test de los 4 medios de pago, el default del creador y la ejecución idempotente.
 10. **`OnFamilyCreatedHandler`** — ✅ implementado con test en `tests/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts`. `FamilyCreated` fue actualizado para transportar también `creatorId` desde `Family.create()`.
-11. **`SetInitialPaymentMethodPreferenceUseCase`** — con test.
+11. **`SetInitialPaymentMethodPreferenceUseCase`** — ✅ implementado con tests de creación, idempotencia, aislamiento por familia y validación del estado de `Efectivo`.
 12. **`OnInvitationAcceptedHandler`** (en `Financial Tracking`) — test de integración, verificando que un nuevo miembro recibe su preferencia automáticamente al aceptar.
 12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — test de integración, verificando que la preferencia del miembro removido se elimina (y que no falla si no existía ninguna).
 13. **`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `GetPaymentMethodsQuery`** — TDD, mismo patrón que `Category`, sin chequeo de rol.
