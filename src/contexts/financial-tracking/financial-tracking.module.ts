@@ -5,8 +5,11 @@ import type { EventBus } from "../../platform/events/event-bus.js";
 import type { GetFamilyDefaultCurrencyQuery } from "../family-access/application/queries/get-family-default-currency.query.js";
 import type { GetFamilyMembershipQuery } from "../family-access/application/queries/get-family-membership.query.js";
 import type { FamilyCreated } from "../family-access/domain/events/family-created.event.js";
+import type { InvitationAccepted } from "../family-access/domain/events/invitation-accepted.event.js";
+import type { MemberRemoved } from "../family-access/domain/events/member-removed.event.js";
 import { AddTagToCategoryUseCase } from "./application/commands/add-tag-to-category.usecase.js";
 import { CreateCategoryUseCase } from "./application/commands/create-category.usecase.js";
+import { CreateDefaultPaymentMethodsUseCase } from "./application/commands/create-default-payment-methods.usecase.js";
 import { CreateFinancialItemUseCase } from "./application/commands/create-financial-item.usecase.js";
 import { CreatePaymentMethodUseCase } from "./application/commands/create-payment-method.usecase.js";
 import { DeleteCategoryUseCase } from "./application/commands/delete-category.usecase.js";
@@ -22,8 +25,12 @@ import { RenamePaymentMethodUseCase } from "./application/commands/rename-paymen
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
 import { SetDefaultPaymentMethodUseCase } from "./application/commands/set-default-payment-method.usecase.js";
+import { SetInitialPaymentMethodPreferenceUseCase } from "./application/commands/set-initial-payment-method-preference.usecase.js";
 import { UpdateFinancialItemUseCase } from "./application/commands/update-financial-item.usecase.js";
 import { CreateDefaultCategoriesOnFamilyCreatedEventHandler } from "./application/event-handlers/create-default-categories-on-family-created.event-handler.js";
+import { OnFamilyCreatedHandler } from "./application/event-handlers/on-family-created.handler.js";
+import { OnInvitationAcceptedHandler } from "./application/event-handlers/on-invitation-accepted.handler.js";
+import { OnMemberRemovedHandler } from "./application/event-handlers/on-member-removed.handler.js";
 import { GetCategoriesQuery } from "./application/queries/get-categories.query.js";
 import { GetFinancialItemsQuery } from "./application/queries/get-financial-items.query.js";
 import { GetPaymentMethodsQuery } from "./application/queries/get-payment-methods.query.js";
@@ -162,6 +169,28 @@ function buildFinancialTrackingModule(
   );
   deps.eventBus.subscribe<FamilyCreated>("family-access.family-created", (event) =>
     createDefaultCategoriesHandler.handle(event),
+  );
+
+  const onFamilyCreatedHandler = new OnFamilyCreatedHandler(
+    new CreateDefaultPaymentMethodsUseCase(deps.paymentMethodRepository, deps.preferenceRepository),
+  );
+  deps.eventBus.subscribe<FamilyCreated>("family-access.family-created", (event) =>
+    onFamilyCreatedHandler.handle(event),
+  );
+
+  const onInvitationAcceptedHandler = new OnInvitationAcceptedHandler(
+    new SetInitialPaymentMethodPreferenceUseCase(
+      deps.paymentMethodRepository,
+      deps.preferenceRepository,
+    ),
+  );
+  deps.eventBus.subscribe<InvitationAccepted>("family-access.invitation-accepted", (event) =>
+    onInvitationAcceptedHandler.handle(event),
+  );
+
+  const onMemberRemovedHandler = new OnMemberRemovedHandler(deps.preferenceRepository);
+  deps.eventBus.subscribe<MemberRemoved>("family-access.member-removed", (event) =>
+    onMemberRemovedHandler.handle(event),
   );
 
   return {

@@ -254,15 +254,15 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 **Implementado (dominio, aplicación e infraestructura, con TDD y dobles in-memory):**
 
 - **Family & Access** — los casos de uso de familias, miembros, invitaciones, roles, moneda y orden de familias, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL.
-- **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías y tags, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL. Los casos de uso y entidades de medios de pago están implementados y probados, pero todavía no están compuestos en el módulo, expuestos por HTTP ni respaldados por repositorios Drizzle.
-- **Reporting & Analytics** — read model `CategoryPeriodAggregate`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y cinco rutas HTTP. `PaymentMethodPeriodAggregate`, `GetExpensesByPaymentMethodQuery` y su ruta están implementados; la migración PostgreSQL sigue pendiente de aplicar.
+- **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías, tags y medios de pago, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL, todos compuestos en el módulo y expuestos por HTTP. `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` (medios de pago) suscritos al `EventBus`: al crear una familia se generan 4 medios de pago por defecto y se fija "Efectivo" como preferencia del creador; al aceptar una invitación se fija la preferencia inicial del nuevo miembro; al remover un miembro se borra su preferencia. Falta aún añadir tests HTTP dedicados a las rutas de medios de pago (hoy solo hay tests de los casos de uso y cobertura e2e).
+- **Reporting & Analytics** — read model `CategoryPeriodAggregate` y `PaymentMethodPeriodAggregate`, seis queries, ocho event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP (incluida `/reports/by-payment-method`). Migraciones PostgreSQL aplicadas.
 - Eventos de dominio entre contextos, event bus in-process (`platform/events`), y flujo de autenticación/autorización (JWT con rotación de refresh tokens, middlewares `authenticate`/`requireFamilyMembership`) en `platform/auth`.
 - Anticorruption layer de `AI Assistance` definida a nivel de diseño (puertos), sin adaptadores concretos todavía.
 
 **Pendiente:**
 
 - `Budgeting`: dominio, cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP implementados con pruebas; quedan pendientes únicamente los trabajos listados en la documentación de Budgeting.
-- `Reporting & Analytics`: parcialmente implementado. Incluye `CategoryPeriodAggregate`, `ItemCount`, cinco queries, cuatro event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y cinco rutas HTTP; el read model y query por medio de pago están implementados, pero todavía no están expuestos por HTTP ni respaldados por migraciones PostgreSQL.
+- Añadir tests HTTP dedicados para las rutas de medios de pago (hoy solo cubiertas por tests de casos de uso y por `tests/e2e/payment-method-lifecycle.test.ts`).
 - `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
 - Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
 - `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.

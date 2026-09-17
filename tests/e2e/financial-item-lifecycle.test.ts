@@ -7,6 +7,7 @@ import {
   categories,
   financialItems,
   paymentMethods,
+  userPaymentMethodPreferences,
 } from "../../src/contexts/financial-tracking/infrastructure/persistence/schema.js";
 import { users } from "../../src/contexts/identity/infrastructure/persistence/schema.js";
 import {
@@ -61,15 +62,6 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
       assert.equal(transportResponse.statusCode, 201);
       const transportCategoryId = transportResponse.json().id;
 
-      const paymentMethodResponse = await app.inject({
-        method: "POST",
-        url: `/families/${defaultFamilyId}/payment-methods`,
-        headers: authHeader,
-        payload: { name: "Débito E2E" },
-      });
-      assert.equal(paymentMethodResponse.statusCode, 201);
-      const paymentMethodId = paymentMethodResponse.json().id;
-
       const period = "2026-04";
       const occurredOn = "2026-04-10T12:00:00.000Z";
 
@@ -80,7 +72,6 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
         payload: {
           amount: 10000,
           categoryId: groceriesCategoryId,
-          paymentMethodId,
           title: "Supermercado",
           occurredOn,
         },
@@ -172,6 +163,9 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
           .delete(paymentMethodPeriodAggregates)
           .where(eq(paymentMethodPeriodAggregates.familyId, familyId));
         await db.delete(categories).where(eq(categories.familyId, familyId));
+        await db
+          .delete(userPaymentMethodPreferences)
+          .where(eq(userPaymentMethodPreferences.familyId, familyId));
         await db.delete(paymentMethods).where(eq(paymentMethods.familyId, familyId));
         await db.delete(families).where(eq(families.id, familyId));
       }

@@ -15,21 +15,22 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [x] Autenticación + `requireFamilyMembership` funcionando en rutas de familia.
 - [x] Validación HTTP por JSON Schema en rutas de Fastify.
 - [x] Orden de persistencia/publicación en `CreateFinancialItemUseCase` corregido.
+- [x] Migración inicial aplicada desde una base vacía vía `npm run db:reset`.
+- [x] Casos de uso y rutas HTTP de medios de pago compuestos en `financial-tracking.module.ts` y expuestos en `financial-tracking.routes.ts` (ver detalle en sección `Financial Tracking`).
+- [x] Suite de tests de integración contra PostgreSQL real: 15 tests cubriendo los 11 repositorios Drizzle del proyecto, en `tests/integration/` (`npm run test:integration`, se salta sin `DATABASE_URL`).
+- [x] Suite de tests end-to-end: 5 flujos HTTP completos contra Postgres real en `tests/e2e/` (`npm run test:e2e`, helper compartido `build-e2e-app.ts`): ciclo de vida de un movimiento (con read model de Reporting), presupuesto reaccionando vía `EventBus`, invitación y aceptación de miembro, ciclo de vida de medios de pago, y dashboard/trend/comparison.
+- [x] `resolveHttpStatus` no mapeaba `PAYMENT_METHOD_IS_SOMEONES_DEFAULT` a un status de conflicto (caía al 400 por defecto). Corregido agregando la regla de sufijo `IS_SOMEONES_DEFAULT` → 409, detectado por `tests/e2e/payment-method-lifecycle.test.ts`.
+- [x] `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` de medios de pago suscritos al `EventBus` (ver detalle en sección `Financial Tracking` → `Medios de pago`). Los tests e2e ya no crean el medio de pago manualmente; dependen del que se crea automáticamente al registrar la familia.
 
 ### Pendiente
 
 - [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
 - [ ] Implementar notificaciones reales por email para invitaciones.
-- [ ] Definir estrategia de pruebas de integración contra PostgreSQL en CI (aún no hay job de CI que las ejecute; localmente ya existe un primer ejemplo, ver más abajo).
-- [x] Ejecutar `npm run db:reset` y aplicar la migración inicial desde una base vacía.
-- [ ] Automatizar en CI la verificación reproducible de `db:reset`/`db:migrate`.
-- [x] Añadir pruebas end-to-end que cubran creación, actualización, reclasificación y borrado de un movimiento y validen el read model de `Reporting`: `tests/e2e/financial-item-lifecycle.test.ts` — levanta `buildApp()` con dependencias reales (Drizzle + Postgres), usa `app.inject()` (nativo de Fastify, sin librerías nuevas) para ejercitar todo el flujo HTTP: `POST /auth/register` → crea categorías y medio de pago → crea, actualiza, reclasifica y borra un movimiento → valida en cada paso `GET /families/:familyId/reports/breakdown`. Se ejecuta con `npm run test:e2e` (vive en `tests/e2e/`, se salta automáticamente si `DATABASE_URL` no está definida, igual que los de integración). Nota: el test crea explícitamente el medio de pago y lo pasa por `paymentMethodId` porque `OnFamilyCreatedHandler` de medios de pago todavía no está suscrito al `EventBus` (ver pendiente relacionado más abajo).
-- [x] Suite e2e extendida con 4 flujos adicionales en `tests/e2e/` (helper compartido `build-e2e-app.ts`): `budgeting-lifecycle.test.ts` (presupuesto reacciona a alta/edición/borrado de un movimiento vía `EventBus`), `family-invitation-flow.test.ts` (invitar por email + aceptar + verificar membresía), `payment-method-lifecycle.test.ts` (renombrar, fijar default, bloqueo de borrado por ser default o tener items asociados, borrado libre), `reporting-dashboard.test.ts` (trend/comparison/dashboard con movimientos en dos períodos). Total 5 tests e2e, todos con limpieza robusta en `finally` (incluye categorías por defecto creadas por `CreateDefaultCategoriesOnFamilyCreatedEventHandler`, que no tienen FK hacia `families` y por eso no se borran en cascada).
+- [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
+- [ ] Añadir tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
+- [ ] Añadir tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
-- [x] Primer test de integración contra PostgreSQL real: `tests/integration/contexts/financial-tracking/infrastructure/persistence/payment-method.repository.test.ts` cubre `DrizzlePaymentMethodRepository` y `DrizzleUserPaymentMethodPreferenceRepository` (save/find/delete). Los tests de integración viven en `tests/integration/` (mirroring de `src/contexts/`, separado de los unit tests) y se ejecutan con `npm run test:integration`; se saltan automáticamente dentro de `npm test` si `DATABASE_URL` no está definida.
-- [x] Patrón de test de integración extendido a los 11 repositorios Drizzle restantes: `category.repository.test.ts`, `financial-item.repository.test.ts` (financial-tracking); `family.repository.test.ts`, `invitation.repository.test.ts` (family-access); `user.repository.test.ts` (identity); `budget-configuration.repository.test.ts`, `budget-period-status.repository.test.ts` (budgeting); `category-period-aggregate.repository.test.ts`, `payment-method-period-aggregate.repository.test.ts` (reporting). 15 tests en total, todos verificados contra Postgres real sin dejar filas huérfanas.
-- [x] `resolveHttpStatus` no mapeaba `PAYMENT_METHOD_IS_SOMEONES_DEFAULT` a un status de conflicto (caía al 400 por defecto, inconsistente con `HAS_ASSOCIATED_ITEMS`/`ALREADY_MEMBER`). Corregido agregando la regla de sufijo `IS_SOMEONES_DEFAULT` → 409, detectado por `tests/e2e/payment-method-lifecycle.test.ts`.
 
 ### Opcional
 
@@ -83,23 +84,24 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - Mantener documentada la decisión actual de permisos: las operaciones sobre movimientos requieren
   membresía, pero no un rol `Owner`; revisar si el producto necesita permisos más granulares.
-- Añadir pruebas de integración contra PostgreSQL para repositorios y migraciones.
+
+### Resuelto
+
+- [x] Pruebas de integración contra PostgreSQL para los repositorios Drizzle de `Financial Tracking` (categorías, movimientos, medios de pago, preferencias) en `tests/integration/contexts/financial-tracking/`.
 
 ### Medios de pago
 
-- Componer los casos de uso y handlers de medios de pago en `financial-tracking.module.ts`.
-- Registrar `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` en el `EventBus`.
-- Añadir pruebas HTTP específicas para las rutas de medios de pago y default por usuario.
-- Verificar de forma automatizada que la migración `0006_icy_shriek.sql` aplicada mediante `npm run db:reset` permanece reproducible; no se conservarán datos anteriores ni se hará backfill.
+- [x] Casos de uso y rutas HTTP de medios de pago compuestos en `financial-tracking.module.ts` (`CreatePaymentMethodUseCase`, `RenamePaymentMethodUseCase`, `DeprecatePaymentMethodUseCase`, `DeletePaymentMethodUseCase`, `SetDefaultPaymentMethodUseCase`, `GetPaymentMethodsQuery`) y expuestos por HTTP en `financial-tracking.routes.ts` (crear, listar, renombrar, deprecar, borrar, fijar default).
+- [x] `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` (medios de pago) suscritos al `EventBus` en `financial-tracking.module.ts`. Al crear una familia se generan automáticamente 4 medios de pago por defecto (Efectivo, Tarjeta de Débito, Tarjeta de Crédito, Transferencia) y se fija "Efectivo" como preferencia del creador; al aceptar una invitación se fija "Efectivo" como preferencia inicial del nuevo miembro; al remover un miembro se borra su preferencia. Probado con test de composición (`tests/unit/contexts/financial-tracking/financial-tracking.module.test.ts`, publica los eventos sobre un `FakeEventBus` y verifica los efectos) y validado end-to-end (los tests de `tests/e2e/` ya no crean el medio de pago manualmente, dependen del que se crea al registrar).
+- [ ] Añadir pruebas HTTP dedicadas (`.route.test.ts`) para las rutas de medios de pago y default por usuario — hoy solo hay tests de los casos de uso con dobles y cobertura funcional vía `tests/e2e/payment-method-lifecycle.test.ts`, pero ningún test HTTP unitario equivalente a `create-category.route.test.ts`.
+- [x] Migración `0006_icy_shriek.sql` aplicada mediante `npm run db:reset`; queda pendiente automatizar en CI la verificación de que `db:reset`/`db:migrate` siguen siendo reproducibles (ver sección Persistencia y plataforma).
 
 ## Reporting
 
 ### Pendiente
 
-- Añadir pruebas end-to-end que cubran crear, actualizar, reclasificar y borrar un movimiento y
-  verifiquen el read model de Reporting.
-- Añadir pruebas HTTP específicas para `/families/:familyId/reports/by-payment-method`.
-- Añadir pruebas end-to-end para `PaymentMethodPeriodAggregate` y el reporte por medio de pago.
+- [ ] Añadir pruebas HTTP dedicadas para `/families/:familyId/reports/by-payment-method` (hoy solo cubierta por el test genérico de `reporting.routes.test.ts` y por el unit test de la query).
+- [ ] Añadir un test end-to-end específico para el reporte por medio de pago (`/reports/by-payment-method`) — la suite e2e actual limpia `PaymentMethodPeriodAggregate` pero ningún test ejercita esa ruta directamente.
 
 ### Decisiones cerradas
 
@@ -110,12 +112,14 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 ## Persistencia y plataforma
 
+### Resuelto
+
+- [x] Estrategia de pruebas contra PostgreSQL real definida y en uso local: `tests/integration/` (repositorios Drizzle, `npm run test:integration`) y `tests/e2e/` (flujos HTTP completos, `npm run test:e2e`); ambas requieren `DATABASE_URL` y se saltan automáticamente si no está definida.
+
 ### Pendiente
 
-- Definir y ejecutar una estrategia de pruebas de integración contra PostgreSQL en CI o mediante
-  una base de datos local de test.
-- Verificar de forma automatizada `db:reset`, `db:migrate` y la migración inicial desde una base
-  vacía.
+- Automatizar en CI la ejecución de `npm run test:integration` y `npm run test:e2e` (hoy solo se ejecutan localmente; no hay job de CI que levante Postgres y las corra).
+- Verificar de forma automatizada en CI que `db:reset`, `db:migrate` y la migración inicial siguen siendo reproducibles desde una base vacía.
 
 ### Opcional
 
