@@ -3,8 +3,17 @@ import assert from "node:assert/strict";
 import { after, describe, test } from "node:test";
 import { eq } from "drizzle-orm";
 import { families } from "../../src/contexts/family-access/infrastructure/persistence/schema.js";
-import { categories } from "../../src/contexts/financial-tracking/infrastructure/persistence/schema.js";
+import {
+  categories,
+  financialItems,
+  paymentMethods,
+  userPaymentMethodPreferences,
+} from "../../src/contexts/financial-tracking/infrastructure/persistence/schema.js";
 import { users } from "../../src/contexts/identity/infrastructure/persistence/schema.js";
+import {
+  categoryPeriodAggregates,
+  paymentMethodPeriodAggregates,
+} from "../../src/contexts/reporting/infrastructure/persistence/schema.js";
 import { refreshTokens } from "../../src/platform/auth/schema.js";
 import { db, pool } from "../../src/platform/db/connection.js";
 import { buildE2eApp } from "./build-e2e-app.js";
@@ -83,12 +92,47 @@ describe("Flujo E2E: invitar y aceptar un miembro de familia", () => {
       const membership = membershipResponse.json();
       assert.equal(membership.familyId, owner.defaultFamilyId);
       assert.equal(membership.role, "MEMBER");
+
+      // el miembro recién aceptado ya debe tener "Efectivo" como medio de pago por defecto
+      // (OnInvitationAcceptedHandler), sin necesidad de fijarlo manualmente.
+      const categoryResponse = await app.inject({
+        method: "POST",
+        url: `/families/${owner.defaultFamilyId}/categories`,
+        headers: ownerAuthHeader,
+        payload: { type: "EXPENSE", name: "Gastos Compartidos" },
+      });
+      assert.equal(categoryResponse.statusCode, 201);
+      const categoryId = categoryResponse.json().id;
+
+      const itemResponse = await app.inject({
+        method: "POST",
+        url: `/families/${owner.defaultFamilyId}/items`,
+        headers: memberAuthHeader,
+        payload: {
+          amount: 2000,
+          categoryId,
+          title: "Compra compartida",
+          occurredOn: "2026-07-01T12:00:00.000Z",
+        },
+      });
+      assert.equal(itemResponse.statusCode, 201);
+      assert.ok(itemResponse.json().paymentMethodId);
     } finally {
       // eliminar familias cascadea members/invitations (onDelete: "cascade"), pero NO las
-      // categorías por defecto que crea CreateDefaultCategoriesOnFamilyCreatedEventHandler
-      // al registrarse (categories.familyId no tiene FK hacia families).
+      // categorías ni los medios de pago por defecto (no tienen FK hacia families).
       for (const familyId of createdFamilyIds) {
+        await db.delete(financialItems).where(eq(financialItems.familyId, familyId));
+        await db
+          .delete(categoryPeriodAggregates)
+          .where(eq(categoryPeriodAggregates.familyId, familyId));
+        await db
+          .delete(paymentMethodPeriodAggregates)
+          .where(eq(paymentMethodPeriodAggregates.familyId, familyId));
+        await db
+          .delete(userPaymentMethodPreferences)
+          .where(eq(userPaymentMethodPreferences.familyId, familyId));
         await db.delete(categories).where(eq(categories.familyId, familyId));
+        await db.delete(paymentMethods).where(eq(paymentMethods.familyId, familyId));
         await db.delete(families).where(eq(families.id, familyId));
       }
       for (const userId of createdUserIds) {

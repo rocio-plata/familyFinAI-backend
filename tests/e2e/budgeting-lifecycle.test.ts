@@ -11,6 +11,7 @@ import {
   categories,
   financialItems,
   paymentMethods,
+  userPaymentMethodPreferences,
 } from "../../src/contexts/financial-tracking/infrastructure/persistence/schema.js";
 import { users } from "../../src/contexts/identity/infrastructure/persistence/schema.js";
 import {
@@ -56,15 +57,6 @@ describe("Flujo E2E: presupuesto reacciona a movimientos vía EventBus", () => {
       assert.equal(categoryResponse.statusCode, 201);
       const categoryId = categoryResponse.json().id;
 
-      const paymentMethodResponse = await app.inject({
-        method: "POST",
-        url: `/families/${defaultFamilyId}/payment-methods`,
-        headers: authHeader,
-        payload: { name: "Débito Budget" },
-      });
-      assert.equal(paymentMethodResponse.statusCode, 201);
-      const paymentMethodId = paymentMethodResponse.json().id;
-
       const budgetResponse = await app.inject({
         method: "POST",
         url: `/families/${defaultFamilyId}/budgets`,
@@ -80,7 +72,7 @@ describe("Flujo E2E: presupuesto reacciona a movimientos vía EventBus", () => {
         method: "POST",
         url: `/families/${defaultFamilyId}/items`,
         headers: authHeader,
-        payload: { amount: 30000, categoryId, paymentMethodId, title: "Supermercado", occurredOn },
+        payload: { amount: 30000, categoryId, title: "Supermercado", occurredOn },
       });
       assert.equal(createItemResponse.statusCode, 201);
       const itemId = createItemResponse.json().id;
@@ -145,6 +137,9 @@ describe("Flujo E2E: presupuesto reacciona a movimientos vía EventBus", () => {
           .delete(paymentMethodPeriodAggregates)
           .where(eq(paymentMethodPeriodAggregates.familyId, familyId));
         await db.delete(categories).where(eq(categories.familyId, familyId));
+        await db
+          .delete(userPaymentMethodPreferences)
+          .where(eq(userPaymentMethodPreferences.familyId, familyId));
         await db.delete(paymentMethods).where(eq(paymentMethods.familyId, familyId));
         await db.delete(families).where(eq(families.id, familyId));
       }
