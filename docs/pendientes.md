@@ -28,7 +28,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [ ] Implementar notificaciones reales por email para invitaciones.
 - [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
 - [x] Tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
-- [ ] Añadir tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).
+- [x] Tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
 - [x] `Money` movido a `shared-kernel/domain/money.ts` (junto con `InvalidMoneyError` en `shared-kernel/errors/`, código `SHARED.INVALID_MONEY`); `Budgeting` y `Reporting` ya no dependen del dominio interno de `Financial Tracking` para este VO. Test movido a `tests/unit/shared-kernel/domain/money.test.ts`.
@@ -93,10 +93,10 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 ## Reporting
 
-### Pendiente
+### Resuelto
 
-- [ ] Añadir pruebas HTTP dedicadas para `/families/:familyId/reports/by-payment-method` (hoy solo cubierta por el test genérico de `reporting.routes.test.ts` y por el unit test de la query).
-- [ ] Añadir un test end-to-end específico para el reporte por medio de pago (`/reports/by-payment-method`) — la suite e2e actual limpia `PaymentMethodPeriodAggregate` pero ningún test ejercita esa ruta directamente.
+- [x] Test HTTP dedicado `get-expenses-by-payment-method.route.test.ts` para `/families/:familyId/reports/by-payment-method`: agrupación por medio de pago, período sin movimientos, validación de `period` requerido y con formato inválido.
+- [x] Test end-to-end dedicado `tests/e2e/reporting-by-payment-method.test.ts`: dos movimientos con medios de pago distintos (uno con el "Efectivo" automático, otro con uno creado explícitamente) se reflejan correctamente en `/reports/by-payment-method` contra Postgres real.
 
 ### Decisiones cerradas
 
