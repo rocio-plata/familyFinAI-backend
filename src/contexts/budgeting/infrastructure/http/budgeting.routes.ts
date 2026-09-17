@@ -1,12 +1,12 @@
 // src/contexts/budgeting/infrastructure/http/budgeting.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
 import type { GetFamilyDefaultCurrencyQuery } from "../../../family-access/application/queries/get-family-default-currency.query.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { Role } from "../../../family-access/domain/value-objects/role.js";
 import { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { CreateBudgetConfigurationUseCase } from "../../application/commands/create-budget-configuration.usecase.js";
 import type { DeactivateBudgetConfigurationUseCase } from "../../application/commands/deactivate-budget-configuration.usecase.js";
 import type { RemoveBudgetOverrideForPeriodUseCase } from "../../application/commands/remove-budget-override-for-period.usecase.js";

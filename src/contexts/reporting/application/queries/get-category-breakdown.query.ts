@@ -1,5 +1,6 @@
 // src/contexts/reporting/application/queries/get-category-breakdown.query.ts
 
+import type { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type {
@@ -9,7 +10,6 @@ import type {
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import type { CategoryName } from "../../../financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../financial-tracking/domain/value-objects/financial-item-type.js";
-import type { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { CategoryPeriodAggregateRepository } from "../../domain/repositories/category-period-aggregate.repository.js";
 
 interface GetCategoryBreakdownInput {

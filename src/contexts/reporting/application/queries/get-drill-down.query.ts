@@ -1,4 +1,6 @@
 // src/contexts/reporting/application/queries/get-drill-down.query.ts
+
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { GetCategoriesQuery } from "../../../financial-tracking/application/queries/get-categories.query.js";
@@ -8,7 +10,6 @@ import type {
 } from "../../../financial-tracking/application/queries/get-financial-items.query.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemType } from "../../../financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { TagId } from "../../../financial-tracking/domain/value-objects/tag-id.js";
 import type { TagName } from "../../../financial-tracking/domain/value-objects/tag-name.js";
 import { TagWithoutCategoryError } from "../../domain/errors/tag-without-category.error.js";

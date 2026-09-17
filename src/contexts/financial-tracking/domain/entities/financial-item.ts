@@ -1,6 +1,7 @@
 // /src/contexts/financial-tracking/domain/entities/financial-item.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { CannotReclassifyAcrossTypesError } from "../errors/cannot-reclassify-across-types.error.js";
@@ -12,7 +13,6 @@ import { CategoryAssignment } from "../value-objects/category-assignment.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import { FinancialItemId } from "../value-objects/financial-item-id.js";
 import type { FinancialItemType } from "../value-objects/financial-item-type.js";
-import { Money } from "../value-objects/money.js";
 import { Note } from "../value-objects/note.js";
 import { PaymentMethodId } from "../value-objects/payment-method-id.js";
 import { TagId } from "../value-objects/tag-id.js";

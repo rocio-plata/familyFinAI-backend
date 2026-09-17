@@ -1,9 +1,9 @@
 // src/contexts/reporting/application/event-handlers/on-item-amount-changed-by-payment-method.event-handler.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { ItemAmountChanged } from "../../../financial-tracking/domain/events/item-amount-changed.event.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { PaymentMethodPeriodAggregate } from "../../domain/entities/payment-method-period-aggregate.js";
 import type { PaymentMethodPeriodAggregateRepository } from "../../domain/repositories/payment-method-period-aggregate.repository.js";
 

@@ -1,12 +1,12 @@
 // src/contexts/reporting/domain/entities/category-period-aggregate.ts
 
 import type { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
+import { InvalidMoneyError } from "../../../../shared-kernel/errors/invalid-money.error.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
-import { InvalidMoneyError } from "../../../financial-tracking/domain/errors/invalid-money.error.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemType } from "../../../financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { InvalidItemCountError } from "../errors/invalid-item-count.error.js";
 import { ItemCount } from "../value-objects/item-count.js";
 

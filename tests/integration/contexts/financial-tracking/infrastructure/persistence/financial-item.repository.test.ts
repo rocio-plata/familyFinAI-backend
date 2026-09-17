@@ -10,7 +10,6 @@ import { PaymentMethod } from "../../../../../../src/contexts/financial-tracking
 import { CategoryAssignment } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { PaymentMethodName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { Title } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
@@ -23,6 +22,7 @@ import {
 } from "../../../../../../src/contexts/financial-tracking/infrastructure/persistence/schema.js";
 import { db } from "../../../../../../src/platform/db/connection.js";
 import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../../../src/shared-kernel/domain/money.js";
 
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 const skip = hasDatabase ? false : "requiere DATABASE_URL";

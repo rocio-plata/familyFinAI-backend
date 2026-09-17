@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
-import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
+import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 
 describe("Money", () => {
   const clp = Currency.of("CLP");

@@ -7,12 +7,12 @@ import { CannotReclassifyAcrossTypesError } from "../../../../../../src/contexts
 import { CategoryAssignment } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
 import { CategoryId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Note } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/note.js";
 import { PaymentMethodId } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
 import { Title } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
 import { Currency } from "../../../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../../../src/shared-kernel/domain/money.js";
 
 describe("FinancialItem", () => {
   const clp = Currency.of("CLP");

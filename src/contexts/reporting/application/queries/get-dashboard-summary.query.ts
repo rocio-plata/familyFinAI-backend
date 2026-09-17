@@ -1,10 +1,10 @@
 // src/contexts/reporting/application/queries/get-dashboard-summary.query.ts
 
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { CategoryPeriodAggregateRepository } from "../../domain/repositories/category-period-aggregate.repository.js";
 
 interface GetDashboardSummaryInput {

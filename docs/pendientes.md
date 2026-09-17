@@ -31,10 +31,10 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [ ] Añadir tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
+- [x] `Money` movido a `shared-kernel/domain/money.ts` (junto con `InvalidMoneyError` en `shared-kernel/errors/`, código `SHARED.INVALID_MONEY`); `Budgeting` y `Reporting` ya no dependen del dominio interno de `Financial Tracking` para este VO. Test movido a `tests/unit/shared-kernel/domain/money.test.ts`.
 
 ### Opcional
 
-- [ ] Evaluar mover `Money` a `shared-kernel` para evitar depender del dominio interno de `Financial Tracking`.
 - [ ] Revisar índices adicionales usando métricas reales de consultas.
 - [ ] Evaluar la estrategia de pool de conexiones si el despliegue final es serverless.
 - [ ] Revisar y estabilizar DTOs HTTP de consultas como `GetFamilyMembers` para la app móvil.
@@ -59,11 +59,6 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - Los presupuestos serán modificables por cualquier `Member` de la familia; no se exige rol
   `Owner` para estas operaciones.
-
-### Opcional
-
-- Evaluar mover `Money` a `shared-kernel` para evitar que Budgeting dependa del dominio interno de
-  Financial Tracking.
 
 ## Family & Access
 

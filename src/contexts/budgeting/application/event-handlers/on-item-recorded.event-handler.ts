@@ -1,10 +1,10 @@
 // src/contexts/budgeting/application/event-handlers/on-item-recorded.event-handler.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { ItemRecorded } from "../../../financial-tracking/domain/events/item-recorded.event.js";
 import { FinancialItemType } from "../../../financial-tracking/domain/value-objects/financial-item-type.js";
-import { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import { BudgetPeriodStatus } from "../../domain/entities/budget-period-status.js";
 import type { BudgetConfigurationRepository } from "../../domain/repositories/budget-configuration.repository.js";
 import type { BudgetPeriodStatusRepository } from "../../domain/repositories/budget-period-status.repository.js";

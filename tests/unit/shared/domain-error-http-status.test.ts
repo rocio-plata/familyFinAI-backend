@@ -35,7 +35,7 @@ describe("resolveHttpStatus", () => {
   });
 
   test("cualquier otro error de dominio devuelve 400 por defecto", () => {
-    assert.equal(resolveHttpStatus({ code: "FINANCIAL_TRACKING.INVALID_MONEY" }), 400);
+    assert.equal(resolveHttpStatus({ code: "SHARED.INVALID_MONEY" }), 400);
     assert.equal(resolveHttpStatus({ code: "FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER" }), 400);
   });
 });

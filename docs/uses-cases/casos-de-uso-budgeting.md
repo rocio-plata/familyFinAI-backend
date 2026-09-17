@@ -250,12 +250,12 @@ Se registran contra el `EventBus` y reaccionan a eventos publicados por `Financi
 | `NoOverrideForPeriodError` | RemoveBudgetOverrideForPeriod | ✅ definido e implementado |
 | `InvalidPeriodError` | Construcción de `Period` (mes fuera de 1–12) | ✅ shared-kernel |
 | `CategoryNotFoundError` / `CategoryNotActiveError` | CreateBudgetConfiguration | (compartidos con `Financial Tracking`) |
-| `InvalidMoneyError` | Varios | ✅ ya definido (pendiente de mover a `shared-kernel`, ver más abajo) |
+| `InvalidMoneyError` | Varios | ✅ shared-kernel |
 
 ## Decisiones abiertas y mejoras futuras
 
 1. **Permisos**: mismo punto abierto que en `Financial Tracking` — ¿cualquier `Member` puede gestionar presupuestos, o solo `Owner`?
-2. **`Money` compartido**: sigue pendiente moverlo a `shared-kernel`, igual que `Currency`, para que `Budgeting` no dependa del dominio interno de `Financial Tracking`.
+2. **`Money` compartido**: ✅ movido a `shared-kernel/domain/money.ts` (junto con `InvalidMoneyError` en `shared-kernel/errors/`), igual que `Currency`; `Budgeting` ya no depende del dominio interno de `Financial Tracking` para este VO.
 3. **Consulta cruzada de categorías**: `CreateBudgetConfiguration` usa temporalmente `GetCategoriesQuery` como consulta síncrona pública de `Financial Tracking`; `GetBudgets` deberá reutilizar este contrato o extraer un puerto/adaptador dedicado si el contexto crece.
 4. **`ItemAmountChanged` necesita `previousAmount`**: ✅ resuelto en el evento compartido; Reporting y Budgeting ya utilizan el payload completo.
 5. **Backfill histórico**: no se recalculan presupuestos desde `financial_items`. Después de resetear

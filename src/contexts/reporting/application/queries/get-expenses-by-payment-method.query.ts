@@ -1,8 +1,9 @@
 // src/contexts/reporting/application/queries/get-expenses-by-payment-method.query.ts
+
+import type { Money } from "../../../../shared-kernel/domain/money.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { GetPaymentMethodsQuery } from "../../../financial-tracking/application/queries/get-payment-methods.query.js";
-import type { Money } from "../../../financial-tracking/domain/value-objects/money.js";
 import type { PaymentMethodId } from "../../../financial-tracking/domain/value-objects/payment-method-id.js";
 import type { PaymentMethodName } from "../../../financial-tracking/domain/value-objects/payment-method-name.js";
 import type { PaymentMethodPeriodAggregateRepository } from "../../domain/repositories/payment-method-period-aggregate.repository.js";

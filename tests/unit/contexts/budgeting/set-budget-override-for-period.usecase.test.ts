@@ -8,8 +8,8 @@ import { Family } from "../../../../src/contexts/family-access/domain/entities/f
 import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
-import { Money } from "../../../../src/contexts/financial-tracking/domain/value-objects/money.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
+import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { Period } from "../../../../src/shared-kernel/domain/period.js";
 import { InMemoryBudgetConfigurationRepository } from "./doubles/in-memory-budget-configuration.repository.js";
 import { InMemoryBudgetPeriodStatusRepository } from "./doubles/in-memory-budget-period-status.repository.js";
