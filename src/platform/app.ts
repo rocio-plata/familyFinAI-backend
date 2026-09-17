@@ -58,7 +58,10 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
   const reportingModule =
     dependencies.reporting && financialTrackingModule
       ? buildReportingModule(
-          dependencies.reporting,
+          {
+            ...dependencies.reporting,
+            getPaymentMethodsQuery: financialTrackingModule.useCases.getPaymentMethods,
+          },
           familyAccessModule.useCases.getFamilyMembership,
         )
       : null;

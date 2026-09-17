@@ -83,7 +83,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - Componer los casos de uso y handlers de medios de pago en `financial-tracking.module.ts`.
 - Registrar `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` en el `EventBus`.
-- Implementar las rutas HTTP de medios de pago y la ruta de default por usuario.
+- Añadir pruebas HTTP específicas para las rutas de medios de pago y default por usuario.
 - Crear los repositorios Drizzle de `PaymentMethod` y `UserPaymentMethodPreference`.
 - Ejecutar `npm run db:reset` y verificar la migración `0006_icy_shriek.sql` desde una base vacía; no se conservarán datos anteriores ni se hará backfill.
 
@@ -93,7 +93,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - Añadir pruebas end-to-end que cubran crear, actualizar, reclasificar y borrar un movimiento y
   verifiquen el read model de Reporting.
-- Componer `GetExpensesByPaymentMethodQuery` y exponer `/families/:familyId/reports/by-payment-method`.
+- Añadir pruebas HTTP específicas para `/families/:familyId/reports/by-payment-method`.
 - Añadir pruebas end-to-end para `PaymentMethodPeriodAggregate` y el reporte por medio de pago.
 
 ### Decisiones cerradas

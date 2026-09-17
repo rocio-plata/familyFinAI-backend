@@ -260,7 +260,7 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 17. **`PaymentMethodPeriodAggregate`** (Reporting) — ✅ implementado con entidad, repositorios in-memory/Drizzle, schema y handlers para `ItemRecorded`, `ItemAmountChanged`, `ItemDeleted` e `ItemPaymentMethodChanged`, con tests unitarios. Los eventos fueron ampliados con los datos necesarios para mantener el agregado; la migración DB sigue pendiente del paso 19.
 18. **`GetExpensesByPaymentMethodQuery`** — ✅ implementado con tests TDD. Devuelve gastos por medio de pago para una familia y período, incluye medios deprecados para conservar históricos, ignora ingresos/montos cero y ordena de mayor a menor. La query todavía no está construida en `reporting.module.ts` ni expuesta por HTTP.
 19. **Schemas de Drizzle** — ✅ implementados y migración `0006_icy_shriek.sql` generada para `payment_methods`, `user_payment_method_preferences`, `payment_method_period_aggregates` y la foreign key de `financial_items.payment_method_id`. Pendiente ejecutar `npm run db:reset` para aplicar todo desde una base vacía; no se hará backfill.
-20. **Rutas HTTP** — pendiente: registrar los endpoints de medios de pago y `/families/:familyId/reports/by-payment-method`; actualmente no están expuestos.
+20. **Rutas HTTP** — ✅ implementadas: endpoints CRUD/deprecación/default bajo `/families/:familyId/payment-methods` y `/families/:familyId/me/default-payment-method`, además de `/families/:familyId/reports/by-payment-method`. Pendientes las pruebas HTTP específicas y la verificación con PostgreSQL tras el reset.
 21. **Actualizar la colección de Postman**.
 22. **Actualizar `casos-de-uso-financial-tracking.md` y `casos-de-uso-reporting.md`**.
 

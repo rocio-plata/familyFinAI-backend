@@ -8,8 +8,8 @@ ya cuentan con pruebas unitarias. `OnItemRecordedHandler`, `OnItemAmountChangedH
 también están implementados y probados. La
 persistencia InMemory y Drizzle de `CategoryPeriodAggregate`, la composición del módulo, las
 suscripciones al `EventBus` y las rutas HTTP de categorías están implementadas. La query por medio
-de pago está implementada y probada, pero todavía no está compuesta en el módulo ni expuesta por
-HTTP. Sigue la misma convención usada en
+de pago también está compuesta en el módulo y expuesta por HTTP; la migración PostgreSQL se aplicará
+mediante `npm run db:reset`. Sigue la misma convención usada en
 los documentos anteriores:
 **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de
 dominio disparados**.
@@ -39,9 +39,8 @@ Este read model es la base de `GetDashboardSummary`, `GetCategoryBreakdown` y `G
 
 ### 0. GetExpensesByPaymentMethod
 
-> Estado de implementación: query y tests implementados en
-> `src/contexts/reporting/application/queries/get-expenses-by-payment-method.query.ts`; falta
-> construirla en `reporting.module.ts` y registrar la ruta HTTP.
+> Estado de implementación: query, tests, composición y ruta HTTP implementados en
+> `src/contexts/reporting/application/queries/get-expenses-by-payment-method.query.ts`.
 
 Lista los gastos agrupados por medio de pago para una familia y período.
 
@@ -160,8 +159,8 @@ Navega desde una vista general hacia los movimientos individuales que la compone
 
 ### Handlers de `PaymentMethodPeriodAggregate`
 
-> Estado de implementación: implementados y probados; la persistencia Drizzle está codificada,
-> pero las migraciones PostgreSQL siguen pendientes.
+> Estado de implementación: implementados y probados; la persistencia Drizzle está codificada y la
+> migración está generada. Su aplicación se hará mediante `npm run db:reset`.
 
 Reaccionan a los eventos de `Financial Tracking`:
 
