@@ -7,10 +7,14 @@ import { FamilyName } from "../../../../src/contexts/family-access/domain/value-
 import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { PaymentMethod } from "../../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
-import { PaymentMethodId } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-id.js";
+import { PaymentMethodName } from "../../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { TagName } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
+import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { buildApp } from "../../../../src/platform/app.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
@@ -62,13 +66,24 @@ describe("POST /families/:familyId/items", () => {
     categoryId = category.id.toString();
     tagId = category.tags[0].id.toString();
     incomeCategoryId = incomeCategory.id.toString();
-    paymentMethodId = PaymentMethodId.generate().toString();
+    const paymentMethodRepository = new InMemoryPaymentMethodRepository();
+    const preferenceRepository = new InMemoryUserPaymentMethodPreferenceRepository();
+    const defaultPaymentMethod = PaymentMethod.create(family.id, PaymentMethodName.of("Efectivo"));
+    await paymentMethodRepository.save(defaultPaymentMethod);
+    await preferenceRepository.save(
+      UserPaymentMethodPreference.create(memberId, family.id, defaultPaymentMethod.id),
+    );
+    paymentMethodId = defaultPaymentMethod.id.toString();
     memberAuthorization = `Bearer ${await jwtService.sign(memberId)}`;
     app = buildApp({
       jwtService,
       identity: buildTestIdentityDependencies(),
       familyAccess: buildTestFamilyAccessDependencies({ familyRepository }),
-      financialTracking: buildTestFinancialTrackingDependencies({ categoryRepository }),
+      financialTracking: buildTestFinancialTrackingDependencies({
+        categoryRepository,
+        paymentMethodRepository,
+        preferenceRepository,
+      }),
     });
   });
 
@@ -80,7 +95,6 @@ describe("POST /families/:familyId/items", () => {
       payload: {
         amount: 25.5,
         categoryId,
-        paymentMethodId,
         tagId,
         title: "Compra semanal",
         note: "Oferta",
@@ -95,6 +109,7 @@ describe("POST /families/:familyId/items", () => {
     assert.equal(body.amount, 25.5);
     assert.equal(body.currency, "USD");
     assert.equal(body.categoryId, categoryId);
+    assert.equal(body.paymentMethodId, paymentMethodId);
     assert.equal(body.tagId, tagId);
     assert.equal(body.title, "Compra semanal");
     assert.equal(body.note, "Oferta");

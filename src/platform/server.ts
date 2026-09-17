@@ -15,6 +15,8 @@ import { DrizzleCategoryRepository } from "../contexts/financial-tracking/infras
 import { DrizzleFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/drizzle-financial-item.repository.js";
 import { InMemoryCategoryRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-category.repository.js";
 import { InMemoryFinancialItemRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-financial-item.repository.js";
+import { InMemoryPaymentMethodRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "../contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { GetUserIdByEmailQuery } from "../contexts/identity/application/queries/get-user-id-by-email.query.js";
 import {
   hashPassword,
@@ -96,6 +98,8 @@ const app = buildApp({
   financialTracking: {
     categoryRepository,
     financialItemRepository,
+    paymentMethodRepository: new InMemoryPaymentMethodRepository(),
+    preferenceRepository: new InMemoryUserPaymentMethodPreferenceRepository(),
     eventBus,
   },
   reporting: {

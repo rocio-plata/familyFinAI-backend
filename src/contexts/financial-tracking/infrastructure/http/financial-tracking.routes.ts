@@ -108,7 +108,7 @@ function registerFinancialTrackingRoutes(
         },
         body: {
           type: "object",
-          required: ["amount", "categoryId", "paymentMethodId", "title", "occurredOn"],
+          required: ["amount", "categoryId", "title", "occurredOn"],
           properties: {
             amount: { type: "number" },
             currency: { type: "string", minLength: 1 },
@@ -132,7 +132,7 @@ function registerFinancialTrackingRoutes(
           amount: number;
           currency?: string;
           categoryId: string;
-          paymentMethodId: string;
+          paymentMethodId?: string;
           tagId?: string;
           title: string;
           note?: string;
@@ -147,7 +147,7 @@ function registerFinancialTrackingRoutes(
         recordedBy: request.userId,
         amount: Money.of(amount, resolvedCurrency),
         categoryId: CategoryId.of(categoryId),
-        paymentMethodId: PaymentMethodId.of(paymentMethodId),
+        ...(paymentMethodId ? { paymentMethodId: PaymentMethodId.of(paymentMethodId) } : {}),
         tagId: tagId ? TagId.of(tagId) : null,
         title: Title.of(title),
         occurredOn: TransactionDate.of(new Date(occurredOn)),

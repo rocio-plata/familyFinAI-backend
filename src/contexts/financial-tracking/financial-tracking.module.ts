@@ -23,6 +23,8 @@ import { GetCategoriesQuery } from "./application/queries/get-categories.query.j
 import { GetFinancialItemsQuery } from "./application/queries/get-financial-items.query.js";
 import type { CategoryRepository } from "./domain/repositories/category.repository.js";
 import type { FinancialItemRepository } from "./domain/repositories/financial-item.repository.js";
+import type { PaymentMethodRepository } from "./domain/repositories/payment-method.repository.js";
+import type { UserPaymentMethodPreferenceRepository } from "./domain/repositories/user-payment-method-preference.repository.js";
 import { CategoryDeletionService } from "./domain/services/category-deletion.service.js";
 import { TagDeletionService } from "./domain/services/tag-deletion.service.js";
 import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial-tracking.routes.js";
@@ -30,6 +32,8 @@ import { registerFinancialTrackingRoutes } from "./infrastructure/http/financial
 interface FinancialTrackingModuleDependencies {
   categoryRepository: CategoryRepository;
   financialItemRepository: FinancialItemRepository;
+  paymentMethodRepository: PaymentMethodRepository;
+  preferenceRepository: UserPaymentMethodPreferenceRepository;
   eventBus: EventBus;
 }
 
@@ -70,6 +74,8 @@ function buildFinancialTrackingModule(
       deps.financialItemRepository,
       deps.categoryRepository,
       deps.eventBus,
+      deps.paymentMethodRepository,
+      deps.preferenceRepository,
     ),
     deleteCategory: new DeleteCategoryUseCase(
       deps.categoryRepository,

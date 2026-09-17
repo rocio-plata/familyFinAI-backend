@@ -5,10 +5,15 @@ import { FamilyId } from "../../../src/contexts/family-access/domain/value-objec
 import { UserId } from "../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { CreateFinancialItemUseCase } from "../../../src/contexts/financial-tracking/application/commands/create-financial-item.usecase.js";
 import { Category } from "../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { PaymentMethod } from "../../../src/contexts/financial-tracking/domain/entities/payment-method.js";
+import { UserPaymentMethodPreference } from "../../../src/contexts/financial-tracking/domain/entities/user-payment-method-preference.js";
 import { CategoryNotActiveError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-active.error.js";
 import { CategoryNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
 import { InvalidMoneyError } from "../../../src/contexts/financial-tracking/domain/errors/invalid-money.error.js";
 import { InvalidTitleError } from "../../../src/contexts/financial-tracking/domain/errors/invalid-title.error.js";
+import { NoDefaultPaymentMethodSetError } from "../../../src/contexts/financial-tracking/domain/errors/no-default-payment-method-set.error.js";
+import { PaymentMethodNotActiveError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-not-active.error.js";
+import { PaymentMethodNotFoundError } from "../../../src/contexts/financial-tracking/domain/errors/payment-method-not-found.error.js";
 import { TagDoesNotBelongToCategoryError } from "../../../src/contexts/financial-tracking/domain/errors/tag-does-not-belong-to-category.error.js";
 import { TagNotActiveError } from "../../../src/contexts/financial-tracking/domain/errors/tag-not-active.error.js";
 import { ItemRecorded } from "../../../src/contexts/financial-tracking/domain/events/item-recorded.event.js";
@@ -16,10 +21,13 @@ import { CategoryId } from "../../../src/contexts/financial-tracking/domain/valu
 import { CategoryName } from "../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { Money } from "../../../src/contexts/financial-tracking/domain/value-objects/money.js";
+import { PaymentMethodName } from "../../../src/contexts/financial-tracking/domain/value-objects/payment-method-name.js";
 import { TagId } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
 import { TagName } from "../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
 import { Title } from "../../../src/contexts/financial-tracking/domain/value-objects/title.js";
 import { TransactionDate } from "../../../src/contexts/financial-tracking/domain/value-objects/transaction-date.js";
+import { InMemoryPaymentMethodRepository } from "../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-payment-method.repository.js";
+import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { Currency } from "../../../src/shared-kernel/domain/currency.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import {
@@ -36,14 +44,29 @@ describe("CreateFinancialItemUseCase", () => {
   let eventBus: FakeEventBus;
   let familyId: FamilyId;
   let recordedBy: UserId;
+  let paymentMethodRepository: InMemoryPaymentMethodRepository;
+  let preferenceRepository: InMemoryUserPaymentMethodPreferenceRepository;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     itemRepository = new InMemoryFinancialItemRepository();
     categoryRepository = new InMemoryCategoryRepository();
     eventBus = new FakeEventBus();
-    useCase = new CreateFinancialItemUseCase(itemRepository, categoryRepository, eventBus);
     familyId = FamilyId.generate();
     recordedBy = UserId.generate();
+    paymentMethodRepository = new InMemoryPaymentMethodRepository();
+    preferenceRepository = new InMemoryUserPaymentMethodPreferenceRepository();
+    const cash = PaymentMethod.create(familyId, PaymentMethodName.of("Efectivo"));
+    await paymentMethodRepository.save(cash);
+    await preferenceRepository.save(
+      UserPaymentMethodPreference.create(recordedBy, familyId, cash.id),
+    );
+    useCase = new CreateFinancialItemUseCase(
+      itemRepository,
+      categoryRepository,
+      eventBus,
+      paymentMethodRepository,
+      preferenceRepository,
+    );
   });
 
   test("registra un gasto con todos los campos obligatorios", async () => {
@@ -77,6 +100,138 @@ describe("CreateFinancialItemUseCase", () => {
     assert.equal(item.title, title);
     assert.equal(item.note, null);
     assert.ok(item.occurredOn.equals(occurredOn));
+  });
+
+  test("resuelve el medio de pago predeterminado del usuario y la familia", async () => {
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    categoryRepository.add(category);
+
+    const item = await useCase.execute({
+      familyId,
+      recordedBy,
+      categoryId: category.id,
+      tagId: null,
+      amount: Money.of(1000, Currency.default()),
+      title: Title.of("Compra"),
+      occurredOn: TransactionDate.of(new Date("2024-01-15")),
+    });
+
+    assert.ok(item.paymentMethodId);
+  });
+
+  test("acepta un medio de pago explícito", async () => {
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    categoryRepository.add(category);
+    const explicitPaymentMethod = PaymentMethod.create(familyId, PaymentMethodName.of("Tarjeta"));
+    await paymentMethodRepository.save(explicitPaymentMethod);
+
+    const item = await useCase.execute({
+      familyId,
+      recordedBy,
+      paymentMethodId: explicitPaymentMethod.id,
+      categoryId: category.id,
+      tagId: null,
+      amount: Money.of(1000, Currency.default()),
+      title: Title.of("Compra"),
+      occurredOn: TransactionDate.of(new Date("2024-01-15")),
+    });
+
+    assert.ok(item.paymentMethodId.equals(explicitPaymentMethod.id));
+  });
+
+  test("falla si no existe una preferencia predeterminada", async () => {
+    const emptyPreferenceRepository = new InMemoryUserPaymentMethodPreferenceRepository();
+    const noDefaultUseCase = new CreateFinancialItemUseCase(
+      itemRepository,
+      categoryRepository,
+      eventBus,
+      paymentMethodRepository,
+      emptyPreferenceRepository,
+    );
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    categoryRepository.add(category);
+
+    await assert.rejects(
+      () =>
+        noDefaultUseCase.execute({
+          familyId,
+          recordedBy,
+          categoryId: category.id,
+          tagId: null,
+          amount: Money.of(1000, Currency.default()),
+          title: Title.of("Compra"),
+          occurredOn: TransactionDate.of(new Date("2024-01-15")),
+        }),
+      NoDefaultPaymentMethodSetError,
+    );
+  });
+
+  test("rechaza un medio de otra familia", async () => {
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    categoryRepository.add(category);
+    const foreignPaymentMethod = PaymentMethod.create(
+      FamilyId.generate(),
+      PaymentMethodName.of("Tarjeta"),
+    );
+    await paymentMethodRepository.save(foreignPaymentMethod);
+
+    await assert.rejects(
+      () =>
+        useCase.execute({
+          familyId,
+          recordedBy,
+          paymentMethodId: foreignPaymentMethod.id,
+          categoryId: category.id,
+          tagId: null,
+          amount: Money.of(1000, Currency.default()),
+          title: Title.of("Compra"),
+          occurredOn: TransactionDate.of(new Date("2024-01-15")),
+        }),
+      PaymentMethodNotFoundError,
+    );
+  });
+
+  test("rechaza un medio deprecado", async () => {
+    const category = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Alimentación"),
+    );
+    categoryRepository.add(category);
+    const deprecatedPaymentMethod = PaymentMethod.create(familyId, PaymentMethodName.of("Tarjeta"));
+    deprecatedPaymentMethod.deprecate();
+    await paymentMethodRepository.save(deprecatedPaymentMethod);
+
+    await assert.rejects(
+      () =>
+        useCase.execute({
+          familyId,
+          recordedBy,
+          paymentMethodId: deprecatedPaymentMethod.id,
+          categoryId: category.id,
+          tagId: null,
+          amount: Money.of(1000, Currency.default()),
+          title: Title.of("Compra"),
+          occurredOn: TransactionDate.of(new Date("2024-01-15")),
+        }),
+      PaymentMethodNotActiveError,
+    );
   });
 
   test("registra un gasto con tag", async () => {
@@ -121,7 +276,7 @@ describe("CreateFinancialItemUseCase", () => {
     const title = Title.of("Pago de internet");
     const occurredOn = TransactionDate.of(new Date("2024-01-15"));
 
-    await useCase.execute({
+    const item = await useCase.execute({
       familyId,
       recordedBy,
       categoryId: category.id,
@@ -136,6 +291,7 @@ describe("CreateFinancialItemUseCase", () => {
     const event = eventBus.publishedEvents[0];
     assert.ok(event instanceof ItemRecorded);
     assert.equal(event.eventName, "financial-tracking.item-recorded");
+    assert.ok(event.paymentMethodId.equals(item.paymentMethodId));
   });
 
   test("persiste el item antes de publicar ItemRecorded", async () => {
@@ -146,6 +302,8 @@ describe("CreateFinancialItemUseCase", () => {
       orderRecordingRepository,
       categoryRepository,
       orderRecordingEventBus,
+      paymentMethodRepository,
+      preferenceRepository,
     );
     const category = Category.create(
       familyId,

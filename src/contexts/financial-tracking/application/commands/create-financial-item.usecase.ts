@@ -8,10 +8,15 @@ import {
 } from "../../domain/entities/financial-item.js";
 import { CategoryNotActiveError } from "../../domain/errors/category-not-active.error.js";
 import { CategoryNotFoundError } from "../../domain/errors/category-not-found.error.js";
+import { NoDefaultPaymentMethodSetError } from "../../domain/errors/no-default-payment-method-set.error.js";
+import { PaymentMethodNotActiveError } from "../../domain/errors/payment-method-not-active.error.js";
+import { PaymentMethodNotFoundError } from "../../domain/errors/payment-method-not-found.error.js";
 import { TagDoesNotBelongToCategoryError } from "../../domain/errors/tag-does-not-belong-to-category.error.js";
 import { TagNotActiveError } from "../../domain/errors/tag-not-active.error.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
 import type { FinancialItemRepository } from "../../domain/repositories/financial-item.repository.js";
+import type { PaymentMethodRepository } from "../../domain/repositories/payment-method.repository.js";
+import type { UserPaymentMethodPreferenceRepository } from "../../domain/repositories/user-payment-method-preference.repository.js";
 import { CategoryAssignment } from "../../domain/value-objects/category-assignment.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
@@ -26,7 +31,7 @@ import type { TransactionDate } from "../../domain/value-objects/transaction-dat
 interface CreateFinancialItemInput {
   familyId: FamilyId;
   recordedBy: UserId;
-  paymentMethodId: PaymentMethodId;
+  paymentMethodId?: PaymentMethodId;
   amount: Money;
   categoryId: CategoryId;
   tagId: TagId | null;
@@ -40,9 +45,20 @@ class CreateFinancialItemUseCase {
     private readonly itemRepository: FinancialItemRepository,
     private readonly categoryRepository: CategoryRepository,
     private readonly eventBus: EventBus,
+    private readonly paymentMethodRepository: PaymentMethodRepository,
+    private readonly preferenceRepository: UserPaymentMethodPreferenceRepository,
   ) {}
 
   async execute(input: CreateFinancialItemInput): Promise<FinancialItem> {
+    const paymentMethodId = await this.resolvePaymentMethodId(input);
+    const paymentMethod = await this.paymentMethodRepository.findById(paymentMethodId);
+    if (!paymentMethod?.familyId.equals(input.familyId)) {
+      throw new PaymentMethodNotFoundError(paymentMethodId.toString());
+    }
+    if (paymentMethod.status !== CategoryStatus.Active) {
+      throw new PaymentMethodNotActiveError(paymentMethodId.toString());
+    }
+
     // 1. Buscar la categoría
     const category = await this.categoryRepository.findById(input.categoryId);
     if (!category) {
@@ -74,7 +90,7 @@ class CreateFinancialItemUseCase {
     const props: CreateFinancialItemProps = {
       familyId: input.familyId,
       recordedBy: input.recordedBy,
-      paymentMethodId: input.paymentMethodId,
+      paymentMethodId,
       amount: input.amount,
       category: categoryAssignment,
       title: input.title,
@@ -92,6 +108,18 @@ class CreateFinancialItemUseCase {
     }
 
     return item;
+  }
+
+  private async resolvePaymentMethodId(input: CreateFinancialItemInput): Promise<PaymentMethodId> {
+    if (input.paymentMethodId) return input.paymentMethodId;
+
+    const preference = await this.preferenceRepository.findByUserAndFamily(
+      input.recordedBy,
+      input.familyId,
+    );
+    if (!preference) throw new NoDefaultPaymentMethodSetError();
+
+    return preference.defaultPaymentMethodId;
   }
 }
 
