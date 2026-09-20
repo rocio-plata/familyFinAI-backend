@@ -1,4 +1,4 @@
-// tests/unit/contexts/financial-tracking/rename-category.usecase.test.ts
+// tests/unit/contexts/financial-tracking/update-category.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { GetFamilyMembershipQuery } from "../../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
