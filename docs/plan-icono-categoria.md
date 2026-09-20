@@ -6,6 +6,8 @@ Se agrega un campo `icon` a `Category`: una clave de texto (no una imagen ni un 
 
 **Aclaración de alcance**: `Category` sí tiene categorías predefinidas — ya implementaste `CreateDefaultCategoriesOnFamilyCreatedEventHandler`, que reacciona a `FamilyCreated` y crea 9 categorías de tipo `Expense` (Comestibles, Salud, Restaurantes, Servicios, Compras, Regalos, Familia, Tiempo Libre, Transporte) si todavía no existen. Este plan agrega el campo `icon` a `Category` en general — las categorías predefinidas nacen igual que cualquier otra, con `icon = null` (ver decisión 2), coherente con que el catálogo de íconos todavía no está definido.
 
+**Estado de implementación (2026-09-20)**: los puntos 1–8 y 10 están implementados, cubiertos por pruebas unitarias, de integración y E2E, y expuestos por HTTP. El punto 9 (colección de Postman) sigue pendiente.
+
 ---
 
 ## Decisiones de diseño
@@ -162,16 +164,16 @@ Migración: `npm run db:generate` (Drizzle Kit debería generar un simple `ALTER
 
 ## Plan de implementación (orden sugerido, con TDD)
 
-1. **`CategoryIcon`** — Value Object con tests (vacío rechazado, largo máximo, `of()` válido).
-2. **`InvalidCategoryIconError`** — clase completa.
-3. **`Category`** — agregar `_icon`, getter, `updateIcon()`, ajustar `create()`/`reconstitute()`, con tests actualizados y nuevos (crear sin ícono, crear con ícono, actualizar ícono, quitar ícono con `null`).
-4. **Renombrar `RenameCategoryUseCase` → `UpdateCategoryUseCase`** — ampliar la entrada, actualizar todos los tests existentes de este caso de uso al nuevo nombre/firma, agregar tests del campo `icon`.
-5. **`CreateCategoryUseCase`** — agregar `icon` opcional a la entrada, actualizar tests.
-6. **Schema de Drizzle** — agregar la columna, `npm run db:generate`, revisar el SQL generado (debería ser un `ALTER TABLE` simple), `npm run db:migrate`.
-7. **`DrizzleCategoryRepository`** — actualizar `toDomain()`/`toPersistence()` para incluir `icon`.
-8. **Rutas HTTP** — actualizar el schema de `POST .../categories` y `PATCH .../categories/:categoryId`, actualizar el DTO de `GetCategories`.
+1. ~~**`CategoryIcon`** — Value Object con tests (vacío rechazado, largo máximo, `of()` válido).~~ ✅
+2. ~~**`InvalidCategoryIconError`** — clase completa.~~ ✅
+3. ~~**`Category`** — agregar `_icon`, getter, `updateIcon()`, ajustar `create()`/`reconstitute()`, con tests actualizados y nuevos (crear sin ícono, crear con ícono, actualizar ícono, quitar ícono con `null`).~~ ✅
+4. ~~**Renombrar `RenameCategoryUseCase` → `UpdateCategoryUseCase`** — ampliar la entrada, actualizar todos los tests existentes de este caso de uso al nuevo nombre/firma, agregar tests del campo `icon`.~~ ✅
+5. ~~**`CreateCategoryUseCase`** — agregar `icon` opcional a la entrada, actualizar tests.~~ ✅
+6. ~~**Schema de Drizzle** — agregar la columna, `npm run db:generate`, revisar el SQL generado (debería ser un `ALTER TABLE` simple), `npm run db:migrate`.~~ ✅ — migración `0007_funny_sleepwalker.sql` aditiva y aplicada.
+7. ~~**`DrizzleCategoryRepository`** — actualizar `toDomain()`/`toPersistence()` para incluir `icon`.~~ ✅
+8. ~~**Rutas HTTP** — actualizar el schema de `POST .../categories` y `PATCH .../categories/:categoryId`, actualizar el DTO de `GetCategories`.~~ ✅
 9. **Actualizar la colección de Postman** — agregar `icon` opcional a `Create Category`, agregar un request de ejemplo actualizando el ícono vía el endpoint renombrado.
-10. **Actualizar `casos-de-uso-financial-tracking.md`** con el campo nuevo y el renombre de caso de uso.
+10. ~~**Actualizar `casos-de-uso-financial-tracking.md`** con el campo nuevo y el renombre de caso de uso.~~ ✅
 
 ## Pendientes que quedan abiertos
 

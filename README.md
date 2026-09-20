@@ -165,7 +165,7 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 
 - **Economía familiar compartida**: múltiples usuarios de una misma familia, cada uno con su propio login, registrando y consultando la misma información financiera.
 - **Registro de gastos e ingresos**: cada movimiento (`FinancialItem`) tiene tipo derivado de su categoría, categoría obligatoria, tag opcional, título, observación, monto, moneda y fecha. La moneda y el medio de pago pueden resolverse desde las preferencias/defaults de la familia y del usuario.
-- **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada).
+- **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada). Las categorías admiten un ícono opcional como clave de texto compartida con el frontend; el backend valida su formato y lo persiste para toda la familia.
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
 - **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso, rutas HTTP, tests unitarios HTTP, tests de integración PostgreSQL, read model por período y repositorios Drizzle. Al crear una familia se generan los medios por defecto y al aceptar una invitación se asigna el default del nuevo miembro. La migración está aplicada; `npm run db:reset` no conserva datos anteriores ni requiere backfill.

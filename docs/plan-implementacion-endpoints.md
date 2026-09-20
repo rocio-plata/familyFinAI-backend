@@ -78,10 +78,10 @@ Es el contexto **upstream** del resto de los datos de negocio — sin poder invi
 
 Depende de Fase 2 porque cada request necesita `requireFamilyMembership`. Dentro de la fase, **categorías y tags antes que items**, porque `CreateFinancialItem` valida contra una categoría existente:
 
-1. ~~`POST /families/:familyId/categories` (`CreateCategory`)~~ ✅ — requiere `authenticate`; el caso de uso valida que quien la crea sea Owner.
-2. ~~`GET /families/:familyId/categories` (`GetCategories`)~~ ✅ — requiere `authenticate` y membresía de la familia; admite `includeDeprecated` opcional.
+1. ~~`POST /families/:familyId/categories` (`CreateCategory`)~~ ✅ — requiere `authenticate`; el caso de uso valida que quien la crea sea Owner. El body acepta `icon` opcional y la respuesta devuelve `icon` como clave o `null`.
+2. ~~`GET /families/:familyId/categories` (`GetCategories`)~~ ✅ — requiere `authenticate` y membresía de la familia; admite `includeDeprecated` opcional y devuelve `icon` como clave o `null`.
 3. ~~`POST /families/:familyId/categories/:categoryId/tags` (`AddTagToCategory`)~~ ✅ — requiere rol Owner; valida categoría activa y evita tags duplicados.
-4. ~~`PATCH /families/:familyId/categories/:categoryId` (`RenameCategory`)~~ ✅ — requiere rol Owner y evita nombres duplicados, incluso si la categoría existente está deprecada.
+4. ~~`PATCH /families/:familyId/categories/:categoryId` (`UpdateCategory`)~~ ✅ — requiere rol Owner. El body acepta `newName` y/o `newIcon`; `newIcon: null` lo elimina. Si se actualiza el nombre, evita duplicados incluso cuando la categoría existente está deprecada; la respuesta devuelve `icon` como clave o `null`.
 5. ~~`PATCH /families/:familyId/categories/:categoryId/tags/:tagId` (`RenameTag`)~~ ✅ — requiere rol Owner y evita nombres duplicados dentro de la categoría.
 6. ~~`PUT /families/:familyId/categories/:categoryId/tags/order` (`ReorderCategoryTags`)~~ ✅ — requiere rol Owner y valida que el array contenga exactamente los tags actuales de la categoría.
 7. ~~`POST /families/:familyId/categories/:categoryId/deprecate` (`DeprecateCategory`)~~ ✅ — requiere rol Owner; la categoría queda oculta del listado predeterminado, pero permanece disponible con `includeDeprecated=true`.

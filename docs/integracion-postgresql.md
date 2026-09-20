@@ -179,7 +179,9 @@ export const categoryStatusEnum = pgEnum("category_status", ["ACTIVE", "DEPRECAT
 export const categories = pgTable("categories", {
   id: uuid("id").primaryKey(),
   familyId: uuid("family_id").notNull(),
+  type: itemTypeEnum("type").notNull(),
   name: varchar("name", { length: 50 }).notNull(),
+  icon: varchar("icon", { length: 40 }), // nullable: las categorías existentes quedan en null
   status: categoryStatusEnum("status").notNull().default("ACTIVE"),
 });
 
