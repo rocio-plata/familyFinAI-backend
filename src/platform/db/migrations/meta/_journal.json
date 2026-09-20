@@ -50,6 +50,13 @@
       "when": 1789669804758,
       "tag": "0006_icy_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789938444106,
+      "tag": "0007_funny_sleepwalker",
+      "breakpoints": true
     }
   ]
 }

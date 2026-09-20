@@ -24,6 +24,7 @@ export const categories = pgTable(
     familyId: uuid("family_id").notNull(),
     type: financialItemTypeEnum("type").notNull(),
     name: varchar("name", { length: 50 }).notNull(),
+    icon: varchar("icon", { length: 40 }),
     status: categoryStatusEnum("status").notNull().default("ACTIVE"),
   },
   (table) => ({
