@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { InvalidTagOrderError } from "../../../../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
+import { CategoryIcon } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
 import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -21,6 +22,16 @@ describe("Category", () => {
 
     it("inicia sin tags", () => {
       assert.equal(Category.create(familyId, type, catName).tags.length, 0);
+    });
+
+    it("inicia sin ícono cuando no se recibe uno", () => {
+      assert.equal(Category.create(familyId, type, catName).icon, null);
+    });
+
+    it("asigna el ícono recibido", () => {
+      const icon = CategoryIcon.of("shopping_cart");
+
+      assert.ok(Category.create(familyId, type, catName, icon).icon?.equals(icon));
     });
 
     it("asigna el familyId", () => {
@@ -45,6 +56,36 @@ describe("Category", () => {
     it("no expone forma de cambiar el type una vez creada", () => {
       const cat = Category.create(familyId, type, catName);
       assert.equal((cat as unknown as { changeType?: unknown }).changeType, undefined);
+    });
+  });
+
+  describe("reconstitute()", () => {
+    it("reconstituye una categoría con ícono", () => {
+      const category = Category.reconstitute({
+        id: "11111111-1111-4111-8111-111111111111",
+        familyId: "22222222-2222-4222-8222-222222222222",
+        type,
+        name: "Alimentación",
+        icon: "shopping_cart",
+        status: CategoryStatus.Active,
+        tags: [],
+      });
+
+      assert.equal(category.icon?.toString(), "shopping_cart");
+    });
+
+    it("reconstituye una categoría sin ícono", () => {
+      const category = Category.reconstitute({
+        id: "11111111-1111-4111-8111-111111111111",
+        familyId: "22222222-2222-4222-8222-222222222222",
+        type,
+        name: "Alimentación",
+        icon: null,
+        status: CategoryStatus.Active,
+        tags: [],
+      });
+
+      assert.equal(category.icon, null);
     });
   });
 
@@ -79,6 +120,25 @@ describe("Category", () => {
       const newName = CategoryName.of("Transporte");
       cat.rename(newName);
       assert.ok(cat.name.equals(newName));
+    });
+  });
+
+  describe("updateIcon()", () => {
+    it("asigna un ícono a la categoría", () => {
+      const cat = Category.create(familyId, type, catName);
+      const icon = CategoryIcon.of("shopping_cart");
+
+      cat.updateIcon(icon);
+
+      assert.ok(cat.icon?.equals(icon));
+    });
+
+    it("quita el ícono de la categoría al recibir null", () => {
+      const cat = Category.create(familyId, type, catName, CategoryIcon.of("shopping_cart"));
+
+      cat.updateIcon(null);
+
+      assert.equal(cat.icon, null);
     });
   });
 
