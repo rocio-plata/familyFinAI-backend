@@ -34,7 +34,7 @@ Las rutas de familia bajo `/families/:familyId/...` implementan la cadena `authe
 9. Si el recurso pertenece a una familia, encadenar `authenticate` y `requireFamilyMembership`, usando `request.familyContext`.
 10. Registrar dependencias y rutas en `src/platform/app.ts`.
 11. Probar el contrato completo con `app.inject`: éxito, falta de autenticación cuando aplique, entradas inválidas y cuerpo de error; incluir casos de coerción admitida cuando formen parte del contrato.
-12. Ejecutar `npm test`, `npm run build` y `npm run lint`; corregir cualquier fallo antes de entregar.
+12. Ejecutar `npm test`, `npm run test:integration`, `npm run test:e2e`, `npm run build` y `npm run lint`; corregir cualquier fallo antes de entregar. Los tests de integración y E2E requieren `DATABASE_URL` y una base de datos migrada.
 
 ## 4. Inconsistencias detectadas
 

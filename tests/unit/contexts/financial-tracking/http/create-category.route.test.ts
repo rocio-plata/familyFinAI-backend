@@ -53,7 +53,32 @@ describe("POST /families/:familyId/categories", () => {
     assert.ok(body.id);
     assert.equal(body.type, "EXPENSE");
     assert.equal(body.name, "Alimentación");
+    assert.equal(body.icon, null);
     assert.equal(body.status, "ACTIVE");
+  });
+
+  test("crea una categoría con ícono", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/categories`,
+      headers: { authorization: ownerAuthorization },
+      payload: { type: "EXPENSE", name: "Alimentación", icon: "shopping_cart" },
+    });
+
+    assert.equal(response.statusCode, 201);
+    assert.equal(JSON.parse(response.body).icon, "shopping_cart");
+  });
+
+  test("rechaza un ícono vacío", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/categories`,
+      headers: { authorization: ownerAuthorization },
+      payload: { type: "EXPENSE", name: "Alimentación", icon: "" },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
   });
 
   test("rechaza la creación solicitada por un Member", async () => {

@@ -4,6 +4,7 @@ import { after, describe, test } from "node:test";
 import { eq } from "drizzle-orm";
 import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryIcon } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
@@ -31,6 +32,7 @@ describe("Persistencia Drizzle de categorías (integración)", () => {
       familyId,
       FinancialItemType.Expense,
       CategoryName.of("Alimentación integración"),
+      CategoryIcon.of("shopping_cart"),
     );
     category.addTag(TagName.of("Supermercado"));
     createdCategoryIds.push(category.id.toString());
@@ -40,11 +42,30 @@ describe("Persistencia Drizzle de categorías (integración)", () => {
     const found = await categoryRepository.findById(category.id);
     assert.ok(found);
     assert.equal(found.name.toString(), "Alimentación integración");
+    assert.equal(found.icon?.toString(), "shopping_cart");
     assert.equal(found.tags.length, 1);
     assert.equal(found.tags[0]?.name.toString(), "Supermercado");
 
     const byFamily = await categoryRepository.findByFamilyId(familyId);
     assert.equal(byFamily.length, 1);
+    assert.equal(byFamily[0]?.icon?.toString(), "shopping_cart");
+  });
+
+  test("actualiza el ícono de una categoría existente", { skip }, async () => {
+    const category = Category.create(
+      FamilyId.generate(),
+      FinancialItemType.Expense,
+      CategoryName.of("Compras integración"),
+      CategoryIcon.of("shopping_cart"),
+    );
+    createdCategoryIds.push(category.id.toString());
+    await categoryRepository.save(category);
+
+    category.updateIcon(CategoryIcon.of("storefront"));
+    await categoryRepository.save(category);
+
+    const updated = await categoryRepository.findById(category.id);
+    assert.equal(updated?.icon?.toString(), "storefront");
   });
 
   test("renombra y deprecia una categoría existente", { skip }, async () => {

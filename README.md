@@ -79,9 +79,11 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
    curl http://localhost:3000/health
    ```
 
-6. **Correr los tests**
+6. **Correr las suites de tests**
    ```bash
-   npm test
+   npm test                  # unitarios, sin PostgreSQL
+   npm run test:integration  # integración, requiere DATABASE_URL y una base migrada
+   npm run test:e2e          # E2E, requiere DATABASE_URL y una base migrada
    ```
 
 7. **Correr el lint**
@@ -104,6 +106,8 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
 | `npm run build` | Compila TypeScript a `dist/` |
 | `npm start` | Corre el build compilado (producción) |
 | `npm test` | Corre los tests unitarios (`node:test`) |
+| `npm run test:integration` | Corre los tests de integración contra PostgreSQL |
+| `npm run test:e2e` | Corre los tests end-to-end contra PostgreSQL |
 | `npm run lint` | Revisa el código con Biome (sin modificar archivos) |
 | `npm run lint:fix` | Revisa y corrige automáticamente lo que Biome pueda resolver |
 | `npm run db:up` | Levanta PostgreSQL local con Docker |
@@ -161,7 +165,7 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 
 - **Economía familiar compartida**: múltiples usuarios de una misma familia, cada uno con su propio login, registrando y consultando la misma información financiera.
 - **Registro de gastos e ingresos**: cada movimiento (`FinancialItem`) tiene tipo derivado de su categoría, categoría obligatoria, tag opcional, título, observación, monto, moneda y fecha. La moneda y el medio de pago pueden resolverse desde las preferencias/defaults de la familia y del usuario.
-- **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada).
+- **Categorías y tags personalizables**: creación, edición y baja (con protección — no se puede eliminar una categoría/tag con movimientos asociados; en su lugar se marca como deprecada). Las categorías admiten un ícono opcional como clave de texto compartida con el frontend; el backend valida su formato y lo persiste para toda la familia.
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
 - **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso, rutas HTTP, tests unitarios HTTP, tests de integración PostgreSQL, read model por período y repositorios Drizzle. Al crear una familia se generan los medios por defecto y al aceptar una invitación se asigna el default del nuevo miembro. La migración está aplicada; `npm run db:reset` no conserva datos anteriores ni requiere backfill.

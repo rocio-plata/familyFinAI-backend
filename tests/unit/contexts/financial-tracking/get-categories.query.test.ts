@@ -4,6 +4,7 @@ import { beforeEach, describe, test } from "node:test";
 import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryIcon } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -27,6 +28,7 @@ describe("GetCategoriesQuery", () => {
       familyId,
       FinancialItemType.Expense,
       CategoryName.of("Alimentación"),
+      CategoryIcon.of("shopping_cart"),
     );
     activeCategory.addTag(TagName.of("Verdulería"));
     activeCategory.addTag(TagName.of("Supermercado"));
@@ -76,6 +78,7 @@ describe("GetCategoriesQuery", () => {
 
     assert.equal(category.id.toString(), activeCategory.id.toString());
     assert.equal(category.name.toString(), "Alimentación");
+    assert.equal(category.icon?.toString(), "shopping_cart");
     assert.equal(category.status, CategoryStatus.Active);
   });
 

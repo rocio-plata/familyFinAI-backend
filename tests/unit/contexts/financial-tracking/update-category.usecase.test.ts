@@ -1,4 +1,4 @@
-// tests/unit/contexts/financial-tracking/rename-category.usecase.test.ts
+// tests/unit/contexts/financial-tracking/update-category.usecase.test.ts
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { GetFamilyMembershipQuery } from "../../../../src/contexts/family-access/application/queries/get-family-membership.query.js";
@@ -7,19 +7,20 @@ import type { FamilyId } from "../../../../src/contexts/family-access/domain/val
 import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { RenameCategoryUseCase } from "../../../../src/contexts/financial-tracking/application/commands/rename-category.usecase.js";
+import { UpdateCategoryUseCase } from "../../../../src/contexts/financial-tracking/application/commands/update-category.usecase.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
 import { DuplicateCategoryNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
+import { CategoryIcon } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { InMemoryFamilyRepository } from "../family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "./doubles/in-memory-category.repository.js";
 
-describe("RenameCategoryUseCase", () => {
-  let useCase: RenameCategoryUseCase;
+describe("UpdateCategoryUseCase", () => {
+  let useCase: UpdateCategoryUseCase;
   let categoryRepository: InMemoryCategoryRepository;
   let familyRepository: InMemoryFamilyRepository;
   let familyId: FamilyId;
@@ -30,7 +31,7 @@ describe("RenameCategoryUseCase", () => {
   beforeEach(async () => {
     categoryRepository = new InMemoryCategoryRepository();
     familyRepository = new InMemoryFamilyRepository();
-    useCase = new RenameCategoryUseCase(
+    useCase = new UpdateCategoryUseCase(
       categoryRepository,
       new GetFamilyMembershipQuery(familyRepository),
     );
@@ -73,6 +74,48 @@ describe("RenameCategoryUseCase", () => {
 
     const persisted = await categoryRepository.findById(category.id);
     assert.equal(persisted?.name.toString(), "Supermercado");
+  });
+
+  test("actualiza solo el ícono", async () => {
+    const icon = CategoryIcon.of("shopping_cart");
+
+    const updated = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newIcon: icon,
+    });
+
+    assert.ok(updated.icon?.equals(icon));
+    assert.equal(updated.name.toString(), "Alimentación");
+  });
+
+  test("quita el ícono cuando recibe null", async () => {
+    category.updateIcon(CategoryIcon.of("shopping_cart"));
+
+    const updated = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newIcon: null,
+    });
+
+    assert.equal(updated.icon, null);
+  });
+
+  test("actualiza nombre e ícono en una misma operación", async () => {
+    const icon = CategoryIcon.of("shopping_cart");
+
+    const updated = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newName: CategoryName.of("Supermercado"),
+      newIcon: icon,
+    });
+
+    assert.equal(updated.name.toString(), "Supermercado");
+    assert.ok(updated.icon?.equals(icon));
   });
 
   test("rechaza si la categoría no existe", async () => {

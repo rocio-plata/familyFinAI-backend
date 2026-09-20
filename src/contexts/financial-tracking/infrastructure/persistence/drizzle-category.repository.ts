@@ -21,11 +21,16 @@ class DrizzleCategoryRepository implements CategoryRepository {
           familyId: category.familyId.toString(),
           type: category.type,
           name: category.name.toString(),
+          icon: category.icon?.toString() ?? null,
           status: category.status,
         })
         .onConflictDoUpdate({
           target: categories.id,
-          set: { name: category.name.toString(), status: category.status },
+          set: {
+            name: category.name.toString(),
+            icon: category.icon?.toString() ?? null,
+            status: category.status,
+          },
         });
 
       await tx.delete(tags).where(eq(tags.categoryId, category.id.toString()));
@@ -81,6 +86,7 @@ class DrizzleCategoryRepository implements CategoryRepository {
       familyId: categoryRow.familyId,
       type: categoryRow.type === "EXPENSE" ? FinancialItemType.Expense : FinancialItemType.Income,
       name: categoryRow.name,
+      icon: categoryRow.icon,
       status: categoryRow.status === "ACTIVE" ? CategoryStatus.Active : CategoryStatus.Deprecated,
       tags: tagRows.map((tagRow) => ({
         id: tagRow.id,

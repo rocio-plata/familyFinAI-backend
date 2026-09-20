@@ -7,6 +7,7 @@ import { FamilyName } from "../../../../../src/contexts/family-access/domain/val
 import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryIcon } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { TagName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/tag-name.js";
@@ -40,6 +41,7 @@ describe("GET /families/:familyId/categories", () => {
       family.id,
       FinancialItemType.Expense,
       CategoryName.of("Alimentación"),
+      CategoryIcon.of("shopping_cart"),
     );
     activeCategory.addTag(TagName.of("Verdulería"));
     categoryRepository.add(activeCategory);
@@ -80,6 +82,7 @@ describe("GET /families/:familyId/categories", () => {
     const alimentacion = body.find((c: { name: string }) => c.name === "Alimentación");
     assert.equal(alimentacion.type, "EXPENSE");
     assert.equal(alimentacion.status, "ACTIVE");
+    assert.equal(alimentacion.icon, "shopping_cart");
     assert.equal(alimentacion.tags[0].name, "Verdulería");
   });
 

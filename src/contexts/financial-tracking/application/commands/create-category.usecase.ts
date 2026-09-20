@@ -7,6 +7,7 @@ import { Category } from "../../domain/entities/category.js";
 import { DuplicateCategoryNameError } from "../../domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../domain/errors/insufficient-role.error.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
+import type { CategoryIcon } from "../../domain/value-objects/category-icon.js";
 import type { CategoryName } from "../../domain/value-objects/category-name.js";
 import type { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 
@@ -15,6 +16,7 @@ interface CreateCategoryInput {
   requestedBy: UserId;
   type: FinancialItemType;
   name: CategoryName;
+  icon?: CategoryIcon;
 }
 
 class CreateCategoryUseCase {
@@ -43,7 +45,7 @@ class CreateCategoryUseCase {
     }
 
     // 3. Crear la categoría
-    const category = Category.create(input.familyId, input.type, input.name);
+    const category = Category.create(input.familyId, input.type, input.name, input.icon);
 
     // 4. Persistir
     await this.categoryRepository.save(category);

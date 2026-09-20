@@ -12,6 +12,7 @@ import { Category } from "../../../../src/contexts/financial-tracking/domain/ent
 import { DuplicateCategoryNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
 import { CategoryCreated } from "../../../../src/contexts/financial-tracking/domain/events/category-created.event.js";
+import { CategoryIcon } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
@@ -56,6 +57,22 @@ describe("CreateCategoryUseCase", () => {
 
     assert.ok(category.id);
     assert.equal(category.name.toString(), "Alimentación");
+  });
+
+  test("crea y persiste una categoría con el ícono recibido", async () => {
+    const icon = CategoryIcon.of("shopping_cart");
+
+    const category = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Expense,
+      name: CategoryName.of("Alimentación"),
+      icon,
+    });
+
+    assert.ok(category.icon?.equals(icon));
+    const persisted = await categoryRepository.findById(category.id);
+    assert.ok(persisted?.icon?.equals(icon));
   });
 
   test("asigna el type recibido a la categoría creada", async () => {

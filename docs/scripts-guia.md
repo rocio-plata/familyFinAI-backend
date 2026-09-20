@@ -119,10 +119,14 @@ npm run db:migrate            # lo aplica contra tu base de datos local
 
 ### 4. Antes de hacer commit / abrir un PR
 
+Los tests de integración y E2E requieren `DATABASE_URL` y una base de datos migrada. Ejecuta `npm run db:init` antes de esta secuencia si PostgreSQL local no está disponible.
+
 ```bash
 npm run lint:fix              # corrige automáticamente lo que Biome pueda
 npm run lint                  # confirma que no quede nada pendiente
-npm run test                  # toda la suite en verde
+npm test                      # tests unitarios en verde
+npm run test:integration      # tests de integración en verde
+npm run test:e2e              # tests end-to-end en verde
 npm run build                 # confirma que compila sin errores de tipos
 ```
 

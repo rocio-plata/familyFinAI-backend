@@ -279,8 +279,10 @@ Toda ruta que opere sobre datos de una familia debe pasar por ambos middlewares.
 
 ```bash
 npm run dev          # Servidor en modo desarrollo (tsx watch)
-npm test             # Ejecuta todos los tests
+npm test             # Ejecuta los tests unitarios
 npm run test:watch   # Tests en modo watch
+npm run test:integration # Ejecuta los tests de integración contra PostgreSQL
+npm run test:e2e     # Ejecuta los tests end-to-end contra PostgreSQL
 npm run lint         # Biome — solo reporta
 npm run lint:fix     # Biome — corrige automáticamente
 npm run build        # Compila TypeScript a dist/
@@ -307,15 +309,17 @@ No se debe implementar código nuevo directamente en `main` u otras ramas existe
 
 ## Verificaciones obligatorias tras cualquier cambio
 
-Antes de dar por terminada cualquier tarea, el agente **debe ejecutar y confirmar** que los tres comandos siguientes pasan sin errores:
+Antes de dar por terminada cualquier tarea, el agente **debe ejecutar y confirmar** que los cinco comandos siguientes pasan sin errores. Los tests de integración y E2E requieren `DATABASE_URL` y una base de datos migrada:
 
 ```bash
-npm test          # todos los tests deben estar en verde
+npm test                  # tests unitarios en verde
+npm run test:integration  # tests de integración en verde
+npm run test:e2e          # tests end-to-end en verde
 npm run build     # la compilación TypeScript debe completarse sin errores
 npm run lint      # Biome no debe reportar ningún problema
 ```
 
-Si `npm run lint` reporta errores corregibles automáticamente, ejecutar `npm run lint:fix` y luego volver a verificar con `npm run lint`. No entregar código que falle en ninguno de estos tres pasos.
+Si `npm run lint` reporta errores corregibles automáticamente, ejecutar `npm run lint:fix` y luego volver a verificar con `npm run lint`. No entregar código que falle en ninguno de estos cinco pasos.
 
 ---
 

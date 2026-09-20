@@ -7,7 +7,7 @@ convención usada en `casos-de-uso-family-access.md`: **actor**,
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
 disparados**.
 
-Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
+Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `CategoryIcon`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
 > **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests. Los casos de medios de pago están compuestos en `financial-tracking.module.ts`, expuestos por HTTP y cubiertos por tests de casos de uso, rutas HTTP, integración PostgreSQL y e2e.
 
@@ -94,14 +94,14 @@ Crea una categoría nueva para la familia.
 
 - **Actor**: únicamente el `Owner` de la familia. Decisión tomada para mantener la taxonomía de categorías bajo control administrativo — evita que cualquier miembro modifique una estructura compartida por toda la familia.
 - **Precondiciones**: la familia existe; quien solicita es `Owner` de esa familia; no existe ya una categoría con el mismo nombre en la familia, sin importar su estado (`Active` o `Deprecated` — comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
-- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `type` (`Expense` | `Income`, obligatorio), `name`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `type` (`Expense` | `Income`, obligatorio), `name`, `icon` (opcional). En HTTP, `icon` es una clave string opaca; si se omite, la categoría nace con `icon = null`.
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` en la familia (`GetFamilyMembershipQuery`, de `Family & Access`) y se valida que su rol sea `Owner`.
-  2. Se valida `name` como `CategoryName`.
+  2. Se valida `name` como `CategoryName` y, si viene, `icon` como `CategoryIcon` (se recorta, no puede quedar vacío y tiene un máximo de 40 caracteres).
   3. Se verifica que no exista otra categoría con el mismo nombre en la familia, sea `Active` o `Deprecated`.
-  4. Se invoca `Category.create(familyId, type, name)`.
+  4. Se invoca `Category.create(familyId, type, name, icon)`; sin ícono, la entidad conserva `null`.
   5. Se persiste.
-- **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
+- **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: `CategoryCreated`.
 - **Nota de diseño**: una categoría `Deprecated` con el mismo nombre **bloquea** la creación de una nueva — si se deprecó fue porque no se necesitaba, así que no tiene sentido crear un duplicado. Para volver a usarla, el flujo correcto es `ReactivateCategory` (caso de uso 6), no crear una categoría nueva con el mismo nombre.
 - **Nota de diseño (reajuste tipo-categoría)**: `type` es obligatorio y sin valor por defecto — se fuerza al usuario a elegir explícitamente `Expense` o `Income` al crear la categoría. Una vez creada, `Category.type` es **inmutable**: no existe `changeType()` en la entidad, ya que cambiarlo dejaría inconsistentes los items históricos ya clasificados bajo esa categoría.
@@ -125,21 +125,22 @@ Reactiva una categoría previamente deprecada, permitiendo volver a usarla en nu
 
 ---
 
-### 7. RenameCategory
+### 7. UpdateCategory
 
-Renombra una categoría existente.
+Actualiza el nombre y/o el ícono de una categoría existente.
 
 - **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
-- **Precondiciones**: la `Category` existe y pertenece a la familia; quien solicita es `Owner`; el nuevo nombre no colisiona con otra categoría de la familia (comparación case-insensitive, sin importar su estado `Active` o `Deprecated` — mismo criterio que `CreateCategory`).
-- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `newName`.
+- **Precondiciones**: la `Category` existe y pertenece a la familia; quien solicita es `Owner`; si se recibe `newName`, no colisiona con otra categoría de la familia (comparación case-insensitive, sin importar su estado `Active` o `Deprecated` — mismo criterio que `CreateCategory`).
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `newName` (opcional) y `newIcon` (opcional). `newIcon` puede ser una clave válida para asignar/cambiarlo o `null` explícito para quitarlo. Al menos uno de ambos campos debe estar presente en HTTP.
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
   2. Se busca la `Category`, validando que pertenezca a la familia.
-  3. Se valida `newName` y que no colisione con otra categoría existente de la familia (excluyendo a la propia).
-  4. Se invoca `category.rename(newName)`.
-  5. Se persiste.
-- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `InvalidCategoryNameError`, `DuplicateCategoryNameError`.
-- **Eventos disparados**: ninguno definido — a evaluar si `Reporting`/`AI Assistance` necesitan reaccionar a un renombrado (probablemente sí, para no mostrar el nombre viejo en reportes históricos o en `MerchantCategoryHistory`).
+  3. Si llega `newName`, se valida como `CategoryName` y se comprueba que no colisione con otra categoría de la familia (excluyendo a la propia).
+  4. Si llega `newIcon`, se valida como `CategoryIcon` cuando es string; `null` quita el ícono.
+  5. Se invoca `category.rename(newName)` y/o `category.updateIcon(newIcon)` solo para los campos presentes.
+  6. Se persiste.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `DuplicateCategoryNameError`.
+- **Eventos disparados**: ninguno definido — a evaluar si `Reporting`/`AI Assistance` necesitan reaccionar a cambios de nombre o ícono.
 
 ---
 
@@ -270,7 +271,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
   1. Se consulta `CategoryRepository.findByFamilyId()`.
   2. Se filtran las deprecadas si `includeDeprecated` es `false`.
   3. Si se especifica `type`, se filtran solo las categorías de ese tipo — es el filtro que alimenta las pantallas de "categorías de gasto"/"categorías de ingreso".
-  4. Se devuelve la lista (cada categoría con sus tags, ya ordenados por `displayOrder`, y su `type`).
+  4. Se devuelve la lista (cada categoría con `type`, `icon` — clave o `null` — y sus tags ya ordenados por `displayOrder`).
 - **Errores posibles**: ninguno propio.
 
 ---
@@ -462,13 +463,14 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 | Error | Casos de uso donde aparece | ¿Ya existe? |
 |---|---|---|
 | `FinancialItemNotFoundError` | UpdateFinancialItem, ReclassifyFinancialItem, DeleteFinancialItem | ✅ ya definido |
-| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, RenameCategory, DeleteCategory, DeprecateCategory, RenameTag, DeleteTag, DeprecateTag | ✅ ya definido |
+| `InsufficientRoleError` (propio de `Financial Tracking`) | CreateCategory, ReactivateCategory, UpdateCategory, DeleteCategory, DeprecateCategory, RenameTag, DeleteTag, DeprecateTag | ✅ ya definido |
 | `CategoryNotFoundError` | Varios | ✅ ya definido |
 | `CategoryNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem, AddTagToCategory | ✅ ya definido |
 | `TagNotFoundError` | Varios | ✅ ya definido |
 | `TagNotActiveError` | CreateFinancialItem, ReclassifyFinancialItem | ✅ ya definido |
 | `TagDoesNotBelongToCategoryError` | CreateFinancialItem, ReclassifyFinancialItem | ✅ ya definido |
-| `DuplicateCategoryNameError` | CreateCategory, RenameCategory | ✅ ya definido |
+| `DuplicateCategoryNameError` | CreateCategory, UpdateCategory | ✅ ya definido |
+| `InvalidCategoryIconError` | CreateCategory, UpdateCategory | ✅ ya definido |
 | `DuplicateTagNameError` | AddTagToCategory, RenameTag | ✅ ya definido |
 | `InvalidTagOrderError` | ReorderCategoryTags | ✅ ya definido |
 | `CategoryHasAssociatedItemsError` | DeleteCategory | ✅ ya definido |
@@ -484,8 +486,8 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 
 > Nota: los casos de uso de medios de pago están disponibles end-to-end. Los pendientes de esta sección son mejoras futuras, no bloqueos de implementación.
 
-1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `RenameCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
-2. **Eventos de renombrado** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `RenameCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a renombrados en el futuro, sería una mejora posterior.
+1. **Permisos** — **resuelto**: `CreateCategory`, `ReactivateCategory`, `UpdateCategory`, `DeleteCategory`, `DeprecateCategory`, `RenameTag`, `DeleteTag` y `DeprecateTag` quedaron restringidos a `Owner` (validan vía `GetFamilyMembershipQuery` y lanzan `InsufficientRoleError`); `AddTagToCategory` y `ReorderCategoryTags` quedaron abiertos a cualquier `Member` (sin chequeo de rol en el caso de uso). `CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem` y `DeleteFinancialItem` tampoco validan rol — cualquier `Member` de la familia puede operar sobre los movimientos, incluyendo los registrados por otro miembro.
+2. **Eventos de actualización de categoría** — **resuelto**: se implementó sin evento propio, tal como estaba definido; `UpdateCategoryUseCase` y `RenameTagUseCase` no reciben `EventBus` ni publican eventos. Si Reporting necesitara reaccionar a cambios de nombre o ícono en el futuro, sería una mejora posterior.
 3. **`DeleteCategory`/`DeleteTag` sin evento** — **resuelto**: se implementaron sin publicar eventos (no reciben `EventBus`), confirmando que por definición nunca tuvieron items asociados y no hay nada que revertir en otros contextos.
 4. **`AddTagToCategory` sobre categoría deprecada** — **resuelto e implementado**: se rechaza con `CategoryNotActiveError`; una categoría debe reactivarse primero (`ReactivateCategory`) antes de poder agregarle tags nuevos.
 5. **Estrategia de borrado de `FinancialItem`** — **resuelto**: borrado físico. `DeleteFinancialItemUseCase` invoca `FinancialItemRepository.delete()` y publica `ItemDeleted` para que `Budgeting`/`Reporting` reviertan el efecto de `ItemRecorded`.
