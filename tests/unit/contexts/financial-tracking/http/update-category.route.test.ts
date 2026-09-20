@@ -55,19 +55,54 @@ describe("PATCH /families/:familyId/categories/:categoryId", () => {
     });
   });
 
-  test("renombra una categoría cuando lo solicita un Owner", async () => {
+  test("actualiza el nombre de una categoría cuando lo solicita un Owner", async () => {
     const response = await app.inject({
       method: "PATCH",
       url: `/families/${familyId}/categories/${categoryId}`,
       headers: { authorization: ownerAuthorization },
-      payload: { name: "Supermercado" },
+      payload: { newName: "Supermercado" },
     });
 
     assert.equal(response.statusCode, 200);
     const body = JSON.parse(response.body);
     assert.equal(body.id, categoryId);
     assert.equal(body.name, "Supermercado");
+    assert.equal(body.icon, null);
     assert.equal(body.status, "ACTIVE");
+  });
+
+  test("actualiza solo el ícono de una categoría", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newIcon: "shopping_cart" },
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.body);
+    assert.equal(body.name, "Alimentación");
+    assert.equal(body.icon, "shopping_cart");
+  });
+
+  test("quita el ícono de una categoría", async () => {
+    const assignResponse = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newIcon: "shopping_cart" },
+    });
+    assert.equal(assignResponse.statusCode, 200);
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newIcon: null },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(JSON.parse(response.body).icon, null);
   });
 
   test("rechaza el renombrado solicitado por un Member", async () => {
@@ -75,7 +110,7 @@ describe("PATCH /families/:familyId/categories/:categoryId", () => {
       method: "PATCH",
       url: `/families/${familyId}/categories/${categoryId}`,
       headers: { authorization: memberAuthorization },
-      payload: { name: "Supermercado" },
+      payload: { newName: "Supermercado" },
     });
 
     assert.equal(response.statusCode, 403);
@@ -94,19 +129,31 @@ describe("PATCH /families/:familyId/categories/:categoryId", () => {
       method: "PATCH",
       url: `/families/${familyId}/categories/${categoryId}`,
       headers: { authorization: ownerAuthorization },
-      payload: { name: "transporte" },
+      payload: { newName: "transporte" },
     });
 
     assert.equal(response.statusCode, 409);
     assert.equal(JSON.parse(response.body).error, "FINANCIAL_TRACKING.DUPLICATE_CATEGORY_NAME");
   });
 
-  test("rechaza un body sin nombre", async () => {
+  test("rechaza un body sin campos de actualización", async () => {
     const response = await app.inject({
       method: "PATCH",
       url: `/families/${familyId}/categories/${categoryId}`,
       headers: { authorization: ownerAuthorization },
       payload: {},
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
+  });
+
+  test("rechaza un ícono vacío", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newIcon: "" },
     });
 
     assert.equal(response.statusCode, 400);

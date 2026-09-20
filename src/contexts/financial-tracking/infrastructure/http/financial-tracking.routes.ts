@@ -26,6 +26,7 @@ import type { UpdateFinancialItemUseCase } from "../../application/commands/upda
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import type { GetFinancialItemsQuery } from "../../application/queries/get-financial-items.query.js";
 import type { GetPaymentMethodsQuery } from "../../application/queries/get-payment-methods.query.js";
+import { CategoryIcon } from "../../domain/value-objects/category-icon.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../domain/value-objects/category-status.js";
@@ -265,24 +266,31 @@ function registerFinancialTrackingRoutes(
           properties: {
             type: { type: "string", enum: ["EXPENSE", "INCOME"] },
             name: { type: "string", minLength: 1 },
+            icon: { type: "string", minLength: 1 },
           },
         },
       },
     },
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
-      const { type, name } = request.body as { type: "EXPENSE" | "INCOME"; name: string };
+      const { type, name, icon } = request.body as {
+        type: "EXPENSE" | "INCOME";
+        name: string;
+        icon?: string;
+      };
       const category = await deps.createCategoryUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
         type: type === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense,
         name: CategoryName.of(name),
+        ...(icon === undefined ? {} : { icon: CategoryIcon.of(icon) }),
       });
 
       return reply.code(201).send({
         id: category.id.toString(),
         type: category.type,
         name: category.name.toString(),
+        icon: category.icon?.toString() ?? null,
         status: CategoryStatus.Active,
       });
     },
@@ -607,24 +615,34 @@ function registerFinancialTrackingRoutes(
         },
         body: {
           type: "object",
-          required: ["name"],
-          properties: { name: { type: "string", minLength: 1 } },
+          anyOf: [{ required: ["newName"] }, { required: ["newIcon"] }],
+          properties: {
+            newName: { type: "string", minLength: 1 },
+            newIcon: {
+              type: ["string", "null"],
+              minLength: 1,
+            },
+          },
         },
       },
     },
     async (request, reply) => {
       const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
-      const { name } = request.body as { name: string };
+      const { newName, newIcon } = request.body as { newName?: string; newIcon?: string | null };
       const category = await deps.updateCategoryUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
         categoryId: CategoryId.of(categoryId),
-        newName: CategoryName.of(name),
+        ...(newName === undefined ? {} : { newName: CategoryName.of(newName) }),
+        ...(newIcon === undefined
+          ? {}
+          : { newIcon: newIcon === null ? null : CategoryIcon.of(newIcon) }),
       });
 
       return reply.code(200).send({
         id: category.id.toString(),
         name: category.name.toString(),
+        icon: category.icon?.toString() ?? null,
         status: category.status,
       });
     },
@@ -878,6 +896,7 @@ function registerFinancialTrackingRoutes(
           id: category.id.toString(),
           type: category.type,
           name: category.name.toString(),
+          icon: category.icon?.toString() ?? null,
           status: category.status,
           tags: category.tags.map((tag) => ({
             id: tag.id.toString(),
