@@ -17,11 +17,11 @@ import type { DeprecateCategoryUseCase } from "../../application/commands/deprec
 import type { DeprecatePaymentMethodUseCase } from "../../application/commands/deprecate-payment-method.usecase.js";
 import type { DeprecateTagUseCase } from "../../application/commands/deprecate-tag.usecase.js";
 import type { ReclassifyFinancialItemUseCase } from "../../application/commands/reclassify-financial-item.usecase.js";
-import type { RenameCategoryUseCase } from "../../application/commands/rename-category.usecase.js";
 import type { RenamePaymentMethodUseCase } from "../../application/commands/rename-payment-method.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
 import type { SetDefaultPaymentMethodUseCase } from "../../application/commands/set-default-payment-method.usecase.js";
+import type { UpdateCategoryUseCase } from "../../application/commands/update-category.usecase.js";
 import type { UpdateFinancialItemUseCase } from "../../application/commands/update-financial-item.usecase.js";
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import type { GetFinancialItemsQuery } from "../../application/queries/get-financial-items.query.js";
@@ -56,7 +56,7 @@ interface FinancialTrackingRoutesDependencies {
   getCategoriesQuery: GetCategoriesQuery;
   getFinancialItemsQuery: GetFinancialItemsQuery;
   getPaymentMethodsQuery: GetPaymentMethodsQuery;
-  renameCategoryUseCase: RenameCategoryUseCase;
+  updateCategoryUseCase: UpdateCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
   reclassifyFinancialItemUseCase: ReclassifyFinancialItemUseCase;
   reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
@@ -615,7 +615,7 @@ function registerFinancialTrackingRoutes(
     async (request, reply) => {
       const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
       const { name } = request.body as { name: string };
-      const category = await deps.renameCategoryUseCase.execute({
+      const category = await deps.updateCategoryUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
         categoryId: CategoryId.of(categoryId),

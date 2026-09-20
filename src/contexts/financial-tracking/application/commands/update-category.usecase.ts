@@ -1,4 +1,4 @@
-// /src/contexts/financial-tracking/application/commands/rename-category.usecase.ts
+// src/contexts/financial-tracking/application/commands/update-category.usecase.ts
 import type { GetFamilyMembershipQuery } from "../../../family-access/application/queries/get-family-membership.query.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
@@ -7,24 +7,26 @@ import { CategoryNotFoundError } from "../../domain/errors/category-not-found.er
 import { DuplicateCategoryNameError } from "../../domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../domain/errors/insufficient-role.error.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
+import type { CategoryIcon } from "../../domain/value-objects/category-icon.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import type { CategoryName } from "../../domain/value-objects/category-name.js";
 
-interface RenameCategoryInput {
+interface UpdateCategoryInput {
   familyId: FamilyId;
   requestedBy: UserId;
   categoryId: CategoryId;
-  newName: CategoryName;
+  newName?: CategoryName;
+  newIcon?: CategoryIcon | null;
 }
 
-class RenameCategoryUseCase {
+class UpdateCategoryUseCase {
   constructor(
     private readonly categoryRepository: CategoryRepository,
     private readonly getFamilyMembership: GetFamilyMembershipQuery,
   ) {}
 
-  async execute(input: RenameCategoryInput): Promise<Category> {
-    // 1. Solo un Owner puede renombrar categorías
+  async execute(input: UpdateCategoryInput): Promise<Category> {
+    // 1. Solo un Owner puede actualizar categorías
     const membership = await this.getFamilyMembership.execute({
       familyId: input.familyId,
       userId: input.requestedBy,
@@ -39,24 +41,29 @@ class RenameCategoryUseCase {
       throw new CategoryNotFoundError(input.categoryId.toString());
     }
 
-    // 3. Verificar que ninguna otra categoría de la familia tenga ya ese nombre,
-    // sin importar su estado (mismo criterio que CreateCategory)
-    const familyCategories = await this.categoryRepository.findByFamilyId(input.familyId);
-    const duplicate = familyCategories.some(
-      (other) => !other.id.equals(category.id) && other.name.equals(input.newName),
-    );
-    if (duplicate) {
-      throw new DuplicateCategoryNameError(input.newName.toString());
+    // 3. Aplicar cada cambio solicitado
+    if (input.newName !== undefined) {
+      const newName = input.newName;
+      const familyCategories = await this.categoryRepository.findByFamilyId(input.familyId);
+      const duplicate = familyCategories.some(
+        (other) => !other.id.equals(category.id) && other.name.equals(newName),
+      );
+      if (duplicate) {
+        throw new DuplicateCategoryNameError(newName.toString());
+      }
+
+      category.rename(newName);
     }
 
-    // 4. Renombrar
-    category.rename(input.newName);
+    if (input.newIcon !== undefined) {
+      category.updateIcon(input.newIcon);
+    }
 
-    // 5. Persistir
+    // 4. Persistir
     await this.categoryRepository.save(category);
 
     return category;
   }
 }
 
-export { RenameCategoryUseCase };
+export { UpdateCategoryUseCase };
