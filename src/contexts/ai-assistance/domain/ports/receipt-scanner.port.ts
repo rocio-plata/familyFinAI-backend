@@ -1,5 +1,4 @@
 // src/contexts/ai-assistance/domain/ports/receipt-scanner.port.ts
-import type { ReceiptSuggestion } from "../entities/receipt-suggestion.js";
 import type { FamilyContext } from "./natural-language-parser.port.js";
 
 type ReceiptImage = {
@@ -8,8 +7,16 @@ type ReceiptImage = {
   sizeInBytes: number;
 };
 
+type ReceiptScanResult = {
+  merchantName: string;
+  totalAmount: number;
+  currency: string;
+  date: Date | null;
+  suggestedCategoryHint: string | null;
+};
+
 interface ReceiptScannerPort {
-  scan(image: ReceiptImage, context: FamilyContext): Promise<ReceiptSuggestion>;
+  scan(image: ReceiptImage, context: FamilyContext): Promise<ReceiptScanResult>;
 }
 
-export type { ReceiptImage, ReceiptScannerPort };
+export type { ReceiptImage, ReceiptScannerPort, ReceiptScanResult };
