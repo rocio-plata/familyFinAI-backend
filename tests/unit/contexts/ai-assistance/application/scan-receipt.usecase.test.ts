@@ -2,17 +2,16 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import { ScanReceiptUseCase } from "../../../../../src/contexts/ai-assistance/application/commands/scan-receipt.usecase.js";
+import { MerchantCategoryHistory } from "../../../../../src/contexts/ai-assistance/domain/entities/merchant-category-history.js";
+import { UnreadableReceiptError } from "../../../../../src/contexts/ai-assistance/domain/errors/unreadable-receipt.error.js";
+import { SuggestionGenerated } from "../../../../../src/contexts/ai-assistance/domain/events/suggestion-generated.event.js";
+import type { CategoryLookupPort } from "../../../../../src/contexts/ai-assistance/domain/ports/category-lookup.port.js";
+import type { FamilyContext } from "../../../../../src/contexts/ai-assistance/domain/ports/natural-language-parser.port.js";
 import type {
   ReceiptImage,
   ReceiptScannerPort,
   ReceiptScanResult,
 } from "../../../../../src/contexts/ai-assistance/domain/ports/receipt-scanner.port.js";
-import type { FamilyContext } from "../../../../../src/contexts/ai-assistance/domain/ports/natural-language-parser.port.js";
-import type { CategoryLookupPort } from "../../../../../src/contexts/ai-assistance/domain/ports/category-lookup.port.js";
-import { MerchantCategoryHistory } from "../../../../../src/contexts/ai-assistance/domain/entities/merchant-category-history.js";
-import { ReceiptSuggestion } from "../../../../../src/contexts/ai-assistance/domain/entities/receipt-suggestion.js";
-import { UnreadableReceiptError } from "../../../../../src/contexts/ai-assistance/domain/errors/unreadable-receipt.error.js";
-import { SuggestionGenerated } from "../../../../../src/contexts/ai-assistance/domain/events/suggestion-generated.event.js";
 import { MerchantName } from "../../../../../src/contexts/ai-assistance/domain/value-objects/merchant-name.js";
 import { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";

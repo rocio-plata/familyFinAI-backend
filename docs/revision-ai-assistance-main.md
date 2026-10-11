@@ -50,7 +50,7 @@ Parcialmente implementada:
 
 - `ParseNaturalLanguageExpenseUseCase` implementado con tests unitarios.
 - `ScanReceiptUseCase` implementado con tests unitarios.
-- `ConfirmSuggestionUseCase`.
+- `ConfirmSuggestionUseCase` implementado con tests unitarios.
 - `DiscardSuggestionUseCase`.
 
 Financial Tracking ya expone `CreateFinancialItemUseCase`, que sera la frontera publica para confirmar una sugerencia.
