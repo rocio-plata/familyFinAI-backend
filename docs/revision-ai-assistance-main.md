@@ -49,7 +49,7 @@ No existe aun un proveedor real de IA integrado. Los adaptadores antiguos de Ope
 Parcialmente implementada:
 
 - `ParseNaturalLanguageExpenseUseCase` implementado con tests unitarios.
-- `ScanReceiptUseCase`.
+- `ScanReceiptUseCase` implementado con tests unitarios.
 - `ConfirmSuggestionUseCase`.
 - `DiscardSuggestionUseCase`.
 

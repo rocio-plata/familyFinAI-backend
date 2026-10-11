@@ -45,6 +45,8 @@ Analiza una foto de un recibo y genera una sugerencia de gasto — ya definido e
 - **Errores posibles**: `AIProviderUnavailableError`, `UnreadableReceiptError` (la imagen no permite extraer datos mínimos como el monto).
 - **Eventos disparados**: `SuggestionGenerated`.
 
+**Estado de implementación**: implementado en `ScanReceiptUseCase`. Consulta primero una pista local del comercio contra `MerchantCategoryHistoryRepository`; si no encuentra historial, invoca `ReceiptScannerPort`, resuelve la categoría con `CategoryLookupPort`, persiste una única `ReceiptSuggestion` y publica `SuggestionGenerated`. Los resultados sin monto válido se rechazan con `UnreadableReceiptError`.
+
 ---
 
 ### 3. ConfirmSuggestion

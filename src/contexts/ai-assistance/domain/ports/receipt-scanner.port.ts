@@ -5,6 +5,9 @@ type ReceiptImage = {
   reference: string;
   contentType: string;
   sizeInBytes: number;
+  merchantNameHint?: string;
+  amountHint?: number;
+  dateHint?: Date;
 };
 
 type ReceiptScanResult = {
