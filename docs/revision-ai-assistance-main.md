@@ -35,10 +35,12 @@ Continuan pendientes las fases 1 a 6 descritas a continuacion.
 
 ### Fase 1 - Adaptadores fake
 
-Pendiente:
+Implementada en la rama actual:
 
 - `FakeNaturalLanguageParser` deterministico.
 - `FakeReceiptScanner` deterministico.
+
+Ambos adaptadores tienen tests de contrato. El parser extrae montos simples, usa CLP, deja la categoria sin resolver y devuelve una sugerencia pendiente. El scanner devuelve un `ReceiptScanResult` neutral derivado de los metadatos de la imagen, sin llamadas externas.
 
 No existe aun un proveedor real de IA integrado. Los adaptadores antiguos de OpenAI y Vision no se reutilizaran.
 
