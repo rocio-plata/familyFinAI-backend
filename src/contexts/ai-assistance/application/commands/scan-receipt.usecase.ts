@@ -1,20 +1,25 @@
 // src/contexts/ai-assistance/application/commands/scan-receipt.usecase.ts
+
+import type { EventBus } from "../../../../platform/events/event-bus.js";
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
-import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
+import { TransactionDate } from "../../../financial-tracking/domain/value-objects/transaction-date.js";
 import { ReceiptSuggestion } from "../../domain/entities/receipt-suggestion.js";
 import { UnreadableReceiptError } from "../../domain/errors/unreadable-receipt.error.js";
 import type { CategoryLookupPort } from "../../domain/ports/category-lookup.port.js";
 import type { FamilyContext } from "../../domain/ports/natural-language-parser.port.js";
-import type { ReceiptImage, ReceiptScanResult, ReceiptScannerPort } from "../../domain/ports/receipt-scanner.port.js";
+import type {
+  ReceiptImage,
+  ReceiptScannerPort,
+  ReceiptScanResult,
+} from "../../domain/ports/receipt-scanner.port.js";
 import type { MerchantCategoryHistoryRepository } from "../../domain/repositories/merchant-category-history.repository.js";
 import type { SuggestionRepository } from "../../domain/repositories/suggestion.repository.js";
 import { ConfidenceScore } from "../../domain/value-objects/confidence-score.js";
 import { MerchantName } from "../../domain/value-objects/merchant-name.js";
 import { ReceiptImageRef } from "../../domain/value-objects/receipt-image-ref.js";
-import { TransactionDate } from "../../../financial-tracking/domain/value-objects/transaction-date.js";
 
 type ScanReceiptInput = {
   familyId: FamilyId;

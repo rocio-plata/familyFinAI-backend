@@ -65,6 +65,8 @@ El usuario revisa una sugerencia (de texto o de recibo), la edita si es necesari
 - **Errores posibles**: `SuggestionNotFoundError`, `SuggestionNotPendingError` (ya fue confirmada o descartada).
 - **Eventos disparados**: `SuggestionConfirmed`, y `MerchantCategoryLearned` si corresponde (disparado por el propio caso de uso, no por un handler externo).
 
+**Estado de implementación**: implementado en `ConfirmSuggestionUseCase`. Convierte la sugerencia confirmada al contrato público de `CreateFinancialItemUseCase`, persiste el estado confirmado y, para recibos, crea o refuerza `MerchantCategoryHistory` de forma síncrona y publica `MerchantCategoryLearned`.
+
 ---
 
 ### 4. DiscardSuggestion
