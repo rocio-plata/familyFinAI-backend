@@ -4,7 +4,7 @@
 
 La implementacion de `AI Assistance` se construira desde la rama `main` siguiendo el plan actual.
 
-La rama `feature/ai-assistance` no se utilizara como fuente de codigo ni se hara cherry-pick de sus commits. Puede conservarse unicamente como referencia historica de ideas, pero no forma parte de la implementacion objetivo.
+La rama antigua `origin/feature/ai-assistance` no se utilizara como fuente de codigo ni se hara cherry-pick de sus commits. La rama actual `feature/ai-assistance` contiene la implementacion nueva de las fases 0 y 1, construida desde `main`.
 
 La fuente de verdad para el trabajo sera:
 
@@ -46,9 +46,9 @@ No existe aun un proveedor real de IA integrado. Los adaptadores antiguos de Ope
 
 ### Fase 2 - Casos de uso
 
-Pendiente:
+Parcialmente implementada:
 
-- `ParseNaturalLanguageExpenseUseCase`.
+- `ParseNaturalLanguageExpenseUseCase` implementado con tests unitarios.
 - `ScanReceiptUseCase`.
 - `ConfirmSuggestionUseCase`.
 - `DiscardSuggestionUseCase`.

@@ -24,6 +24,8 @@ Interpreta un texto libre del usuario y genera una sugerencia de gasto/ingreso.
 - **Errores posibles**: `AIProviderUnavailableError` (el proveedor de IA falla o no responde), `UnparseableTextError` (el texto no contiene información financiera reconocible).
 - **Eventos disparados**: `SuggestionGenerated`.
 
+**Estado de implementación**: implementado en `ParseNaturalLanguageExpenseUseCase`. Recibe `FamilyId`, `UserId` y texto libre, delega en `NaturalLanguageParserPort`, persiste mediante `SuggestionRepository` y publica los eventos pendientes mediante `EventBus`. El adaptador fake determinista está disponible para desarrollo y tests.
+
 ---
 
 ### 2. ScanReceipt
