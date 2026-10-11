@@ -84,6 +84,8 @@ El usuario descarta una sugerencia sin crear ningún movimiento.
 - **Eventos disparados**: `SuggestionDiscarded`.
 - **Nota de producto**: según lo documentado en el catálogo de eventos original, este evento es útil como métrica de calidad del modelo de IA (cuántas sugerencias se descartan vs. se confirman) — dato relevante para la memoria del TFM como evaluación del sistema.
 
+**Estado de implementación**: implementado en `DiscardSuggestionUseCase`. Verifica la familia, descarta y persiste la sugerencia pendiente y publica `SuggestionDiscarded`.
+
 ---
 
 ### 5. AskFinancialQuestion
