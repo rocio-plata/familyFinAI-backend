@@ -10,7 +10,7 @@ Orden lógico para exponer, vía Fastify, los casos de uso ya diseñados (y en s
 - **Identity** (contexto nuevo, upstream de todo): casos de uso implementados y testeados a nivel de aplicación — `RegisterUser`, `Login`, `GetUserProfile`, `UpdateDisplayName`, `ChangePassword`, `GetUserIdByEmail` (query interna, ya integrada vía `IdentityUserDirectoryAdapter`, wireada en `server.ts`, no se expone por HTTP). Existe el workflow de composición `RegisterUserWithPersonalFamilyWorkflow` (`platform/workflows/`), que orquesta `RegisterUser` + `CreateFamily`. `buildIdentityModule()` ✅ implementado. Rutas expuestas: `POST /auth/register` ✅, `POST /auth/login` ✅, `GET /me/profile` ✅, `PATCH /me/display-name` ✅ y `PATCH /me/password` ✅.
 - **`platform/auth`**: `JwtService`, `TokenService` (con rotación y detección de robo) y `RefreshToken` están implementados y expuestos vía `POST /auth/refresh` ✅ y `POST /auth/logout` ✅. Las rutas viven en `auth.module.ts`, que agrupa la composición HTTP transversal de autenticación.
 - **Family & Access**: los casos de uso de familias, miembros, invitaciones, roles, moneda y multi-familia están implementados, testeados y expuestos por HTTP, incluyendo `GET /me/families` y `PUT /me/families/order`.
-- **Financial Tracking**: casos de uso, entidades/value objects, endpoints HTTP y wiring de medios de pago implementados. **Budgeting** y **Reporting** también tienen sus endpoints HTTP implementados, incluido `/reports/by-payment-method`. AI Assistance sigue pendiente.
+- **Financial Tracking**: casos de uso, entidades/value objects, endpoints HTTP y wiring de medios de pago implementados. **Budgeting**, **Reporting** y el flujo núcleo de **AI Assistance** también tienen sus endpoints HTTP implementados, incluido `/reports/by-payment-method` y las rutas de sugerencias.
 - **Persistencia**: hay soporte dual. Los repositorios InMemory se usan por defecto y los adaptadores Postgres/Drizzle se activan con `PERSISTENCE_MODE=postgres`; el patrón `reconstitute()` ya está implementado en las entidades persistidas.
 
 ---
@@ -127,11 +127,14 @@ Puramente de lectura; depende de que Fase 3 (y opcionalmente Fase 4) ya estén g
 
 Al final porque depende funcionalmente de `Financial Tracking` (para confirmar sugerencias) y de `Reporting` (para `GenerateInsights`/`AskFinancialQuestion`) — y porque es el contexto con más pendientes de diseño sin resolver (puertos de IA aún no implementados con un proveedor real):
 
-1. Implementar al menos un adaptador real (o uno "fake" determinístico para desarrollo) de `NaturalLanguageParserPort` y `ReceiptScannerPort`, ya que sin esto los endpoints no tienen nada real que hacer.
-2. `POST /families/:familyId/suggestions/text` (`ParseNaturalLanguageExpense`).
-3. `POST /families/:familyId/suggestions/receipt` (`ScanReceipt`, con manejo de upload de imagen — a definir mecanismo, probablemente `multipart/form-data`).
-4. `POST /families/:familyId/suggestions/:suggestionId/confirm` (`ConfirmSuggestion`).
-5. `DELETE /families/:familyId/suggestions/:suggestionId` (`DiscardSuggestion`).
+1. ~~Implementar un adaptador fake determinístico de `NaturalLanguageParserPort` y `ReceiptScannerPort`.~~ ✅
+2. ~~`POST /families/:familyId/suggestions/text` (`ParseNaturalLanguageExpense`).~~ ✅
+3. ~~`POST /families/:familyId/suggestions/receipt` (`ScanReceipt`, con upload `multipart/form-data`).~~ ✅
+4. ~~`POST /families/:familyId/suggestions/:suggestionId/confirm` (`ConfirmSuggestion`).~~ ✅
+5. ~~`DELETE /families/:familyId/suggestions/:suggestionId` (`DiscardSuggestion`).~~ ✅
+6. ~~Persistencia Drizzle, migración y composición del módulo.~~ ✅
+7. `AskFinancialQuestion` y `GenerateInsights` — pendientes de diseño.
+8. Rate limiting/control de costos de IA — pendiente transversal.
 6. `POST /families/:familyId/assistant/ask` (`AskFinancialQuestion`) — el más pendiente de diseño de todo el catálogo; probablemente el último en implementarse en la práctica.
 7. `GET /families/:familyId/insights` (`GenerateInsights`).
 

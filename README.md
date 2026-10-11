@@ -130,7 +130,7 @@ src/
 │   ├── financial-tracking/   # Items financieros, categorías y tags — core domain
 │   ├── budgeting/            # Dominio inicial de presupuestos mensuales
 │   ├── reporting/            # Read model inicial para agregaciones y consultas
-│   └── ai-assistance/        # Reservado para interpretación, recibos e insights
+│   └── ai-assistance/        # Sugerencias de texto/recibos, HTTP y persistencia
 ├── shared-kernel/            # Primitivas y errores compartidos entre contextos
 └── platform/                 # Fastify, PostgreSQL/Drizzle, auth y event bus
 
@@ -171,7 +171,7 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 - **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso, rutas HTTP, tests unitarios HTTP, tests de integración PostgreSQL, read model por período y repositorios Drizzle. Al crear una familia se generan los medios por defecto y al aceptar una invitación se asigna el default del nuevo miembro. La migración está aplicada; `npm run db:reset` no conserva datos anteriores ni requiere backfill.
 - **Presupuestos**: cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle y seis rutas HTTP bajo `/families/:familyId/budgets`.
 - **Reportes**: read models materializados por categoría y medio de pago, seis queries, ocho handlers, persistencia InMemory/Drizzle, seis rutas HTTP y tests HTTP/e2e, incluida `/families/:familyId/reports/by-payment-method`.
-- **Asistencia con IA**: contexto reservado; el diseño está documentado, pero todavía no forma parte de la API.
+- **Asistencia con IA**: sugerencias de texto y recibos bajo la filosofía "la IA propone, el usuario confirma". Incluye adaptadores fake determinísticos, confirmación contra `Financial Tracking`, historial comercio-categoría y persistencia PostgreSQL.
 - **Seguridad y aislamiento**: autenticación por JWT, refresh tokens rotables y autorización mediante pertenencia a la familia.
 
 ## f. Usuario y contraseña de prueba
@@ -261,14 +261,14 @@ El desarrollo de casos de uso sigue **TDD** (Red → Green → Refactor), con `n
 - **Financial Tracking** (core domain) — los casos de uso de movimientos financieros, categorías, tags y medios de pago, junto con sus rutas HTTP, repositorios in-memory y adaptadores Drizzle sobre PostgreSQL, todos compuestos en el módulo y expuestos por HTTP. Sus handlers de ciclo de vida de medios de pago están suscritos al `EventBus`, y las rutas tienen tests HTTP dedicados además de cobertura de integración/e2e.
 - **Reporting & Analytics** — read model `CategoryPeriodAggregate` y `PaymentMethodPeriodAggregate`, seis queries, ocho event handlers, persistencia InMemory y Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP (incluida `/reports/by-payment-method`). Migraciones PostgreSQL aplicadas; la ruta por medio de pago tiene tests HTTP y e2e dedicados.
 - Eventos de dominio entre contextos, event bus in-process (`platform/events`), y flujo de autenticación/autorización (JWT con rotación de refresh tokens, middlewares `authenticate`/`requireFamilyMembership`) en `platform/auth`.
-- Anticorruption layer de `AI Assistance` definida a nivel de diseño (puertos), sin adaptadores concretos todavía.
+- Anticorruption layer de `AI Assistance` implementada con `FakeNaturalLanguageParser` y `FakeReceiptScanner`; los proveedores reales quedan como sustitución futura de esos adaptadores.
 
 **Pendiente:**
 
 - `Budgeting`: dominio, cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle, composición, suscripciones al `EventBus` y seis rutas HTTP implementados con pruebas; quedan pendientes únicamente los trabajos listados en la documentación de Budgeting.
 - Automatizar en CI la ejecución de las suites PostgreSQL y la verificación reproducible de migraciones.
-- `AI Assistance`: solo existe el andamiaje de carpetas (`domain/`, `application/`, `infrastructure/`), sin entidades ni casos de uso implementados.
-- Proveedores concretos para `AI Assistance`, como los adaptadores de interpretación de lenguaje natural y escaneo de recibos.
+- `AI Assistance`: las Fases 0-4 están implementadas: dominio, adaptadores fake, cuatro casos de uso núcleo, cuatro rutas HTTP, persistencia Drizzle/in-memory, migración y composición. Quedan pendientes `AskFinancialQuestion`, `GenerateInsights` y rate limiting.
+- Proveedores reales para `AI Assistance` (OpenAI, Anthropic u otro), como sustitución futura de los adaptadores fake actuales.
 - `NaturalLanguageQueryPort` (consultas en lenguaje natural sobre las finanzas familiares) y el resto de los puertos/adaptadores de IA.
 - La ruta HTTP resuelve la moneda por defecto de la familia antes de invocar `CreateFinancialItem`; el caso de uso recibe un `Money` ya construido como contrato de aplicación.
 - Roles/permisos granulares para los casos de uso de `FinancialItem` (`CreateFinancialItem`, `UpdateFinancialItem`, `ReclassifyFinancialItem`, `DeleteFinancialItem` no validan rol todavía) y estrategia de despliegue.

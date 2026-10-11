@@ -2,9 +2,9 @@
 
 ## Decision
 
-La implementacion de `AI Assistance` se construira desde la rama `main` siguiendo el plan actual.
+La implementacion de `AI Assistance` se construyó desde `main` siguiendo el plan actual.
 
-La rama antigua `origin/feature/ai-assistance` no se utilizara como fuente de codigo ni se hara cherry-pick de sus commits. La rama actual `feature/ai-assistance` contiene la implementacion nueva de las fases 0 y 1, construida desde `main`.
+La rama antigua `origin/feature/ai-assistance` no se utilizó como fuente de código ni se hizo cherry-pick de sus commits. Las fases 0-4 se integraron posteriormente en `main`.
 
 La fuente de verdad para el trabajo sera:
 
@@ -14,11 +14,11 @@ La fuente de verdad para el trabajo sera:
 
 ## Estado actual en `main`
 
-El contexto `src/contexts/ai-assistance/` ya contiene la implementacion de dominio de la Fase 0 y sus tests unitarios. Las fases de adaptadores, casos de uso, HTTP, persistencia y control de uso siguen pendientes.
+El contexto `src/contexts/ai-assistance/` contiene las fases 0-4 implementadas y sus tests. Solo las fases 5-6 siguen pendientes.
 
 ### Fase 0 - Dominio
 
-Implementada en la rama actual:
+Implementada en `main`:
 
 - Value objects: `SuggestionId`, `ConfidenceScore`, `MerchantName` y `ReceiptImageRef`.
 - `SuggestionStatus` con estados `Pending`, `Confirmed` y `Discarded`.
@@ -31,11 +31,11 @@ Implementada en la rama actual:
 
 La implementacion incluye tests unitarios de dominio y dobles in-memory para `SuggestionRepository` y `MerchantCategoryHistoryRepository`.
 
-Continuan pendientes las fases 1 a 6 descritas a continuacion.
+Continúan pendientes únicamente las fases 5 y 6 descritas a continuación.
 
 ### Fase 1 - Adaptadores fake
 
-Implementada en la rama actual:
+Implementada en `main`:
 
 - `FakeNaturalLanguageParser` deterministico.
 - `FakeReceiptScanner` deterministico.
@@ -46,7 +46,7 @@ No existe aun un proveedor real de IA integrado. Los adaptadores antiguos de Ope
 
 ### Fase 2 - Casos de uso
 
-Parcialmente implementada:
+Implementada:
 
 - `ParseNaturalLanguageExpenseUseCase` implementado con tests unitarios.
 - `ScanReceiptUseCase` implementado con tests unitarios.
@@ -65,10 +65,6 @@ Implementada como registrar HTTP independiente:
 - `DELETE /families/:familyId/suggestions/:suggestionId`.
 
 Las rutas incluyen autenticación, membresía familiar, schemas Fastify, serialización de sugerencias y soporte multipart mediante `@fastify/multipart`. La composición del módulo y su integración con persistencia quedan para la Fase 4.
-
-Las rutas deberan aplicar `authenticate` y `requireFamilyMembership`, declarar schemas Fastify y mantener handlers delgados.
-
-`@fastify/multipart` aun no esta instalado y solo sera necesario al implementar la subida multipart de recibos.
 
 ### Fase 4 - Persistencia
 

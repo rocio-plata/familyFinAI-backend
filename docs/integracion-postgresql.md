@@ -312,6 +312,10 @@ export const merchantCategoryHistory = pgTable("merchant_category_history", {
 
 **Nota**: `ExpenseSuggestion` y `ReceiptSuggestion` se unificaron en una sola tabla `suggestions` con un discriminador `source` — evita duplicar columnas casi idénticas en dos tablas. El repositorio reconstruye la entidad correcta (`ExpenseSuggestion` vs `ReceiptSuggestion`) según ese campo.
 
+**Estado**: implementado en Drizzle mediante `DrizzleSuggestionRepository` y
+`DrizzleMerchantCategoryHistoryRepository`, con migración `0008_cynical_kabuki.sql`
+y composición en `buildAiAssistanceModule()`.
+
 ### `platform/auth/schema.ts`
 
 ```typescript

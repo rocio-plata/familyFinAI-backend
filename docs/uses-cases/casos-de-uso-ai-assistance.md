@@ -17,7 +17,7 @@ Interpreta un texto libre del usuario y genera una sugerencia de gasto/ingreso.
 - **Entrada**: `familyId`, `requestedBy` (UserId), `rawText`.
 - **Flujo principal**:
   1. Se invoca `NaturalLanguageParserPort.parse(rawText, familyContext)`.
-  2. El adaptador (ej. `OpenAINaturalLanguageParser`) traduce la respuesta del proveedor a los Value Objects del dominio (`Money`, `TransactionDate`, etc.), intentando resolver `categoryId`/`tagId` según el texto detectado.
+  2. El adaptador configurado (actualmente `FakeNaturalLanguageParser`; en el futuro podría ser un proveedor real) traduce la respuesta a los Value Objects del dominio (`Money`, `TransactionDate`, etc.), intentando resolver `categoryId`/`tagId` según el texto detectado.
   3. Se construye un `ExpenseSuggestion` en estado `Pending` con el resultado, incluyendo su `ConfidenceScore`.
   4. Se persiste vía `SuggestionRepository.save()`.
   5. Se devuelve la sugerencia al usuario para su revisión — **no** se crea ningún `FinancialItem` todavía.

@@ -91,10 +91,18 @@ Estos dos casos de uso siguen sin suficiente definición para empezar TDD direct
 
 21. **Rate limiting de uso de IA**: mencionado en la especificación original como requisito de seguridad, no modelado todavía en ningún caso de uso — probablemente un middleware en `platform/`, no parte del dominio de `AI Assistance`. No bloquea nada de lo anterior; se puede abordar en paralelo o al final.
 
----
+
+## Estado actual de las fases implementadas y pendientes
+
+**Fase 0**: Dominio del contexto — completada.
+**Fase 1**: Adaptador fake determinístico — completada.
+**Fase 2**: Casos de uso del flujo núcleo — completada.
+**Fase 3**: Rutas HTTP del flujo núcleo — completada.
+**Fase 4**: Persistencia real (Drizzle) — completada.
+**Fase 5**: Lo menos definido — pendiente.
+**Fase 6**: Rate limiting de uso de IA — pendiente.
 
 ## Resumen visual
-
 ```
 Fase 0: Dominio (VOs, entidades, errores, puertos, MerchantCategoryHistory)
    │

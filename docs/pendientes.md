@@ -17,10 +17,27 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [x] Orden de persistencia/publicación en `CreateFinancialItemUseCase` corregido.
 - [x] Migración inicial aplicada desde una base vacía vía `npm run db:reset`.
 - [x] Casos de uso y rutas HTTP de medios de pago compuestos en `financial-tracking.module.ts` y expuestos en `financial-tracking.routes.ts` (ver detalle en sección `Financial Tracking`).
-- [x] Suite de tests de integración contra PostgreSQL real: 15 tests cubriendo los 11 repositorios Drizzle del proyecto, en `tests/integration/` (`npm run test:integration`, se salta sin `DATABASE_URL`).
+- [x] Suite de tests de integración contra PostgreSQL real: 19 tests cubriendo los repositorios Drizzle del proyecto, incluidos los de AI Assistance, en `tests/integration/` (`npm run test:integration`, se salta sin `DATABASE_URL`).
 - [x] Suite de tests end-to-end: 6 flujos HTTP completos contra Postgres real en `tests/e2e/` (`npm run test:e2e`, helper compartido `build-e2e-app.ts`): ciclo de vida de un movimiento (con read model de Reporting), presupuesto reaccionando vía `EventBus`, invitación y aceptación de miembro, ciclo de vida de medios de pago, dashboard/trend/comparison y reporte por medio de pago.
 - [x] `resolveHttpStatus` no mapeaba `PAYMENT_METHOD_IS_SOMEONES_DEFAULT` a un status de conflicto (caía al 400 por defecto). Corregido agregando la regla de sufijo `IS_SOMEONES_DEFAULT` → 409, detectado por `tests/e2e/payment-method-lifecycle.test.ts`.
 - [x] `OnFamilyCreatedHandler`, `OnInvitationAcceptedHandler` y `OnMemberRemovedHandler` de medios de pago suscritos al `EventBus` (ver detalle en sección `Financial Tracking` → `Medios de pago`). Los tests e2e ya no crean el medio de pago manualmente; dependen del que se crea automáticamente al registrar la familia.
+
+### AI Assistance
+
+#### Resuelto
+
+- [x] Dominio: value objects, entidades, errores, eventos, puertos y repositorios.
+- [x] Adaptadores fake determinísticos: `FakeNaturalLanguageParser` y `FakeReceiptScanner`.
+- [x] Casos de uso `ParseNaturalLanguageExpense`, `ScanReceipt`, `ConfirmSuggestion` y `DiscardSuggestion`.
+- [x] Rutas HTTP de texto, recibos multipart, confirmación y descarte, con autenticación y membresía familiar.
+- [x] Persistencia Drizzle/in-memory, migración `0008_cynical_kabuki.sql` y composición en `buildAiAssistanceModule()`.
+- [x] Tests unitarios HTTP/dominio y tests de integración de los repositorios AI Assistance.
+
+#### Pendiente
+
+- [ ] `AskFinancialQuestion`: definir la traducción de pregunta libre a consultas estructuradas de Reporting.
+- [ ] `GenerateInsights`: decidir entre plantillas determinísticas e IA real para el MVP.
+- [ ] Rate limiting y control de costos de uso de IA.
 
 ### Pendiente
 
@@ -32,7 +49,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
 - [x] `Money` movido a `shared-kernel/domain/money.ts` (junto con `InvalidMoneyError` en `shared-kernel/errors/`, código `SHARED.INVALID_MONEY`); `Budgeting` y `Reporting` ya no dependen del dominio interno de `Financial Tracking` para este VO. Test movido a `tests/unit/shared-kernel/domain/money.test.ts`.
-- [x] Suite unitaria actual: 806 tests ejecutados con `npm test`; suite de integración: 15 tests; suite e2e: 6 tests. Todas las suites se ejecutan con scripts separados para evitar mezclar tests in-memory con PostgreSQL real.
+- [x] Suite actual: 862 tests unitarios, 19 tests de integración y 6 tests e2e. Todas las suites se ejecutan con scripts separados para evitar mezclar tests in-memory con PostgreSQL real.
 
 ### Opcional
 

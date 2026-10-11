@@ -5,7 +5,7 @@ AI Assistance (application) ── usa ──▶ NaturalLanguageParserPort (inte
         │                                        │
         │                              implementado por
         │                                        ▼
-        │                         OpenAINaturalLanguageParser (infrastructure)
+        │                         FakeNaturalLanguageParser (infrastructure)
         │                                        │
         │                          traduce respuesta cruda → ExpenseSuggestion
         │                                        │
@@ -22,3 +22,8 @@ ConfirmSuggestionUseCase ── llama a ──▶ CreateFinancialItemUseCase (de
                                                   │
                                                   ▼
                                          FinancialItem creado (dominio real)
+
+Para recibos, `ScanReceiptUseCase` consulta primero `MerchantCategoryHistory` y,
+si no hay asociación conocida, usa `FakeReceiptScanner`, resuelve la categoría y
+crea una única `ReceiptSuggestion`. Los adaptadores reales de IA quedan para una
+fase posterior.

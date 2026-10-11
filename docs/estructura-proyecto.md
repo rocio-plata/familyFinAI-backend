@@ -14,7 +14,7 @@ src/
 │   ├── financial-tracking/   # Categorías, tags y movimientos financieros
 │   ├── budgeting/            # Casos de uso iniciales de presupuestos mensuales
 │   ├── reporting/            # Queries, handlers, persistencia y endpoints de Reporting
-│   └── ai-assistance/        # Reservado: aún sin implementación
+│   └── ai-assistance/        # Sugerencias de texto/recibos, HTTP y persistencia
 ├── platform/
 │   ├── auth/                 # JWT, refresh tokens y middleware
 │   ├── db/                   # Drizzle, schema, migraciones y unit of work
@@ -48,7 +48,7 @@ membresía y pertenencia son utilizadas por los demás contextos para autorizar 
 Contiene `FinancialItem`, `Category` y `Tag`, además de sus value objects, errores, repositorios,
 casos de uso y rutas HTTP. Publica eventos de dominio para que otros contextos puedan reaccionar.
 
-## Contextos reservados
+## Otros contextos y estado
 
 `Budgeting` tiene implementados sus comandos/queries, handlers, persistencia InMemory y Drizzle,
 composición, rutas HTTP y cobertura e2e; queda pendiente la definición del evento `BudgetOverspent`
@@ -56,12 +56,14 @@ y algunas decisiones de negocio secundarias. `Reporting` tiene implementados los
 `CategoryPeriodAggregate` y `PaymentMethodPeriodAggregate`, seis queries, ocho event handlers,
 persistencia InMemory y Drizzle, composición, suscripciones al `EventBus`, seis rutas HTTP y
 tests HTTP/e2e.
-`AI Assistance` conserva únicamente la estructura de carpetas y archivos `.gitkeep`. Sus documentos
-de diseño no representan endpoints disponibles ni código ejecutado por `src/platform/app.ts`.
+`AI Assistance` está implementado hasta la Fase 4: dominio, adaptadores fake determinísticos,
+los cuatro casos de uso núcleo, rutas HTTP, persistencia Drizzle/in-memory, migración y composición
+en `src/platform/app.ts` y `src/platform/server.ts`. Las Fases 5 y 6 siguen pendientes: definir
+`AskFinancialQuestion`/`GenerateInsights` y añadir rate limiting de uso de IA.
 
 ## Infraestructura y composición
 
-- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access, Financial Tracking, Budgeting y Reporting.
+- `src/platform/app.ts` registra `/health`, Identity, Auth, Family & Access, Financial Tracking, Budgeting, Reporting y AI Assistance cuando se proporcionan sus dependencias.
 - `src/platform/server.ts` selecciona repositorios in-memory por defecto o adaptadores Drizzle
   cuando `PERSISTENCE_MODE=postgres`.
 - PostgreSQL se ejecuta localmente con `docker-compose.yml`; las migraciones están en
@@ -93,4 +95,4 @@ de proveedores externos.
 | Auth y refresh tokens | Implementado con memoria y PostgreSQL |
 | Budgeting | Completamente implementado con memoria y PostgreSQL; quedan pendientes decisiones funcionales y eventos secundarios |
 | Reporting | Queries, handlers, persistencia, composición y endpoints de los read models por categoría y medio de pago implementados |
-| AI Assistance | Diseño/documentación parcial; implementación pendiente |
+| AI Assistance | Fases 0-4 implementadas; Fases 5-6 pendientes |
