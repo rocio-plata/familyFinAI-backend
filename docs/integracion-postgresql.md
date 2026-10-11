@@ -275,21 +275,27 @@ export const categoryPeriodAggregates = pgTable(
 ### `ai-assistance/infrastructure/persistence/schema.ts`
 
 ```typescript
-import { pgTable, uuid, varchar, numeric, text, timestamp, real, pgEnum } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, numeric, real, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const suggestionStatusEnum = pgEnum("suggestion_status", ["PENDING", "CONFIRMED", "DISCARDED"]);
 export const suggestionSourceEnum = pgEnum("suggestion_source", ["TEXT", "RECEIPT"]);
+export const suggestionTypeEnum = pgEnum("suggestion_type", ["EXPENSE", "INCOME"]);
 
 export const suggestions = pgTable("suggestions", {
   id: uuid("id").primaryKey(),
   familyId: uuid("family_id").notNull(),
+  requestedBy: uuid("requested_by").notNull(),
   source: suggestionSourceEnum("source").notNull(),
+  suggestedType: suggestionTypeEnum("suggested_type").notNull(),
   rawInput: text("raw_input"), // texto original, o null si vino de un recibo
+  receiptImageRef: text("receipt_image_ref"),
   merchantName: varchar("merchant_name", { length: 100 }), // solo para recibos
   suggestedAmount: numeric("suggested_amount", { precision: 14, scale: 2 }).notNull(),
+  suggestedCurrency: varchar("suggested_currency", { length: 3 }).notNull(),
   suggestedCategoryId: uuid("suggested_category_id"),
   suggestedTagId: uuid("suggested_tag_id"),
   suggestedDate: timestamp("suggested_date").notNull(),
+  suggestedTitle: varchar("suggested_title", { length: 100 }),
   confidence: real("confidence").notNull(),
   status: suggestionStatusEnum("status").notNull().default("PENDING"),
 });
