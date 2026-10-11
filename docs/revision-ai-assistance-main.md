@@ -72,7 +72,7 @@ Las rutas deberan aplicar `authenticate` y `requireFamilyMembership`, declarar s
 
 ### Fase 4 - Persistencia
 
-Pendiente:
+Implementada:
 
 - Schema Drizzle para `suggestions`.
 - Schema Drizzle para `merchant_category_history`.
@@ -83,7 +83,9 @@ Pendiente:
 - Integracion del modulo en `src/platform/app.ts`.
 - Reexport del schema desde `src/platform/db/schema.ts`.
 
-El esquema esta descrito en `docs/integracion-postgresql.md`, pero aun no existe como codigo en `src/`.
+Incluye migración Drizzle `0008_cynical_kabuki.sql`, repositorios Drizzle e in-memory, composición mediante `buildAiAssistanceModule()` y wiring del bootstrap del servidor. El schema persiste también `requestedBy`, `suggestedType`, `suggestedCurrency`, `suggestedTitle` y `receiptImageRef` para permitir reconstitución completa.
+
+El esquema documentado y el schema real están alineados.
 
 ### Fase 5 - Casos avanzados
 

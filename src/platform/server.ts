@@ -1,5 +1,9 @@
 // /src/platform/server.ts
 
+import { DrizzleMerchantCategoryHistoryRepository } from "../contexts/ai-assistance/infrastructure/persistence/drizzle-merchant-category-history.repository.js";
+import { DrizzleSuggestionRepository } from "../contexts/ai-assistance/infrastructure/persistence/drizzle-suggestion.repository.js";
+import { InMemoryMerchantCategoryHistoryRepository } from "../contexts/ai-assistance/infrastructure/persistence/in-memory-merchant-category-history.repository.js";
+import { InMemorySuggestionRepository } from "../contexts/ai-assistance/infrastructure/persistence/in-memory-suggestion.repository.js";
 import { DrizzleBudgetConfigurationRepository } from "../contexts/budgeting/infrastructure/persistence/drizzle-budget-configuration.repository.js";
 import { DrizzleBudgetPeriodStatusRepository } from "../contexts/budgeting/infrastructure/persistence/drizzle-budget-period-status.repository.js";
 import { InMemoryBudgetConfigurationRepository } from "../contexts/budgeting/infrastructure/persistence/in-memory-budget-configuration.repository.js";
@@ -90,6 +94,12 @@ const budgetPeriodStatusRepository = usePostgres
 const refreshTokenRepository = usePostgres
   ? new DrizzleRefreshTokenRepository()
   : new InMemoryRefreshTokenRepository();
+const suggestionRepository = usePostgres
+  ? new DrizzleSuggestionRepository()
+  : new InMemorySuggestionRepository();
+const merchantCategoryHistoryRepository = usePostgres
+  ? new DrizzleMerchantCategoryHistoryRepository()
+  : new InMemoryMerchantCategoryHistoryRepository();
 const unitOfWork = usePostgres ? new DrizzleUnitOfWork() : new DirectUnitOfWork();
 
 const app = buildApp({
@@ -129,6 +139,11 @@ const app = buildApp({
     budgetConfigurationRepository,
     budgetPeriodStatusRepository,
     getCategoriesQuery: new GetCategoriesQuery(categoryRepository),
+    eventBus,
+  },
+  aiAssistance: {
+    suggestionRepository,
+    merchantCategoryHistoryRepository,
     eventBus,
   },
 });

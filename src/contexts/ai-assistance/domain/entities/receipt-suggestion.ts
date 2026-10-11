@@ -82,6 +82,9 @@ class ReceiptSuggestion {
   get suggestedAmount(): Money {
     return this._suggestedAmount;
   }
+  get suggestedType(): SuggestionType {
+    return SuggestionType.Expense;
+  }
   get suggestedCategoryId(): string | null {
     return this._suggestedCategoryId;
   }

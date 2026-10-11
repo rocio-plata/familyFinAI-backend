@@ -2,6 +2,7 @@
 // persistencia de más contextos (identity, financial-tracking, etc.),
 // agregar su export aquí.
 
+export * from "../../contexts/ai-assistance/infrastructure/persistence/schema.js";
 export * from "../../contexts/budgeting/infrastructure/persistence/schema.js";
 export * from "../../contexts/family-access/infrastructure/persistence/schema.js";
 export * from "../../contexts/financial-tracking/infrastructure/persistence/schema.js";

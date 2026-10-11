@@ -1,6 +1,10 @@
 // /src/platform/app.ts
 import Fastify, { type FastifyInstance } from "fastify";
 import {
+  type AiAssistanceModuleDependencies,
+  buildAiAssistanceModule,
+} from "../contexts/ai-assistance/ai-assistance.module.js";
+import {
   type BudgetingModuleDependencies,
   buildBudgetingModule,
 } from "../contexts/budgeting/budgeting.module.js";
@@ -34,6 +38,10 @@ interface AppDependencies {
   financialTracking?: FinancialTrackingModuleDependencies;
   reporting?: ReportingModuleDependencies;
   budgeting?: BudgetingModuleDependencies;
+  aiAssistance?: Pick<
+    AiAssistanceModuleDependencies,
+    "suggestionRepository" | "merchantCategoryHistoryRepository" | "eventBus"
+  >;
   logLevel?: string;
 }
 
@@ -73,6 +81,15 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
           familyAccessModule.useCases.getFamilyDefaultCurrency,
         )
       : null;
+  const aiAssistanceModule =
+    dependencies.aiAssistance && financialTrackingModule
+      ? buildAiAssistanceModule({
+          ...dependencies.aiAssistance,
+          getCategoriesQuery: financialTrackingModule.useCases.getCategories,
+          getFamilyMembershipQuery: familyAccessModule.useCases.getFamilyMembership,
+          createFinancialItemUseCase: financialTrackingModule.useCases.createFinancialItem,
+        })
+      : null;
   const authenticateRequest = authenticate(dependencies.jwtService);
   const authModule = buildAuthModule({
     tokenService: dependencies.identity.tokenService,
@@ -98,6 +115,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
   financialTrackingModule?.registerRoutes(app, authenticateRequest);
   reportingModule?.registerRoutes(app, authenticateRequest);
   budgetingModule?.registerRoutes(app, authenticateRequest);
+  aiAssistanceModule?.registerRoutes(app, authenticateRequest);
 
   return app;
 }
