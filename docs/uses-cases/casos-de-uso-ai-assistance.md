@@ -86,6 +86,8 @@ El usuario descarta una sugerencia sin crear ningún movimiento.
 
 **Estado de implementación**: implementado en `DiscardSuggestionUseCase`. Verifica la familia, descarta y persiste la sugerencia pendiente y publica `SuggestionDiscarded`.
 
+Las cuatro operaciones están expuestas por `ai-assistance.routes.ts` con autenticación, membresía familiar, schemas Fastify y soporte multipart para recibos.
+
 ---
 
 ### 5. AskFinancialQuestion
