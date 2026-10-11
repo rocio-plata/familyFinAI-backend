@@ -57,9 +57,9 @@ El usuario revisa una sugerencia (de texto o de recibo), la edita si es necesari
   2. Se invoca `suggestion.confirm(edits)`, que aplica las correcciones del usuario y devuelve un `ConfirmedSuggestion`.
   3. Se llama al caso de uso público `CreateFinancialItem` de `Financial Tracking` con los datos ya confirmados — **nunca** se accede al dominio interno de `Financial Tracking` directamente (Anticorruption Layer / límite de contexto).
   4. Se persiste el nuevo estado de la `Suggestion` (`Confirmed`).
-  5. Si la sugerencia vino de un recibo y no existía historial previo para ese comercio, se registra la nueva asociación en `MerchantCategoryHistoryRepository` (ver evento `MerchantCategoryLearned`, disparado desde el event handler correspondiente, no directamente aquí).
+  5. Si la sugerencia vino de un recibo, el propio caso de uso actualiza `MerchantCategoryHistoryRepository` **directamente, de forma síncrona** (no vía event handler) — ya tiene en memoria todo lo necesario (`merchantName`, categoría confirmada), sin requerir que `ItemRecorded` lleve ninguna trazabilidad hacia la sugerencia de origen. *(Decisión resuelta en `plan-implementacion-ai-assistance.md`: reemplaza al `OnItemRecordedHandler` que se mencionaba antes en la sección de Event Handlers.)*
 - **Errores posibles**: `SuggestionNotFoundError`, `SuggestionNotPendingError` (ya fue confirmada o descartada).
-- **Eventos disparados**: `SuggestionConfirmed`.
+- **Eventos disparados**: `SuggestionConfirmed`, y `MerchantCategoryLearned` si corresponde (disparado por el propio caso de uso, no por un handler externo).
 
 ---
 
@@ -116,16 +116,7 @@ Genera recomendaciones e insights proactivos basados en los datos reales de la f
 
 ## Event Handlers
 
-### 7. OnItemRecordedHandler
-
-Aprende la asociación comercio → categoría cuando un movimiento se confirma, para futuras sugerencias sin necesidad de IA.
-
-- **Se dispara con**: `ItemRecorded` (publicado por `Financial Tracking` cuando `ConfirmSuggestion` crea el `FinancialItem`).
-- **Precondición**: el evento debe poder rastrearse hasta una `ReceiptSuggestion` confirmada con un `merchantName` — esto requiere que `ItemRecorded` incluya alguna referencia a la sugerencia de origen (ver pendientes, hoy el evento no lo contempla).
-- **Flujo principal**:
-  1. Si el `FinancialItem` se originó de una `ReceiptSuggestion`, se registra o refuerza la asociación `merchantName → categoryId (+ tagId)` en `MerchantCategoryHistoryRepository`.
-  2. Si la asociación ya existía, se incrementa su "confianza"/frecuencia (para preferir asociaciones bien establecidas sobre coincidencias aisladas).
-- **Eventos disparados**: `MerchantCategoryLearned`.
+Ninguno en este contexto — la actualización de `MerchantCategoryHistory` se resolvió como parte síncrona de `ConfirmSuggestion` (ver caso de uso 3), no como una reacción a un evento externo.
 
 ---
 
@@ -145,5 +136,5 @@ Aprende la asociación comercio → categoría cuando un movimiento se confirma,
 1. **Permisos**: mismo punto abierto que en los demás contextos — ¿cualquier `Member` puede confirmar/descartar sugerencias ajenas (generadas por otro miembro), o solo quien las generó?
 2. **`NaturalLanguageQueryPort` sin definir**: `AskFinancialQuestion` es el caso de uso menos resuelto del catálogo completo del proyecto — falta decidir el mecanismo de traducción "pregunta libre → consulta estructurada a `Reporting`" (¿function calling del proveedor de IA? ¿un set fijo de intents reconocidos?).
 3. **`GenerateInsights` — ¿necesita IA real?**: a evaluar si se puede resolver con plantillas de texto (sin costo de IA) para el MVP, dejando la redacción más natural como mejora futura — coherente con la estrategia de costos de IA de la especificación original ("no usar IA para operaciones que no la necesiten").
-4. **Trazabilidad `ReceiptSuggestion → FinancialItem → OnItemRecordedHandler`**: para que `OnItemRecordedHandler` pueda aprender la asociación comercio-categoría, `ItemRecorded` necesita alguna forma de saber que ese item se originó de una sugerencia de recibo con un `merchantName` específico — hoy el evento no lleva esa referencia. Alternativa: que el propio caso de uso `ConfirmSuggestion` (que sí tiene el contexto completo) sea quien actualice `MerchantCategoryHistory` directamente, sin pasar por un event handler — a decidir cuál enfoque es más consistente con el resto del diseño.
+4. ~~Trazabilidad `ReceiptSuggestion → FinancialItem → OnItemRecordedHandler`~~ — **resuelto**: `ConfirmSuggestion` actualiza `MerchantCategoryHistory` directamente, de forma síncrona (ver caso de uso 3). No hace falta que `ItemRecorded` lleve ninguna referencia hacia la sugerencia de origen, y el `OnItemRecordedHandler` que se mencionaba antes queda descartado.
 5. **Rate limiting / control de costos de IA**: mencionado como requisito de seguridad en la especificación original ("límites de uso de IA"), pero no está modelado en ningún caso de uso todavía — probablemente vive en `platform/` como middleware transversal, no dentro del dominio de `AI Assistance`.
