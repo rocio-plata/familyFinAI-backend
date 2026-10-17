@@ -14,6 +14,7 @@ export const invitationStatusEnum = pgEnum("invitation_status", [
   "ACCEPTED",
   "EXPIRED",
   "REVOKED",
+  "DECLINED",
 ]);
 
 export const families = pgTable("families", {
@@ -50,4 +51,5 @@ export const invitations = pgTable("invitations", {
   status: invitationStatusEnum("status").notNull().default("PENDING"),
   expiresAt: timestamp("expires_at").notNull(),
   invitedUserId: uuid("invited_user_id"),
+  invitedBy: uuid("invited_by").notNull(),
 });

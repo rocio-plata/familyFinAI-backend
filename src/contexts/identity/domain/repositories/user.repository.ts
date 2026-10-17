@@ -7,6 +7,7 @@ interface UserRepository {
   save(user: User): Promise<void>;
   findById(id: UserId): Promise<User | null>;
   findByEmail(email: EmailAddress): Promise<User | null>;
+  findByIds(ids: UserId[]): Promise<User[]>;
 }
 
 export type { UserRepository };

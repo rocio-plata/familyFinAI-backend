@@ -4,6 +4,7 @@ import type { Invitation } from "../../../../../src/contexts/family-access/domai
 import type { InvitationRepository } from "../../../../../src/contexts/family-access/domain/repositories/invitation.repository.js";
 import type { FamilyId } from "../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import type { InvitationId } from "../../../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
+import type { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
 
 class InMemoryInvitationRepository implements InvitationRepository {
   private readonly invitations = new Map<string, Invitation>();
@@ -18,6 +19,12 @@ class InMemoryInvitationRepository implements InvitationRepository {
 
   async findByFamilyId(familyId: FamilyId): Promise<Invitation[]> {
     return [...this.invitations.values()].filter((inv) => inv.familyId.equals(familyId));
+  }
+
+  async findByInvitedEmail(email: EmailAddress): Promise<Invitation[]> {
+    return [...this.invitations.values()].filter((invitation) =>
+      invitation.invitedEmail.equals(email),
+    );
   }
 }
 

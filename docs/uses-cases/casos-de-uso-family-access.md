@@ -10,6 +10,16 @@ La moneda familiar se puede consultar mediante `GET /families/:familyId/settings
 moneda requiere rol `OWNER` y se bloquea cuando existen movimientos o presupuestos activos; las
 razones se devuelven como `ITEMS_EXIST` y/o `ACTIVE_BUDGETS_EXIST`.
 
+`GET /me/profile` devuelve también `userId`. `GET /me/families` devuelve `defaultCurrency` y
+`memberCount`. `GET /families/:familyId/members` devuelve `displayName`; el email solo se incluye
+cuando quien consulta tiene rol `OWNER`. Los perfiles ausentes se representan con
+`displayName: null`.
+
+Las invitaciones pendientes propias se consultan con `GET /me/invitations`. Un usuario puede
+declinar una invitación con `POST /invitations/:invitationId/decline`, que cambia su estado a
+`DECLINED` y valida el email del usuario autenticado. `GET /families/:familyId/invitations` queda
+reservado a `OWNER` y permite filtrar entre `PENDING` y `ALL`.
+
 ---
 
 ## 1. CreateFamily

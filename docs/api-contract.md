@@ -66,6 +66,11 @@ Todas las respuestas de error (`4xx` y `5xx`) retornan una carga útil JSON con 
 
 ## 3. Catálogo de Endpoints
 
+Las rutas de invitaciones implementadas incluyen `GET /me/invitations`,
+`POST /invitations/:invitationId/decline` y `GET /families/:familyId/invitations`. El listado
+administrativo requiere rol `OWNER`; el listado propio deriva el email desde el usuario autenticado
+y nunca lo recibe por querystring.
+
 ### 3.1 Salud del Sistema
 
 #### `GET /health`
@@ -165,6 +170,7 @@ Obtiene el perfil del usuario autenticado.
 - **Respuesta `200 OK`**:
   ```json
   {
+    "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
     "email": "usuario@example.com",
     "displayName": "Rocío Gómez",
     "createdAt": "2026-03-01T10:00:00.000Z"
@@ -237,7 +243,9 @@ Retorna el listado de familias a las que pertenece el usuario autenticado, respe
     {
       "familyId": "b1b2b3b4-1111-4222-8333-a1b2c3d4e5f6",
       "name": "Familia Gómez",
-      "role": "OWNER"
+      "role": "OWNER",
+      "defaultCurrency": "CLP",
+      "memberCount": 3
     },
     {
       "familyId": "c2c3c4c5-2222-4333-9444-b2c3d4e5f6a7",
@@ -276,6 +284,8 @@ Lista todos los miembros actuales de la familia indicada.
     {
       "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
       "role": "OWNER",
+      "displayName": "Rocío Gómez",
+      "email": "rocio@example.com",
       "joinedAt": "2026-03-01T10:00:00.000Z"
     },
     {

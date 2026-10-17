@@ -1,5 +1,5 @@
 // contexts/identity/infrastructure/persistence/drizzle-user.repository.ts
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db } from "../../../../platform/db/connection.js";
 import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { UserId } from "../../../family-access/domain/value-objects/user-id.js";
@@ -35,6 +35,20 @@ class DrizzleUserRepository implements UserRepository {
   async findByEmail(email: EmailAddress): Promise<User | null> {
     const row = await db.query.users.findFirst({ where: eq(users.email, email.toString()) });
     return row ? this.toDomain(row) : null;
+  }
+
+  async findByIds(ids: UserId[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    const rows = await db
+      .select()
+      .from(users)
+      .where(
+        inArray(
+          users.id,
+          ids.map((id) => id.toString()),
+        ),
+      );
+    return rows.map((row) => this.toDomain(row));
   }
 
   private toDomain(row: typeof users.$inferSelect): User {

@@ -12,6 +12,8 @@ interface FamilyForUserDTO {
   familyId: FamilyId;
   name: string;
   role: Role;
+  defaultCurrency: string;
+  memberCount: number;
 }
 
 class GetFamiliesForUserQuery {
@@ -27,6 +29,8 @@ class GetFamiliesForUserQuery {
           familyId: family.id,
           name: family.name.toString(),
           role: membership?.role as Role,
+          defaultCurrency: family.defaultCurrency.toString(),
+          memberCount: family.members.length,
           displayOrder: membership?.displayOrder ?? null,
           joinedAt: membership?.joinedAt as Date,
         };
@@ -39,7 +43,13 @@ class GetFamiliesForUserQuery {
         if (b.displayOrder !== null) return 1;
         return a.joinedAt.getTime() - b.joinedAt.getTime();
       })
-      .map(({ familyId, name, role }) => ({ familyId, name, role }));
+      .map(({ familyId, name, role, defaultCurrency, memberCount }) => ({
+        familyId,
+        name,
+        role,
+        defaultCurrency,
+        memberCount,
+      }));
   }
 }
 

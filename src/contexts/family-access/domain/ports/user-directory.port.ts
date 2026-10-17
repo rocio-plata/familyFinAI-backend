@@ -4,6 +4,14 @@ import type { UserId } from "../value-objects/user-id.js";
 
 interface UserDirectoryPort {
   findUserIdByEmail(email: EmailAddress): Promise<UserId | null>;
+  findEmailByUserId?(userId: UserId): Promise<string | null>;
+  findProfilesByIds?(userIds: UserId[]): Promise<UserDirectoryProfile[]>;
 }
 
-export type { UserDirectoryPort };
+interface UserDirectoryProfile {
+  userId: UserId;
+  displayName: string;
+  email: string;
+}
+
+export type { UserDirectoryPort, UserDirectoryProfile };

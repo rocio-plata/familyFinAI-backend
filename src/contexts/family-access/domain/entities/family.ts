@@ -80,7 +80,7 @@ class Family {
     return this._members.find((m) => m.userId.equals(userId)) ?? null;
   }
 
-  inviteMember(email: EmailAddress, role: Role): Invitation {
+  inviteMember(email: EmailAddress, role: Role, invitedBy: UserId): Invitation {
     if (
       this._members.some(
         (_m) => /* comparar email requiere resolver userId → email en otro lugar */ false,
@@ -88,7 +88,7 @@ class Family {
     ) {
       // invariante: no invitar a alguien que ya es miembro (pendiente de resolver la comparación)
     }
-    return Invitation.create(this.id, email, role);
+    return Invitation.create(this.id, email, role, invitedBy);
   }
 
   removeMember(memberId: UserId, removedBy: UserId): void {

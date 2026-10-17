@@ -10,6 +10,7 @@ describe("Invitation.reconstitute", () => {
     const familyId = "11111111-1111-4111-8111-111111111111";
     const invitationId = "22222222-2222-4222-8222-222222222222";
     const invitedUserId = "33333333-3333-4333-8333-333333333333";
+    const invitedBy = "44444444-4444-4444-8444-444444444444";
     const expiresAt = new Date("2026-09-14T10:00:00Z");
 
     const invitation = Invitation.reconstitute({
@@ -20,6 +21,7 @@ describe("Invitation.reconstitute", () => {
       status: InvitationStatus.Accepted,
       expiresAt,
       invitedUserId,
+      invitedBy,
     });
 
     assert.equal(invitation.id.toString(), invitationId);
@@ -41,6 +43,7 @@ describe("Invitation.reconstitute", () => {
       status: InvitationStatus.Pending,
       expiresAt: new Date("2026-09-14T10:00:00Z"),
       invitedUserId: null,
+      invitedBy: "44444444-4444-4444-8444-444444444444",
     });
 
     assert.throws(() => invitation.invitedUserId);

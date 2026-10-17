@@ -21,6 +21,11 @@ class InMemoryUserRepository implements UserRepository {
     }
     return null;
   }
+
+  async findByIds(ids: UserId[]): Promise<User[]> {
+    const requestedIds = new Set(ids.map((id) => id.toString()));
+    return [...this.users.values()].filter((user) => requestedIds.has(user.id.toString()));
+  }
 }
 
 export { InMemoryUserRepository };

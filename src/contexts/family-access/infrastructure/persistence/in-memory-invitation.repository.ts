@@ -1,4 +1,6 @@
 // /src/contexts/family-access/infrastructure/persistence/in-memory-invitation.repository.ts
+
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import type { Invitation } from "../../domain/entities/invitation.js";
 import type { InvitationRepository } from "../../domain/repositories/invitation.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
@@ -18,6 +20,12 @@ class InMemoryInvitationRepository implements InvitationRepository {
   async findByFamilyId(familyId: FamilyId): Promise<Invitation[]> {
     return [...this.invitations.values()].filter((invitation) =>
       invitation.familyId.equals(familyId),
+    );
+  }
+
+  async findByInvitedEmail(email: EmailAddress): Promise<Invitation[]> {
+    return [...this.invitations.values()].filter((invitation) =>
+      invitation.invitedEmail.equals(email),
     );
   }
 }

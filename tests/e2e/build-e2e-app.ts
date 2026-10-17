@@ -47,7 +47,10 @@ function buildE2eApp() {
     familyAccess: {
       familyRepository,
       invitationRepository: new DrizzleInvitationRepository(),
-      userDirectory: new IdentityUserDirectoryAdapter(new GetUserIdByEmailQuery(userRepository)),
+      userDirectory: new IdentityUserDirectoryAdapter(
+        new GetUserIdByEmailQuery(userRepository),
+        userRepository,
+      ),
       eventBus,
       unitOfWork: new DrizzleUnitOfWork(),
     },

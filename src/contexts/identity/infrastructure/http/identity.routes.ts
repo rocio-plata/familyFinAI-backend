@@ -84,6 +84,7 @@ function registerIdentityRoutes(app: FastifyInstance, deps: IdentityRoutesDepend
     const profile = await deps.getUserProfileQuery.execute({ userId: request.userId });
 
     return reply.code(200).send({
+      userId: profile.userId.toString(),
       email: profile.email,
       displayName: profile.displayName,
       createdAt: profile.createdAt.toISOString(),
