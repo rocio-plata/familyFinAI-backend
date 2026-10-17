@@ -12,6 +12,7 @@ import type { RevokeInvitationUseCase } from "../../application/commands/revoke-
 import type { GetFamiliesForUserQuery } from "../../application/queries/get-families-for-user.query.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import type { GetFamilyMembershipQuery } from "../../application/queries/get-family-membership.query.js";
+import type { GetFamilySettingsQuery } from "../../application/queries/get-family-settings.query.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
 import { Role } from "../../domain/value-objects/role.js";
@@ -31,6 +32,7 @@ interface FamilyRoutesDependencies {
   getFamiliesForUserQuery: GetFamiliesForUserQuery;
   getFamilyMembersQuery: GetFamilyMembersQuery;
   getFamilyMembershipQuery: GetFamilyMembershipQuery;
+  getFamilySettingsQuery: GetFamilySettingsQuery;
 }
 
 function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependencies): void {
@@ -297,6 +299,28 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
       });
 
       return reply.code(204).send();
+    },
+  );
+
+  app.get(
+    "/families/:familyId/settings",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const settings = await deps.getFamilySettingsQuery.execute({
+        familyId: FamilyId.of(familyId),
+      });
+
+      return reply.code(200).send(settings);
     },
   );
 

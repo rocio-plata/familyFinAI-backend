@@ -1,5 +1,5 @@
 // src/contexts/budgeting/infrastructure/persistence/drizzle-budget-configuration.repository.ts
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../../../../platform/db/connection.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { BudgetConfiguration } from "../../domain/entities/budget-configuration.js";
@@ -54,6 +54,20 @@ class DrizzleBudgetConfigurationRepository implements BudgetConfigurationReposit
       .from(budgetConfigurations)
       .where(eq(budgetConfigurations.familyId, familyId.toString()));
     return rows.map((row) => this.toDomain(row));
+  }
+
+  async existsActiveByFamilyId(familyId: FamilyId): Promise<boolean> {
+    const row = await db
+      .select({ id: budgetConfigurations.id })
+      .from(budgetConfigurations)
+      .where(
+        and(
+          eq(budgetConfigurations.familyId, familyId.toString()),
+          eq(budgetConfigurations.isActive, true),
+        ),
+      )
+      .limit(1);
+    return row.length > 0;
   }
 
   private toDomain(row: typeof budgetConfigurations.$inferSelect): BudgetConfiguration {

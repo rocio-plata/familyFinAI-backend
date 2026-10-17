@@ -184,6 +184,12 @@ Las Fases 0 y 1 van primero porque todo lo demás depende de la forma del dinero
 
 ## Fase 1 — Moneda de la familia (C1–C4)
 
+> **Estado actual:** implementados el puerto de actividad financiera, el bloqueo por items y
+> presupuestos activos, `PATCH /families/:familyId/settings/currency`, `GET
+> /families/:familyId/settings` y la validación de moneda en items y presupuestos. La confirmación
+> de sugerencias de IA y la integración transaccional completa quedan pendientes de sus fases
+> específicas.
+
 ### 1.1 Puerto de actividad financiera
 
 Family & Access no puede consultar tablas de otros contextos.

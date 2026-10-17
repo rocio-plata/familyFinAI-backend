@@ -7,6 +7,7 @@ interface BudgetConfigurationRepository {
   save(configuration: BudgetConfiguration): Promise<void>;
   findById(id: BudgetConfigurationId): Promise<BudgetConfiguration | null>;
   findByFamilyId(familyId: FamilyId): Promise<BudgetConfiguration[]>;
+  existsActiveByFamilyId(familyId: FamilyId): Promise<boolean>;
 }
 
 export type { BudgetConfigurationRepository };

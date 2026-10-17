@@ -3,7 +3,7 @@
 > **Estado del documento**
 > - Las secciones 1 a 5 provienen de la lectura del código del backend por otro agente de IA y **sustituyen a mi versión v1**, que se basaba en Postman y en el plan de endpoints y daba por pendientes rutas que ya existen (Budgeting, Reporting y AI Assistance están expuestos).
 > - Las secciones 6 a 9 son nuevas: **brechas entre este contrato y lo que necesita la app móvil**, **discrepancias** (incluida la colección Postman), un **mapa pantalla → endpoints** y los **códigos de error que faltan**.
-> - La serialización `Money`, la validación de importes enteros y los errores 401/403 tipados están implementados. Las reglas de moneda única de familia y las nuevas rutas de brechas siguen siendo propuestas hasta su implementación.
+> - La serialización `Money`, la validación de importes enteros y los errores 401/403 tipados están implementados. También están implementados el bloqueo de cambio de moneda por actividad financiera, `GET /families/:familyId/settings` y la validación de moneda en items y presupuestos. Las reglas de confirmación de IA y demás brechas siguen siendo propuestas hasta su implementación.
 
 Este documento constituye el contrato de interfaz oficial entre el backend de **FamilyFin AI** y el cliente móvil Kotlin (Android). Define las convenciones globales, mecanismos de autenticación y autorización, estructuras de datos, códigos de error y la especificación detallada de cada endpoint disponible.
 
@@ -21,7 +21,7 @@ Este documento constituye el contrato de interfaz oficial entre el backend de **
 | Identificadores (`id`) | UUID v4 en formato string |
 | Monedas soportadas | `"CLP"`, `"USD"`, `"EUR"`. Por defecto familiar: `"CLP"`. |
 | Dinero (Fase 0, decisiones D1 y D9) | **Entero en la unidad menor de la moneda** en peticiones y respuestas. Las respuestas lo devuelven como objeto `Money`: `{ "amount": 1599, "currency": "USD" }` = US$ 15,99. Exponentes: `CLP` 0, `USD` 2, `EUR` 2. El cliente convierte con `Currency.getDefaultFractionDigits()` y **nunca usa `Double`** |
-| Moneda de la familia (📐 propuesto, decisión D2) | La regla de una sola moneda por familia, `SHARED.CURRENCY_MISMATCH`, `FAMILY.CURRENCY_LOCKED` y `GET /families/:familyId/settings` están definidos en el plan, pero todavía no forman parte del contrato implementado |
+| Moneda de la familia (Fase 1 parcial, decisión D2) | Items y presupuestos deben usar la moneda familiar (`SHARED.CURRENCY_MISMATCH`, 409). Cambiarla está bloqueado si existen items o presupuestos activos (`FAMILY.CURRENCY_LOCKED`, 409). `GET /families/:familyId/settings` expone el estado de bloqueo. La confirmación de sugerencias aún queda pendiente |
 | Filosofía IA | **"La IA propone, el usuario confirma"**: la IA nunca escribe directo en el core financiero; genera sugerencias que el usuario debe confirmar o descartar. |
 
 ### 1.1 Formato Estándar de Errores

@@ -122,7 +122,7 @@ describe("POST /families/:familyId/items", () => {
       headers: { authorization: memberAuthorization },
       payload: {
         amount: 1000,
-        currency: "CLP",
+        currency: "USD",
         categoryId: incomeCategoryId,
         paymentMethodId,
         title: "Pago recibido",
@@ -133,8 +133,27 @@ describe("POST /families/:familyId/items", () => {
     assert.equal(response.statusCode, 201);
     const body = JSON.parse(response.body);
     assert.equal(body.type, "INCOME");
-    assert.deepEqual(body.amount, { amount: 1000, currency: "CLP" });
+    assert.deepEqual(body.amount, { amount: 1000, currency: "USD" });
     assert.equal(body.tagId, null);
+  });
+
+  test("rechaza una moneda distinta a la moneda de la familia", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/items`,
+      headers: { authorization: memberAuthorization },
+      payload: {
+        amount: 1000,
+        currency: "CLP",
+        categoryId,
+        paymentMethodId,
+        title: "Compra incompatible",
+        occurredOn: "2026-08-02T12:00:00.000Z",
+      },
+    });
+
+    assert.equal(response.statusCode, 409);
+    assert.equal(JSON.parse(response.body).error, "SHARED.CURRENCY_MISMATCH");
   });
 
   test("acepta fecha solo en formato YYYY-MM-DD", async () => {

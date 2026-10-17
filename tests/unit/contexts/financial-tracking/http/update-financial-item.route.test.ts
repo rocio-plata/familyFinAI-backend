@@ -39,6 +39,7 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
     const financialItemRepository = new InMemoryFinancialItemRepository();
     const paymentMethodRepository = new InMemoryPaymentMethodRepository();
     const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    family.changeDefaultCurrency(Currency.of("USD"), ownerId);
     family.addMemberFromInvitationData(memberId, Role.member());
     family.pullDomainEvents();
     await familyRepository.save(family);

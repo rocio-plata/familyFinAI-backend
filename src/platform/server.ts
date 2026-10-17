@@ -8,6 +8,7 @@ import { DrizzleBudgetConfigurationRepository } from "../contexts/budgeting/infr
 import { DrizzleBudgetPeriodStatusRepository } from "../contexts/budgeting/infrastructure/persistence/drizzle-budget-period-status.repository.js";
 import { InMemoryBudgetConfigurationRepository } from "../contexts/budgeting/infrastructure/persistence/in-memory-budget-configuration.repository.js";
 import { InMemoryBudgetPeriodStatusRepository } from "../contexts/budgeting/infrastructure/persistence/in-memory-budget-period-status.repository.js";
+import { FamilyFinancialActivityAdapter } from "../contexts/family-access/infrastructure/adapters/family-financial-activity.adapter.js";
 import { IdentityUserDirectoryAdapter } from "../contexts/family-access/infrastructure/adapters/identity-user-directory.adapter.js";
 import { DrizzleFamilyRepository } from "../contexts/family-access/infrastructure/persistence/drizzle-family.repository.js";
 import { DrizzleInvitationRepository } from "../contexts/family-access/infrastructure/persistence/drizzle-invitation.repository.js";
@@ -111,6 +112,10 @@ const app = buildApp({
     userDirectory: new IdentityUserDirectoryAdapter(getUserIdByEmailQuery),
     eventBus,
     unitOfWork,
+    financialActivity: new FamilyFinancialActivityAdapter(
+      financialItemRepository,
+      budgetConfigurationRepository,
+    ),
   },
   identity: {
     userRepository,

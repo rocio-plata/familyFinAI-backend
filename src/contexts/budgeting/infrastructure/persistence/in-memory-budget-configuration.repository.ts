@@ -20,6 +20,13 @@ class InMemoryBudgetConfigurationRepository implements BudgetConfigurationReposi
       configuration.familyId.equals(familyId),
     );
   }
+
+  async existsActiveByFamilyId(familyId: FamilyId): Promise<boolean> {
+    for (const configuration of this.configurations.values()) {
+      if (configuration.familyId.equals(familyId) && configuration.isActive) return true;
+    }
+    return false;
+  }
 }
 
 export { InMemoryBudgetConfigurationRepository };

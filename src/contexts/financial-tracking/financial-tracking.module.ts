@@ -96,6 +96,7 @@ function buildFinancialTrackingModule(
       deps.eventBus,
       deps.paymentMethodRepository,
       deps.preferenceRepository,
+      getFamilyDefaultCurrencyQuery,
     ),
     createPaymentMethod: new CreatePaymentMethodUseCase(
       deps.paymentMethodRepository,
@@ -151,6 +152,7 @@ function buildFinancialTrackingModule(
       deps.financialItemRepository,
       deps.eventBus,
       deps.paymentMethodRepository,
+      getFamilyDefaultCurrencyQuery,
     ),
     renamePaymentMethod: new RenamePaymentMethodUseCase(
       deps.paymentMethodRepository,

@@ -78,6 +78,15 @@ class DrizzleFinancialItemRepository implements FinancialItemRepository {
     return rows.map((row) => this.toDomain(row));
   }
 
+  async existsByFamilyId(familyId: FamilyId): Promise<boolean> {
+    const row = await db
+      .select({ id: financialItems.id })
+      .from(financialItems)
+      .where(eq(financialItems.familyId, familyId.toString()))
+      .limit(1);
+    return row.length > 0;
+  }
+
   async delete(id: FinancialItemId): Promise<void> {
     await db.delete(financialItems).where(eq(financialItems.id, id.toString()));
   }

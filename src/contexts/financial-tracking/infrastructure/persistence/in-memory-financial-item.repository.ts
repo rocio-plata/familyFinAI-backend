@@ -29,6 +29,13 @@ class InMemoryFinancialItemRepository implements FinancialItemRepository {
     return [...this.items.values()].filter((item) => matchesFilters(item, familyId, filters));
   }
 
+  async existsByFamilyId(familyId: FamilyId): Promise<boolean> {
+    for (const item of this.items.values()) {
+      if (item.familyId.equals(familyId)) return true;
+    }
+    return false;
+  }
+
   async delete(id: FinancialItemId): Promise<void> {
     this.items.delete(id.toString());
   }

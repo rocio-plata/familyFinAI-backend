@@ -15,6 +15,8 @@ import { GetFamiliesForUserQuery } from "./application/queries/get-families-for-
 import { GetFamilyDefaultCurrencyQuery } from "./application/queries/get-family-default-currency.query.js";
 import { GetFamilyMembersQuery } from "./application/queries/get-family-members.query.js";
 import { GetFamilyMembershipQuery } from "./application/queries/get-family-membership.query.js";
+import { GetFamilySettingsQuery } from "./application/queries/get-family-settings.query.js";
+import type { FamilyFinancialActivityPort } from "./domain/ports/family-financial-activity.port.js";
 import type { UserDirectoryPort } from "./domain/ports/user-directory.port.js";
 import type { FamilyRepository } from "./domain/repositories/family.repository.js";
 import type { InvitationRepository } from "./domain/repositories/invitation.repository.js";
@@ -26,6 +28,7 @@ interface FamilyAccessModuleDependencies {
   userDirectory: UserDirectoryPort;
   eventBus: EventBus;
   unitOfWork?: UnitOfWork;
+  financialActivity?: FamilyFinancialActivityPort;
 }
 
 interface FamilyAccessModule {
@@ -42,6 +45,7 @@ interface FamilyAccessModule {
     getFamilyDefaultCurrency: GetFamilyDefaultCurrencyQuery;
     getFamilyMembership: GetFamilyMembershipQuery;
     getFamilyMembers: GetFamilyMembersQuery;
+    getFamilySettings: GetFamilySettingsQuery;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -64,12 +68,16 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
     revokeInvitation: new RevokeInvitationUseCase(deps.familyRepository, deps.invitationRepository),
     removeMember: new RemoveMemberUseCase(deps.familyRepository, deps.eventBus),
     changeMemberRole: new ChangeMemberRoleUseCase(deps.familyRepository, deps.eventBus),
-    changeDefaultCurrency: new ChangeDefaultCurrencyUseCase(deps.familyRepository),
+    changeDefaultCurrency: new ChangeDefaultCurrencyUseCase(
+      deps.familyRepository,
+      deps.financialActivity,
+    ),
     reorderMyFamilies: new ReorderMyFamiliesUseCase(deps.familyRepository),
     getFamiliesForUser: new GetFamiliesForUserQuery(deps.familyRepository),
     getFamilyDefaultCurrency: new GetFamilyDefaultCurrencyQuery(deps.familyRepository),
     getFamilyMembership: new GetFamilyMembershipQuery(deps.familyRepository),
     getFamilyMembers: new GetFamilyMembersQuery(deps.familyRepository),
+    getFamilySettings: new GetFamilySettingsQuery(deps.familyRepository, deps.financialActivity),
   };
 
   return {
@@ -90,6 +98,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         getFamiliesForUserQuery: useCases.getFamiliesForUser,
         getFamilyMembersQuery: useCases.getFamilyMembers,
         getFamilyMembershipQuery: useCases.getFamilyMembership,
+        getFamilySettingsQuery: useCases.getFamilySettings,
       });
     },
   };

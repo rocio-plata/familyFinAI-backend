@@ -11,6 +11,7 @@ import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
+import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { InMemoryFamilyRepository } from "../../contexts/family-access/doubles/in-memory-family.repository.js";
 import { InMemoryCategoryRepository } from "../../contexts/financial-tracking/doubles/in-memory-category.repository.js";
@@ -41,7 +42,7 @@ describe("CreateBudgetConfigurationUseCase", () => {
     const budget = await useCase.execute({
       familyId: family.id,
       categoryId: category.id,
-      defaultAmount: Money.of(150_000, "CLP"),
+      defaultAmount: Money.of(150_000, Currency.of("CLP")),
     });
 
     assert.equal(budget.familyId.toString(), family.id.toString());
@@ -73,9 +74,38 @@ describe("CreateBudgetConfigurationUseCase", () => {
       useCase.execute({
         familyId: family.id,
         categoryId: category.id,
-        defaultAmount: Money.of(100_000, "CLP"),
+        defaultAmount: Money.of(100_000, Currency.of("CLP")),
       }),
       { name: "CategoryNotExpenseError" },
+    );
+  });
+
+  test("rechaza un presupuesto en una moneda distinta a la de la familia", async () => {
+    const family = Family.create(FamilyName.of("Familia"), UserId.generate());
+    family.changeDefaultCurrency(Currency.of("USD"), family.createdBy);
+    const category = Category.create(
+      family.id,
+      FinancialItemType.Expense,
+      CategoryName.of("Supermercado"),
+    );
+    const familyRepository = new InMemoryFamilyRepository();
+    const categoryRepository = new InMemoryCategoryRepository();
+    await familyRepository.save(family);
+    await categoryRepository.save(category);
+    const useCase = new CreateBudgetConfigurationUseCase(
+      familyRepository,
+      new GetCategoriesQuery(categoryRepository),
+      new InMemoryBudgetConfigurationRepository(),
+      new FakeEventBus(),
+    );
+
+    await assert.rejects(
+      useCase.execute({
+        familyId: family.id,
+        categoryId: category.id,
+        defaultAmount: Money.of(100_000, Currency.of("CLP")),
+      }),
+      { name: "CurrencyMismatchError" },
     );
   });
 
@@ -92,7 +122,7 @@ describe("CreateBudgetConfigurationUseCase", () => {
     await familyRepository.save(family);
     await categoryRepository.save(category);
     await budgetRepository.save(
-      BudgetConfiguration.create(family.id, category.id, Money.of(100_000, "CLP")),
+      BudgetConfiguration.create(family.id, category.id, Money.of(100_000, Currency.of("CLP"))),
     );
     const useCase = new CreateBudgetConfigurationUseCase(
       familyRepository,
@@ -105,7 +135,7 @@ describe("CreateBudgetConfigurationUseCase", () => {
       useCase.execute({
         familyId: family.id,
         categoryId: category.id,
-        defaultAmount: Money.of(150_000, "CLP"),
+        defaultAmount: Money.of(150_000, Currency.of("CLP")),
       }),
       { name: "DuplicateBudgetConfigurationError" },
     );
