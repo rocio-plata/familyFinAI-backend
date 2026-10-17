@@ -245,11 +245,11 @@ Vuelven a vivir bajo `/families/:familyId/...` (como `Category`), salvo el de "m
 3. **`PaymentMethod`** — ✅ implementado, scoped por `familyId`, con tests.
 4. **`UserPaymentMethodPreference`** — ✅ implementado con clave compuesta `(userId, familyId)` y tests.
 5. **`PaymentMethodRepository`, `UserPaymentMethodPreferenceRepository`** (puertos) + repositorios in-memory/Drizzle y dobles de test — ✅ implementados con tests de contrato. Incluyen `findByUserAndFamily()`, `findById()`, `existsAnyForPaymentMethod()` y `delete()`; las implementaciones hacen upsert por identidad. El composition root selecciona la implementación según `PERSISTENCE_MODE`.
-6. **`PaymentMethodDeletionService`** — ✅ implementado con tests. Valida mediante `PaymentMethodItemAssociationReader` que el medio no tenga items asociados; la eliminación física queda a cargo del futuro caso de uso.
+6. **`PaymentMethodDeletionService`** — ✅ implementado con tests. Valida mediante `PaymentMethodItemAssociationReader` que el medio no tenga items asociados; `DeletePaymentMethodUseCase` realiza la eliminación física.
 7. **`FinancialItemRepository.countByPaymentMethod()`** — ✅ implementado en el puerto y en los repositorios in-memory y Drizzle, con tests.
 8. **`FinancialItem`** — ✅ implementado con `paymentMethodId` obligatorio, `changePaymentMethod()`, `ItemPaymentMethodChanged` y tests. La resolución opcional mediante preferencia corresponde al paso 15.
 9. **`CreateDefaultPaymentMethodsUseCase`** — ✅ implementado con test de los 4 medios de pago, el default del creador y la ejecución idempotente.
-10. **`OnFamilyCreatedHandler`** — ✅ implementado con test en `tests/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts`. `FamilyCreated` fue actualizado para transportar también `creatorId` desde `Family.create()`.
+10. **`OnFamilyCreatedHandler`** — ✅ implementado con test en `tests/unit/contexts/financial-tracking/event-handlers/on-family-created-handler.test.ts`. `FamilyCreated` fue actualizado para transportar también `creatorId` desde `Family.create()`.
 11. **`SetInitialPaymentMethodPreferenceUseCase`** — ✅ implementado con tests de creación, idempotencia, aislamiento por familia y validación del estado de `Efectivo`.
 12. **`OnInvitationAcceptedHandler`** (en `Financial Tracking`) — ✅ implementado, probado y cableado en el módulo/event bus.
 12b. **`OnMemberRemovedHandler`** (en `Financial Tracking`) — ✅ implementado, probado y cableado en el módulo/event bus.

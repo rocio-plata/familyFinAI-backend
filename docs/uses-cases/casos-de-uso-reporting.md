@@ -44,7 +44,8 @@ Este read model es la base de `GetDashboardSummary`, `GetCategoryBreakdown` y `G
 
 Lista los gastos agrupados por medio de pago para una familia y período.
 
-- **Actor**: cualquier `Member` de la familia, con autorización pendiente de la capa HTTP.
+- **Actor**: cualquier `Member` autenticado de la familia; la ruta aplica `authenticate` y
+  `requireFamilyMembership`.
 - **Entrada**: `familyId`, `period`.
 - **Flujo principal**:
   1. Se consultan los `PaymentMethodPeriodAggregate` del período.

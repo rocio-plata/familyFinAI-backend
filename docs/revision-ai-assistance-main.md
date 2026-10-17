@@ -57,14 +57,14 @@ Financial Tracking ya expone `CreateFinancialItemUseCase`, que sera la frontera 
 
 ### Fase 3 - HTTP
 
-Implementada como registrar HTTP independiente:
+Implementada como registro HTTP independiente:
 
 - `POST /families/:familyId/suggestions/text`.
 - `POST /families/:familyId/suggestions/receipt`.
 - `POST /families/:familyId/suggestions/:suggestionId/confirm`.
 - `DELETE /families/:familyId/suggestions/:suggestionId`.
 
-Las rutas incluyen autenticación, membresía familiar, schemas Fastify, serialización de sugerencias y soporte multipart mediante `@fastify/multipart`. La composición del módulo y su integración con persistencia quedan para la Fase 4.
+Las rutas incluyen autenticación, membresía familiar, schemas Fastify, serialización de sugerencias y soporte multipart mediante `@fastify/multipart`. La composición del módulo y su integración con persistencia están implementadas en la Fase 4 descrita a continuación.
 
 ### Fase 4 - Persistencia
 

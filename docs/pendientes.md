@@ -46,10 +46,10 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 - [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
 - [x] Tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
 - [x] Tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).
-- [ ] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
+- [x] Mantener documentada la decisión actual de permisos para movimientos: membresía sí, rol `Owner` no obligatorio.
 - [ ] Revisar si `Budgeting`/`Financial Tracking` necesitan permisos más granulares en producto.
-- [x] `Money` movido a `shared-kernel/domain/money.ts` (junto con `InvalidMoneyError` en `shared-kernel/errors/`, código `SHARED.INVALID_MONEY`); `Budgeting` y `Reporting` ya no dependen del dominio interno de `Financial Tracking` para este VO. Test movido a `tests/unit/shared-kernel/domain/money.test.ts`.
-- [x] Suite actual: 862 tests unitarios, 19 tests de integración y 6 tests e2e. Todas las suites se ejecutan con scripts separados para evitar mezclar tests in-memory con PostgreSQL real.
+- [x] `Money` vive en `shared-kernel/domain/money.ts`, usa unidades menores enteras y se serializa como `{ amount, currency }`; los errores de importe usan `SHARED.INVALID_AMOUNT`.
+- [x] Las suites se ejecutan con scripts separados: `npm test`, `npm run test:integration` y `npm run test:e2e`. Los recuentos concretos deben obtenerse ejecutando los comandos, no mantenerse como cifras fijas en esta guía.
 
 ### Opcional
 

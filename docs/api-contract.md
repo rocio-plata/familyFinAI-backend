@@ -1,9 +1,9 @@
-# Contrato de API REST — FamilyFin AI (v2, Fase 0 implementada)
+# Contrato de API REST — FamilyFin AI (v2, estado actual)
 
 > **Estado del documento**
 > - Las secciones 1 a 5 provienen de la lectura del código del backend por otro agente de IA y **sustituyen a mi versión v1**, que se basaba en Postman y en el plan de endpoints y daba por pendientes rutas que ya existen (Budgeting, Reporting y AI Assistance están expuestos).
 > - Las secciones 6 a 9 son nuevas: **brechas entre este contrato y lo que necesita la app móvil**, **discrepancias** (incluida la colección Postman), un **mapa pantalla → endpoints** y los **códigos de error que faltan**.
-> - La Fase 0 está implementada: errores 401/403 tipados, DTO `Money`, validación de importes enteros en requests y persistencia en unidades menores (`bigint`). Las fases posteriores continúan marcadas como propuestas hasta su implementación.
+> - La serialización `Money`, la validación de importes enteros y los errores 401/403 tipados están implementados. Las reglas de moneda única de familia y las nuevas rutas de brechas siguen siendo propuestas hasta su implementación.
 
 Este documento constituye el contrato de interfaz oficial entre el backend de **FamilyFin AI** y el cliente móvil Kotlin (Android). Define las convenciones globales, mecanismos de autenticación y autorización, estructuras de datos, códigos de error y la especificación detallada de cada endpoint disponible.
 
@@ -21,7 +21,7 @@ Este documento constituye el contrato de interfaz oficial entre el backend de **
 | Identificadores (`id`) | UUID v4 en formato string |
 | Monedas soportadas | `"CLP"`, `"USD"`, `"EUR"`. Por defecto familiar: `"CLP"`. |
 | Dinero (Fase 0, decisiones D1 y D9) | **Entero en la unidad menor de la moneda** en peticiones y respuestas. Las respuestas lo devuelven como objeto `Money`: `{ "amount": 1599, "currency": "USD" }` = US$ 15,99. Exponentes: `CLP` 0, `USD` 2, `EUR` 2. El cliente convierte con `Currency.getDefaultFractionDigits()` y **nunca usa `Double`** |
-| Moneda de la familia (📐 propuesto, decisión D2) | Una familia usa **una sola moneda**: todo item y presupuesto debe estar en ella (`SHARED.CURRENCY_MISMATCH`, 409). Solo se puede cambiar si la familia no tiene items ni presupuestos activos (`FAMILY.CURRENCY_LOCKED`, 409). Por eso los reportes devuelven un único `currency` |
+| Moneda de la familia (📐 propuesto, decisión D2) | La regla de una sola moneda por familia, `SHARED.CURRENCY_MISMATCH`, `FAMILY.CURRENCY_LOCKED` y `GET /families/:familyId/settings` están definidos en el plan, pero todavía no forman parte del contrato implementado |
 | Filosofía IA | **"La IA propone, el usuario confirma"**: la IA nunca escribe directo en el core financiero; genera sugerencias que el usuario debe confirmar o descartar. |
 
 ### 1.1 Formato Estándar de Errores
@@ -647,7 +647,7 @@ Registra un nuevo movimiento financiero (gasto o ingreso según la categoría).
 - **Request Body**:
   | Campo | Tipo | Requerido | Descripción / Reglas |
   |---|---|---|---|
-  | `amount` | number | Sí | Monto mayor que 0 |
+  | `amount` | integer | Sí | Monto entero mayor que 0 en unidades menores |
   | `currency` | string | No | `"CLP"`, `"USD"`, `"EUR"`. Si no se envía, usa la moneda por defecto de la familia. |
   | `categoryId` | string (UUID) | Sí | Debe ser una categoría activa de la familia. |
   | `paymentMethodId` | string (UUID) | No | Si se omite, se utiliza el default payment method configurado por el usuario. Si no tiene uno configurado, arroja error. |
@@ -660,8 +660,7 @@ Registra un nuevo movimiento financiero (gasto o ingreso según la categoría).
   {
     "id": "i1i2i3i4-0000-4111-8222-111122223333",
     "type": "EXPENSE",
-    "amount": 25990,
-    "currency": "CLP",
+    "amount": { "amount": 25990, "currency": "CLP" },
     "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
     "tagId": "t1t2t3t4-0000-4111-8222-123456789abc",
     "paymentMethodId": "m1m2m3m4-0000-4111-8222-111122223333",
@@ -696,8 +695,7 @@ Consulta los movimientos registrados con filtros opcionales.
       "familyId": "b1b2b3b4-1111-4222-8333-a1b2c3d4e5f6",
       "recordedBy": "d290f1ee-6c54-4b01-90e6-d701748f0851",
       "type": "EXPENSE",
-      "amount": 25990,
-      "currency": "CLP",
+      "amount": { "amount": 25990, "currency": "CLP" },
       "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
       "tagId": "t1t2t3t4-0000-4111-8222-123456789abc",
       "title": "Supermercado Lider",
@@ -712,7 +710,7 @@ Consulta los movimientos registrados con filtros opcionales.
 
 #### `PATCH /families/:familyId/items/:itemId`
 Actualiza datos de un movimiento existente (monto, título, nota, medio de pago, fecha).
-- **Importante**: Este endpoint **no** permite cambiar la categoría ni el tag (para reclasificar, use `/category`). Si se provee `amount`, debe proveerse `currency` y viceversa.
+- **Importante**: Este endpoint **no** permite cambiar la categoría ni el tag (para reclasificar, use `/category`). `amount` y `currency` son opcionales; si se envía `currency`, se aplica al importe actualizado según las reglas monetarias vigentes.
 - **Autenticación**: Bearer Token + Miembro.
 - **Request Body** (al menos una propiedad requerida):
   ```json
@@ -887,7 +885,7 @@ Obtiene el resumen consolidado del mes (ingresos totales, gastos totales, saldo 
       "amount": 1200000,
       "currency": "CLP"
     },
-    "balance": 750000,
+    "balance": { "amount": 750000, "currency": "CLP" },
     "categoryBreakdown": [
       {
         "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
@@ -922,14 +920,12 @@ Reporte de gastos agrupados por cada medio de pago para un periodo.
     {
       "paymentMethodId": "m1m2m3m4-0000-4111-8222-111122223333",
       "paymentMethodName": "Tarjeta Santander",
-      "amount": 320000,
-      "currency": "CLP"
+      "amount": { "amount": 320000, "currency": "CLP" }
     },
     {
       "paymentMethodId": "m2m3m4m5-0000-4111-8222-111122223334",
       "paymentMethodName": "Efectivo",
-      "amount": 130000,
-      "currency": "CLP"
+      "amount": { "amount": 130000, "currency": "CLP" }
     }
   ]
   ```
@@ -969,12 +965,12 @@ Compara dos periodos mensuales (`periodA` vs `periodB`), calculando las variacio
     "periodA": {
       "totalExpenses": { "amount": 400000, "currency": "CLP" },
       "totalIncome": { "amount": 1100000, "currency": "CLP" },
-      "balance": 700000
+      "balance": { "amount": 700000, "currency": "CLP" }
     },
     "periodB": {
       "totalExpenses": { "amount": 450000, "currency": "CLP" },
       "totalIncome": { "amount": 1200000, "currency": "CLP" },
-      "balance": 750000
+      "balance": { "amount": 750000, "currency": "CLP" }
     },
     "expenseVariation": 12.5,
     "incomeVariation": 9.09
@@ -997,19 +993,19 @@ Evolución temporal mensual a lo largo de un rango de periodos. Ideal para gráf
       "period": "2026-08",
       "totalExpenses": { "amount": 380000, "currency": "CLP" },
       "totalIncome": { "amount": 1050000, "currency": "CLP" },
-      "balance": 670000
+      "balance": { "amount": 670000, "currency": "CLP" }
     },
     {
       "period": "2026-09",
       "totalExpenses": { "amount": 410000, "currency": "CLP" },
       "totalIncome": { "amount": 1100000, "currency": "CLP" },
-      "balance": 690000
+      "balance": { "amount": 690000, "currency": "CLP" }
     },
     {
       "period": "2026-10",
       "totalExpenses": { "amount": 450000, "currency": "CLP" },
       "totalIncome": { "amount": 1200000, "currency": "CLP" },
-      "balance": 750000
+      "balance": { "amount": 750000, "currency": "CLP" }
     }
   ]
   ```
@@ -1099,8 +1095,7 @@ Procesa una descripción en lenguaje natural y extrae la sugerencia estructurada
     "requestedBy": "d290f1ee-6c54-4b01-90e6-d701748f0851",
     "status": "PENDING",
     "source": "TEXT",
-    "amount": 18500,
-    "currency": "CLP",
+    "amount": { "amount": 18500, "currency": "CLP" },
     "categoryId": "c3c4c5c6-0000-4111-8222-abcdefabcdef",
     "tagId": null,
     "occurredOn": "2026-10-12T00:00:00.000Z",
@@ -1125,8 +1120,7 @@ Sube y escanea una imagen de recibo o boleta.
     "requestedBy": "d290f1ee-6c54-4b01-90e6-d701748f0851",
     "status": "PENDING",
     "source": "RECEIPT",
-    "amount": 34990,
-    "currency": "CLP",
+    "amount": { "amount": 34990, "currency": "CLP" },
     "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
     "tagId": null,
     "occurredOn": "2026-10-12T11:20:00.000Z",

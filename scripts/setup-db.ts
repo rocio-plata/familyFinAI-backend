@@ -1,7 +1,7 @@
 // scripts/setup-db.ts
 //
 // Deja la base de datos lista para usar desde cero:
-//   1. Levanta el contenedor de Postgres (docker-compose).
+//   1. Levanta el contenedor de Postgres (docker compose).
 //   2. Espera a que acepte conexiones.
 //   3. Genera migraciones si no existe ninguna todavía (primera vez del proyecto).
 //   4. Aplica todas las migraciones pendientes.
@@ -81,7 +81,7 @@ async function main() {
   }
 
   console.log("🐳 Levantando el contenedor de Postgres...");
-  run("docker-compose up -d db");
+  run("docker compose up -d db");
 
   console.log("\n⏳ Esperando a que Postgres acepte conexiones...");
   await waitForDb(connectionString);

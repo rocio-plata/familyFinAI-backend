@@ -44,7 +44,7 @@ Cierra las brechas de la sección 6 de `api-contract.md`. Método: **TDD** (test
 | P7 | Dependencia para multipart (S9) | `@fastify/multipart` (excepción documentada a "pocas dependencias") |
 | P8 | Campo `currency` en peticiones de items y presupuestos | **Se mantiene opcional**; si viene, debe coincidir con la familia (C1). La regla "si envías `amount` debes enviar `currency`" **desaparece** |
 | P9 | Sugerencia de IA cuya moneda ya no coincide con la familia | Al confirmar → `SHARED.CURRENCY_MISMATCH`. No se publica evento nuevo ni se descartan solas |
-| P10 | Carrera entre crear un item y cambiar la moneda | **Riesgo aceptado** hasta que exista Unit of Work (ya anotado como pendiente). Se documenta y se prueba la regla a nivel secuencial |
+| P10 | Carrera entre crear un item y cambiar la moneda | **Riesgo aceptado**: existe `UnitOfWork`, pero `ChangeDefaultCurrencyUseCase` todavía no integra la comprobación de actividad financiera y el cambio en una transacción atómica. Se documenta y se prueba la regla a nivel secuencial |
 | P11 | Rango máximo de `trend` | 24 meses |
 | P12 | Redondeo de `percentage` | Un decimal, calculado con enteros (`round(parte × 1000 / total) / 10`) |
 | P13 | Redondeo de variaciones | Dos decimales; `null` si el período base es 0 |

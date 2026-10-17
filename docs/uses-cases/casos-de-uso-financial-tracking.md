@@ -1,7 +1,8 @@
 # Financial Tracking — Casos de uso
 
 Documentación de los casos de uso del contexto `Financial Tracking` (core domain). Los casos de uso
-de categorías, tags, items y medios de pago están compuestos y expuestos por HTTP, con repositorios
+de categorías, tags, items y medios de pago están implementados; la mayoría está compuesta y
+expuesta por HTTP, con repositorios
 InMemory/Drizzle y tests unitarios HTTP, de integración y e2e. Sigue la misma
 convención usada en `casos-de-uso-family-access.md`: **actor**,
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
@@ -9,7 +10,10 @@ disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `CategoryIcon`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests. Los casos de medios de pago están compuestos en `financial-tracking.module.ts`, expuestos por HTTP y cubiertos por tests de casos de uso, rutas HTTP, integración PostgreSQL y e2e.
+> **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests.
+> `ReactivateCategory` existe como caso de uso, pero todavía no tiene ruta HTTP. Los demás casos
+> expuestos están compuestos en `financial-tracking.module.ts` y cubiertos por tests de aplicación,
+> rutas HTTP, integración PostgreSQL y e2e según corresponda.
 
 ---
 
@@ -39,7 +43,7 @@ Registra un nuevo gasto o ingreso.
 
 Corrige uno o más campos editables de un movimiento ya registrado: monto, fecha, título y/o nota. Unificado en un solo caso de uso (en vez de uno por campo) para reflejar mejor un formulario de edición típico.
 
-- **Actor**: el `Member` que registró el item, o cualquier `Member` con permisos suficientes (a definir — ver pendientes).
+- **Actor**: cualquier `Member` de la familia; las rutas actuales no exigen rol `Owner`.
 - **Precondiciones**: el `FinancialItem` existe y pertenece a la familia del solicitante.
 - **Entrada**: `familyId`, `itemId`, y de forma opcional (solo se aplican los campos presentes): `amount`, `occurredOn`, `title`, `note`.
 - **Flujo principal**:
@@ -183,7 +187,7 @@ Marca una categoría como no disponible para nuevos registros, preservando el hi
 
 Agrega un tag nuevo dentro de una categoría.
 
-- **Actor**: cualquier `Member` de la familia (a diferencia de los demás casos de uso de `Category`, este no está restringido a `Owner` — cualquier miembro puede agregar tags de uso diario).
+- **Actor**: únicamente el `Owner` de la familia; la ruta HTTP actual exige `Role.owner()`.
 - **Precondiciones**: la `Category` existe, pertenece a la familia y está `Active`; el nombre del tag no colisiona con otro tag existente en esa categoría (comparación case-insensitive).
 - **Entrada**: `familyId`, `categoryId`, `tagName`.
 - **Flujo principal**:
@@ -200,7 +204,7 @@ Agrega un tag nuevo dentro de una categoría.
 
 Reordena los tags de una categoría según la preferencia manual del usuario.
 
-- **Actor**: cualquier `Member` de la familia (mismo criterio que `AddTagToCategory` — es una preferencia de organización personal/diaria, no administrativa).
+- **Actor**: únicamente el `Owner` de la familia; la ruta HTTP actual exige `Role.owner()`.
 - **Precondiciones**: la `Category` existe y pertenece a la familia; `orderedTagIds` contiene exactamente los mismos tags que ya tiene la categoría (sin faltantes, sin extras, sin duplicados).
 - **Entrada**: `familyId`, `categoryId`, `orderedTagIds` (array completo de `TagId` en el nuevo orden).
 - **Flujo principal**:

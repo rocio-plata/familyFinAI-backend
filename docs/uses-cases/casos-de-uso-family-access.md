@@ -1,6 +1,8 @@
 # Family & Access — Casos de uso
 
-Documentación de los casos de uso del contexto `Family & Access`, previa a su implementación. Sirve como contrato entre el diseño de dominio ya definido (`Family`, `Member`, `Invitation`, `Role`) y la capa de aplicación que vamos a construir.
+Documentación de los casos de uso del contexto `Family & Access`, actualmente implementado. Sirve
+como contrato funcional entre el dominio (`Family`, `Member`, `Invitation`, `Role`) y la capa de
+aplicación; los pendientes reales se indican al final del documento.
 
 Convención: cada caso de uso indica **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, y **eventos de dominio disparados**.
 

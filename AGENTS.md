@@ -216,6 +216,11 @@ No se acepta código de producción nuevo sin un test que lo respalde.
 
 ### Documentación de implementación
 
+- Antes de dar por terminada cualquier implementación, se debe revisar y actualizar
+  la documentación relevante del repositorio (`docs/`, contratos de API, casos de uso,
+  planes y guías técnicas) para que refleje el comportamiento, los contratos y los
+  pendientes reales del código. Una implementación no se considera completa si su
+  documentación quedó desactualizada.
 - Cada implementación o cambio de un caso de uso debe actualizar, dentro de la misma rama y
   cambio, la documentación funcional correspondiente en `docs/uses-cases/` para reflejar el
   estado real de implementación, sus contratos y sus pendientes.

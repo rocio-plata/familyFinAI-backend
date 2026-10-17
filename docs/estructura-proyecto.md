@@ -25,8 +25,10 @@ src/
 └── shared-kernel/            # Eventos, value objects y errores compartidos
 
 tests/
-├── contexts/                 # Tests de identidad, acceso familiar, tracking financiero y Reporting
-├── platform/                 # Tests de app, auth, HTTP y workflows
+├── unit/                     # Tests de dominio, aplicación y rutas con dobles in-memory
+├── integration/              # Tests de persistencia contra PostgreSQL
+├── e2e/                      # Flujos HTTP completos contra PostgreSQL
+├── platform/                 # Tests transversales de plataforma
 └── shared-kernel/            # Tests de primitivas compartidas
 ```
 

@@ -6,8 +6,8 @@
 > `OnItemAmountChangedHandler`, `OnItemReclassifiedHandler` y `OnItemDeletedHandler` ya están
 > implementados y probados.
 > La persistencia InMemory y Drizzle de `BudgetConfiguration` y `BudgetPeriodStatus`, la composición,
-> las suscripciones al `EventBus` y las seis rutas HTTP ya están implementadas. Quedan abiertas las
-> decisiones funcionales indicadas al final del documento.
+> las suscripciones al `EventBus` y las seis rutas HTTP ya están implementadas. Los presupuestos
+> pueden gestionarse por cualquier `Member`; no se exige rol `Owner`.
 
 Este documento describe el comportamiento objetivo del contexto. No debe interpretarse como una lista de endpoints disponibles ni como un contrato HTTP implementado.
 
@@ -42,7 +42,7 @@ Los presupuestos son **mensuales**, con un modelo híbrido: se definen una vez y
 
 Define un presupuesto recurrente para una categoría, con un monto por defecto que aplica desde ahora en adelante, todos los meses.
 
-- **Actor**: un `Member` de la familia (a definir si se restringe a `Owner` — ver pendientes).
+- **Actor**: un `Member` de la familia. Las rutas HTTP actuales no exigen rol `Owner`.
 - **Precondiciones**: la familia existe; la categoría existe en `Financial Tracking` y está `Active`; no existe ya una `BudgetConfiguration` activa para esa categoría.
 - **Entrada**: `familyId`, `categoryId`, `defaultAmount`.
 - **Flujo principal**:

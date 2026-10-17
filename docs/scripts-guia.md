@@ -6,7 +6,7 @@ Explicación de cada script definido en `package.json` y en qué orden usarlos s
 
 | Script | Comando | Categoría |
 |---|---|---|
-| `dev` | `LOG_LEVEL=debug tsx watch src/platform/server.ts` | Desarrollo |
+| `dev` | `node --env-file-if-exists=.env --import tsx/esm ./node_modules/tsx/dist/cli.mjs watch src/platform/server.ts` | Desarrollo |
 | `token` | `tsx scripts/generate-token.ts` | Desarrollo / utilidades |
 | `lint` | `biome check src tests` | Calidad |
 | `lint:fix` | `biome check --write src tests` | Calidad |
@@ -18,8 +18,8 @@ Explicación de cada script definido en `package.json` y en qué orden usarlos s
 | `db:generate` | `drizzle-kit generate` | Base de datos |
 | `db:migrate` | `drizzle-kit migrate` | Base de datos |
 | `db:studio` | `drizzle-kit studio` | Base de datos |
-| `db:up` | `docker-compose up -d db` | Base de datos |
-| `db:down` | `docker-compose down` | Base de datos |
+| `db:up` | `docker compose up -d db` | Base de datos |
+| `db:down` | `docker compose down` | Base de datos |
 | `db:wait` | `node --env-file=.env --import tsx scripts/wait-for-db.ts` | Base de datos |
 | `db:init` | `db:up` → `db:wait` → `db:migrate` | Base de datos (compuesto) |
 | `db:reset` | `docker-compose down -v` → `db:up` → `db:wait` → `db:migrate` | Base de datos (compuesto) |
@@ -33,9 +33,9 @@ Explicación de cada script definido en `package.json` y en qué orden usarlos s
 Levanta el servidor Fastify en modo desarrollo con recarga automática (`tsx watch`), y con logs en nivel `debug` (más verboso que el nivel por defecto — útil para ver cada request, query, evento publicado, etc. mientras desarrollas). Requiere que la base de datos ya esté arriba y migrada (ver `db:init`/`db:setup` más abajo) y el `.env` configurado.
 
 ### `token`
-Genera un JWT manualmente, sin pasar por `/auth/register` ni `/auth/login`. Fue útil **antes** de que existiera el contexto `Identity` — hoy que ya tienes esos endpoints reales, este script queda más como utilidad de respaldo (por ejemplo, para generar un segundo usuario de prueba rápido sin llenar un formulario de registro) que como el flujo principal para obtener tokens.
+Genera un JWT manualmente, sin pasar por `/auth/register` ni `/auth/login`. Es una utilidad de respaldo para desarrollo; el flujo principal debe usar los endpoints reales de Identity.
 
-> ⚠️ Verifica que `scripts/generate-token.ts` exista con ese nombre exacto — en una sesión anterior armamos un script equivalente como `scripts/generate-test-tokens.ts` (con "test" y en plural); si no coinciden, el comando falla con "no such file". Confirma cuál de los dos nombres es el real en tu proyecto y ajusta uno de los dos lados (el script o esta línea del `package.json`) para que coincidan.
+El script vigente es `scripts/generate-token.ts`.
 
 ### `lint` / `lint:fix`
 `lint` solo reporta problemas de estilo/calidad detectados por Biome, sin modificar nada. `lint:fix` aplica automáticamente las correcciones que Biome pueda resolver por sí solo (el resto hay que corregirlo a mano).
@@ -67,7 +67,7 @@ Levanta una interfaz web local (normalmente en `https://local.drizzle.studio`) p
 ### `db:up` / `db:down`
 Prenden/apagan el contenedor de Postgres definido en `docker-compose.yml`, sin tocar migraciones ni datos. `db:down` conserva el volumen (los datos persisten aunque el contenedor esté apagado).
 
-> Nota: tu `package.json` usa `docker-compose` (con guion, el binario standalone de Docker Compose v1). Si tienes Docker Desktop o una instalación reciente, es más común tener disponible `docker compose` (sin guion, como subcomando de `docker`, Compose v2) en su lugar. Si `db:up` falla con "command not found", ese es el motivo más probable — cambia `docker-compose` por `docker compose` en los scripts correspondientes.
+Los scripts usan Docker Compose v2 mediante el comando `docker compose`.
 
 ### `db:wait`
 Reintenta conectarse a Postgres cada segundo (hasta 20 intentos) hasta que responda. No hace nada más por sí solo — existe para que otros scripts compuestos puedan esperar de forma confiable antes de migrar.

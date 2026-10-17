@@ -19,7 +19,13 @@ Reglas de producto confirmadas:
 
 Una `Family` con **un solo miembro** (el propio usuario como `Owner`) ya es, sin ningún cambio de modelo, exactamente "mis finanzas personales" — tiene su propia economía, categorías, presupuestos y reportes, completamente aislada de cualquier otra familia. Lo único que se agrega es que **se crea automáticamente** en el momento del registro, en vez de requerir que el usuario la cree a mano.
 
-## Qué falta realmente
+## Estado actual
+
+El contexto `Identity`, la familia personal, el orden de familias, el listado ordenado y el
+adaptador `UserDirectoryPort` están implementados. Las secciones siguientes conservan el diseño
+original como referencia; los pendientes actuales se limitan a mejoras futuras de producto.
+
+## Qué faltaba en el diseño original
 
 1. **Un contexto que sepa qué es un "usuario"** — hoy `UserId` es un UUID sin dueño. Se necesita una entidad `User` real, con email/credenciales.
 2. **Creación automática de la familia personal al registrarse.**

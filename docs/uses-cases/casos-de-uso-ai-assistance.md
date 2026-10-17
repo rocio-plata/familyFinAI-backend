@@ -1,6 +1,10 @@
 # AI Assistance — Casos de uso
 
-Documentación de los casos de uso del contexto `AI Assistance`, previa a su implementación (algunos ya fueron esbozados con código en sesiones anteriores — este documento los formaliza y completa el catálogo). Sigue la misma convención usada en los documentos anteriores: **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio disparados**.
+Documentación de los casos de uso del contexto `AI Assistance`. Los cuatro casos de uso núcleo
+están implementados y expuestos por HTTP; `AskFinancialQuestion` y `GenerateInsights` siguen
+pendientes de diseño. Sigue la misma convención usada en los documentos anteriores: **actor**,
+**precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
+disparados**.
 
 Recordatorio de arquitectura: `AI Assistance` es un contexto **genérico**, regido por la filosofía **"la IA propone, el usuario confirma"** — nunca escribe directamente en `Financial Tracking`. Cada capacidad de IA se define como un **puerto** (`NaturalLanguageParserPort`, `ReceiptScannerPort`, `NaturalLanguageQueryPort`), implementado por un **adaptador** que traduce la respuesta del proveedor externo a conceptos del propio dominio (Anticorruption Layer).
 

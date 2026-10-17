@@ -112,11 +112,13 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
 | `npm run lint:fix` | Revisa y corrige automáticamente lo que Biome pueda resolver |
 | `npm run db:up` | Levanta PostgreSQL local con Docker |
 | `npm run db:down` | Detiene los servicios de Docker |
+| `npm run db:wait` | Espera a que PostgreSQL acepte conexiones |
 | `npm run db:init` | Levanta PostgreSQL y aplica las migraciones |
 | `npm run db:reset` | Elimina el volumen local, recrea PostgreSQL y aplica las migraciones |
 | `npm run db:generate` | Genera una migración Drizzle a partir del schema |
 | `npm run db:migrate` | Aplica las migraciones pendientes |
 | `npm run db:studio` | Abre Drizzle Studio |
+| `npm run db:setup` | Prepara la base local y lista las tablas resultantes |
 
 ## d. Estructura del proyecto
 
@@ -135,7 +137,11 @@ src/
 └── platform/                 # Fastify, PostgreSQL/Drizzle, auth y event bus
 
 tests/
-└── contexts/                 # Espejo de la estructura de src/contexts/, con dobles de prueba en doubles/
+├── unit/                     # Dominio, aplicación y rutas con dobles in-memory
+├── integration/              # Repositorios Drizzle contra PostgreSQL
+├── e2e/                      # Flujos HTTP completos con app.inject()
+├── platform/                 # Tests transversales de plataforma
+└── shared-kernel/            # Tests de primitivas compartidas
 ```
 
 Cada contexto sigue internamente:
@@ -169,21 +175,10 @@ Para el detalle del estado de cada contexto, ver `docs/estructura-proyecto.md`.
 - **API de identidad y acceso**: registro, login, perfil, cambio de contraseña, familias, invitaciones y membresías.
 - **Registro financiero**: categorías, tags y movimientos de gastos/ingresos, con filtros y protección de datos por familia.
 - **Medios de pago**: entidades, preferencias por usuario y familia, casos de uso, rutas HTTP, tests unitarios HTTP, tests de integración PostgreSQL, read model por período y repositorios Drizzle. Al crear una familia se generan los medios por defecto y al aceptar una invitación se asigna el default del nuevo miembro. La migración está aplicada; `npm run db:reset` no conserva datos anteriores ni requiere backfill.
-- **Presupuestos**: cinco comandos/queries, cuatro handlers, persistencia InMemory/Drizzle y seis rutas HTTP bajo `/families/:familyId/budgets`.
+- **Presupuestos**: comandos y queries, cuatro handlers, persistencia InMemory/Drizzle y seis rutas HTTP bajo `/families/:familyId/budgets`.
 - **Reportes**: read models materializados por categoría y medio de pago, seis queries, ocho handlers, persistencia InMemory/Drizzle, seis rutas HTTP y tests HTTP/e2e, incluida `/families/:familyId/reports/by-payment-method`.
 - **Asistencia con IA**: sugerencias de texto y recibos bajo la filosofía "la IA propone, el usuario confirma". Incluye adaptadores fake determinísticos, confirmación contra `Financial Tracking`, historial comercio-categoría y persistencia PostgreSQL.
 - **Seguridad y aislamiento**: autenticación por JWT, refresh tokens rotables y autorización mediante pertenencia a la familia.
-
-## f. Usuario y contraseña de prueba
-
-Para pruebas en ambiente de desarrollo:
-
-| Campo | Valor |
-|---|---|
-| Usuario | `aaaa` |
-| Contraseña | `bbbb` |
-
-> ⚠️ Credenciales únicamente para desarrollo/pruebas locales. No deben usarse ni existir en ningún ambiente de producción.
 
 ---
 
@@ -207,7 +202,7 @@ El backend sigue **Domain-Driven Design (DDD)** con **arquitectura hexagonal** (
 - El orden de los tags dentro de una categoría es **manual** (`displayOrder`), controlado por el usuario.
 - Un recibo escaneado siempre genera **un único** `FinancialItem`.
 - `Family` es el único agregado que gestiona su membresía: siempre debe quedar al menos un `Owner`.
-- La moneda por defecto de una familia es **CLP**, configurable a futuro; cada `FinancialItem` guarda su propia moneda vía el Value Object `Currency` (en `shared-kernel`).
+- La moneda por defecto de una familia es **CLP** y cada `FinancialItem` guarda su propia moneda vía el Value Object `Currency` (en `shared-kernel`).
 
 ### Comunicación entre contextos
 
