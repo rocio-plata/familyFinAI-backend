@@ -362,6 +362,10 @@ Family & Access **no importa Identity**. Se amplía el puerto `UserDirectoryPort
 
 ## Fase 3 — Dashboard y reportes
 
+> **Estado actual:** implementados `PeriodResolver` para `America/Santiago` y el límite máximo de
+> 24 meses para `trend`. La actualización de DTOs de dashboard, breakdown, comparison, drilldown y
+> by-payment-method continúa en esta fase.
+
 Con una sola moneda por familia (C1–C4) los reportes son más simples. Los **nombres e íconos de categoría** viven en Financial Tracking: se obtienen por un puerto.
 
 **Forma común:** todo reporte lleva `currency` a nivel superior (la de la familia), y las cifras son `Money`.

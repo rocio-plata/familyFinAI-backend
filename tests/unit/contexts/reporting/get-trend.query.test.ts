@@ -86,6 +86,17 @@ describe("GetTrendQuery", () => {
       InvalidPeriodRangeError,
     );
   });
+
+  test("rechaza un rango mayor a 24 meses", async () => {
+    await assert.rejects(
+      query.execute({
+        familyId,
+        fromPeriod: Period.of(2024, 1),
+        toPeriod: Period.of(2026, 2),
+      }),
+      InvalidPeriodRangeError,
+    );
+  });
 });
 
 async function addAggregate(

@@ -31,6 +31,7 @@ class GetTrendQuery {
     }
 
     const periods = this.generatePeriods(input.fromPeriod, input.toPeriod);
+    if (periods.length > 24) throw new InvalidPeriodRangeError();
     const aggregatesByPeriod = await Promise.all(
       periods.map(async (period) => ({
         period,

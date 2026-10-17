@@ -71,6 +71,9 @@ Las rutas de invitaciones implementadas incluyen `GET /me/invitations`,
 administrativo requiere rol `OWNER`; el listado propio deriva el email desde el usuario autenticado
 y nunca lo recibe por querystring.
 
+Los períodos de Reporting y Budgeting se resuelven en la zona `REPORTING_TIMEZONE`, cuyo valor
+predeterminado es `America/Santiago`. La consulta `trend` admite como máximo 24 meses.
+
 ### 3.1 Salud del Sistema
 
 #### `GET /health`
