@@ -25,7 +25,15 @@ class Period {
   }
 
   static fromDate(date: Date): Period {
-    return Period.of(date.getUTCFullYear(), date.getUTCMonth() + 1);
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: process.env.REPORTING_TIMEZONE ?? "America/Santiago",
+      year: "numeric",
+      month: "2-digit",
+    }).formatToParts(date);
+    return Period.of(
+      Number(parts.find((part) => part.type === "year")?.value),
+      Number(parts.find((part) => part.type === "month")?.value),
+    );
   }
 
   toString(): string {
