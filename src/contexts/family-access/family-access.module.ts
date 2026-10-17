@@ -7,15 +7,18 @@ import { AcceptInvitationUseCase } from "./application/commands/accept-invitatio
 import { ChangeDefaultCurrencyUseCase } from "./application/commands/change-default-currency.usecase.js";
 import { ChangeMemberRoleUseCase } from "./application/commands/change-member-role.usecase.js";
 import { CreateFamilyUseCase } from "./application/commands/create-family.usecase.js";
+import { DeclineInvitationUseCase } from "./application/commands/decline-invitation.usecase.js";
 import { InviteMemberUseCase } from "./application/commands/invite-member.usecase.js";
 import { RemoveMemberUseCase } from "./application/commands/remove-member.usecase.js";
 import { ReorderMyFamiliesUseCase } from "./application/commands/reorder-my-families.usecase.js";
 import { RevokeInvitationUseCase } from "./application/commands/revoke-invitation.usecase.js";
 import { GetFamiliesForUserQuery } from "./application/queries/get-families-for-user.query.js";
 import { GetFamilyDefaultCurrencyQuery } from "./application/queries/get-family-default-currency.query.js";
+import { GetFamilyInvitationsQuery } from "./application/queries/get-family-invitations.query.js";
 import { GetFamilyMembersQuery } from "./application/queries/get-family-members.query.js";
 import { GetFamilyMembershipQuery } from "./application/queries/get-family-membership.query.js";
 import { GetFamilySettingsQuery } from "./application/queries/get-family-settings.query.js";
+import { GetMyPendingInvitationsQuery } from "./application/queries/get-my-pending-invitations.query.js";
 import type { FamilyFinancialActivityPort } from "./domain/ports/family-financial-activity.port.js";
 import type { UserDirectoryPort } from "./domain/ports/user-directory.port.js";
 import type { FamilyRepository } from "./domain/repositories/family.repository.js";
@@ -46,6 +49,9 @@ interface FamilyAccessModule {
     getFamilyMembership: GetFamilyMembershipQuery;
     getFamilyMembers: GetFamilyMembersQuery;
     getFamilySettings: GetFamilySettingsQuery;
+    declineInvitation: DeclineInvitationUseCase;
+    getMyPendingInvitations: GetMyPendingInvitationsQuery;
+    getFamilyInvitations: GetFamilyInvitationsQuery;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -64,6 +70,7 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
       deps.invitationRepository,
       deps.eventBus,
       deps.unitOfWork,
+      deps.userDirectory,
     ),
     revokeInvitation: new RevokeInvitationUseCase(deps.familyRepository, deps.invitationRepository),
     removeMember: new RemoveMemberUseCase(deps.familyRepository, deps.eventBus),
@@ -76,8 +83,18 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
     getFamiliesForUser: new GetFamiliesForUserQuery(deps.familyRepository),
     getFamilyDefaultCurrency: new GetFamilyDefaultCurrencyQuery(deps.familyRepository),
     getFamilyMembership: new GetFamilyMembershipQuery(deps.familyRepository),
-    getFamilyMembers: new GetFamilyMembersQuery(deps.familyRepository),
+    getFamilyMembers: new GetFamilyMembersQuery(deps.familyRepository, deps.userDirectory),
     getFamilySettings: new GetFamilySettingsQuery(deps.familyRepository, deps.financialActivity),
+    declineInvitation: new DeclineInvitationUseCase(deps.invitationRepository, deps.userDirectory),
+    getMyPendingInvitations: new GetMyPendingInvitationsQuery(
+      deps.familyRepository,
+      deps.invitationRepository,
+      deps.userDirectory,
+    ),
+    getFamilyInvitations: new GetFamilyInvitationsQuery(
+      deps.familyRepository,
+      deps.invitationRepository,
+    ),
   };
 
   return {
@@ -99,6 +116,10 @@ function buildFamilyAccessModule(deps: FamilyAccessModuleDependencies): FamilyAc
         getFamilyMembersQuery: useCases.getFamilyMembers,
         getFamilyMembershipQuery: useCases.getFamilyMembership,
         getFamilySettingsQuery: useCases.getFamilySettings,
+        declineInvitationUseCase: useCases.declineInvitation,
+        getMyPendingInvitationsQuery: useCases.getMyPendingInvitations,
+        getFamilyInvitationsQuery: useCases.getFamilyInvitations,
+        userDirectory: deps.userDirectory,
       });
     },
   };

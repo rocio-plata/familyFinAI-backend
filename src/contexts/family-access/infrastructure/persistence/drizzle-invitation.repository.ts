@@ -3,6 +3,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../../../platform/db/connection.js";
 import type { TransactionClient } from "../../../../platform/db/unit-of-work.js";
+import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
 import { Invitation } from "../../domain/entities/invitation.js";
 import type { InvitationRepository } from "../../domain/repositories/invitation.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
@@ -25,6 +26,7 @@ class DrizzleInvitationRepository implements InvitationRepository {
         status: invitation.status,
         expiresAt: invitation.expiresAt,
         invitedUserId: this.getInvitedUserId(invitation),
+        invitedBy: invitation.invitedBy.toString(),
       })
       .onConflictDoUpdate({
         target: invitations.id,
@@ -55,6 +57,15 @@ class DrizzleInvitationRepository implements InvitationRepository {
     return rows.map((row) => this.toDomain(row));
   }
 
+  async findByInvitedEmail(email: EmailAddress, tx?: TransactionClient): Promise<Invitation[]> {
+    const client = tx ?? db;
+    const rows = await client
+      .select()
+      .from(invitations)
+      .where(eq(invitations.invitedEmail, email.toString()));
+    return rows.map((row) => this.toDomain(row));
+  }
+
   private toDomain(row: typeof invitations.$inferSelect): Invitation {
     return Invitation.reconstitute({
       id: row.id,
@@ -64,6 +75,7 @@ class DrizzleInvitationRepository implements InvitationRepository {
       status: this.toDomainStatus(row.status),
       expiresAt: row.expiresAt,
       invitedUserId: row.invitedUserId,
+      invitedBy: row.invitedBy,
     });
   }
 
@@ -77,6 +89,8 @@ class DrizzleInvitationRepository implements InvitationRepository {
         return InvitationStatus.Expired;
       case InvitationStatus.Revoked:
         return InvitationStatus.Revoked;
+      case InvitationStatus.Declined:
+        return InvitationStatus.Declined;
     }
 
     throw new Error(`Unknown invitation status: ${status}`);

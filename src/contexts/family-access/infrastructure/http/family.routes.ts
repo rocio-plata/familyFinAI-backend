@@ -5,14 +5,18 @@ import type { AcceptInvitationUseCase } from "../../application/commands/accept-
 import type { ChangeDefaultCurrencyUseCase } from "../../application/commands/change-default-currency.usecase.js";
 import type { ChangeMemberRoleUseCase } from "../../application/commands/change-member-role.usecase.js";
 import type { CreateFamilyUseCase } from "../../application/commands/create-family.usecase.js";
+import type { DeclineInvitationUseCase } from "../../application/commands/decline-invitation.usecase.js";
 import type { InviteMemberUseCase } from "../../application/commands/invite-member.usecase.js";
 import type { RemoveMemberUseCase } from "../../application/commands/remove-member.usecase.js";
 import type { ReorderMyFamiliesUseCase } from "../../application/commands/reorder-my-families.usecase.js";
 import type { RevokeInvitationUseCase } from "../../application/commands/revoke-invitation.usecase.js";
 import type { GetFamiliesForUserQuery } from "../../application/queries/get-families-for-user.query.js";
+import type { GetFamilyInvitationsQuery } from "../../application/queries/get-family-invitations.query.js";
 import type { GetFamilyMembersQuery } from "../../application/queries/get-family-members.query.js";
 import type { GetFamilyMembershipQuery } from "../../application/queries/get-family-membership.query.js";
 import type { GetFamilySettingsQuery } from "../../application/queries/get-family-settings.query.js";
+import type { GetMyPendingInvitationsQuery } from "../../application/queries/get-my-pending-invitations.query.js";
+import type { UserDirectoryPort } from "../../domain/ports/user-directory.port.js";
 import { FamilyId } from "../../domain/value-objects/family-id.js";
 import { InvitationId } from "../../domain/value-objects/invitation-id.js";
 import { Role } from "../../domain/value-objects/role.js";
@@ -24,6 +28,10 @@ interface FamilyRoutesDependencies {
   createFamilyUseCase: CreateFamilyUseCase;
   inviteMemberUseCase: InviteMemberUseCase;
   acceptInvitationUseCase: AcceptInvitationUseCase;
+  declineInvitationUseCase: DeclineInvitationUseCase;
+  getMyPendingInvitationsQuery: GetMyPendingInvitationsQuery;
+  getFamilyInvitationsQuery: GetFamilyInvitationsQuery;
+  userDirectory: UserDirectoryPort;
   revokeInvitationUseCase: RevokeInvitationUseCase;
   removeMemberUseCase: RemoveMemberUseCase;
   changeMemberRoleUseCase: ChangeMemberRoleUseCase;
@@ -69,6 +77,18 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
         familyId: family.familyId.toString(),
         name: family.name,
         role: family.role.isOwner() ? "OWNER" : "MEMBER",
+        defaultCurrency: family.defaultCurrency,
+        memberCount: family.memberCount,
+      })),
+    );
+  });
+
+  app.get("/me/invitations", { preHandler: [deps.authenticate] }, async (request, reply) => {
+    const invitations = await deps.getMyPendingInvitationsQuery.execute({ userId: request.userId });
+    return reply.code(200).send(
+      invitations.map((invitation) => ({
+        ...invitation,
+        expiresAt: invitation.expiresAt.toISOString(),
       })),
     );
   });
@@ -117,13 +137,51 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
 
-      const members = await deps.getFamilyMembersQuery.execute({ familyId: FamilyId.of(familyId) });
+      const members = await deps.getFamilyMembersQuery.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        ...(request.familyContext ? { requestedByRole: request.familyContext.role } : {}),
+      });
 
       return reply.code(200).send(
         members.map((m) => ({
           userId: m.userId.toString(),
           role: m.role.isOwner() ? "OWNER" : "MEMBER",
           joinedAt: m.joinedAt.toISOString(),
+          displayName: m.displayName,
+          ...(m.email !== undefined ? { email: m.email } : {}),
+        })),
+      );
+    },
+  );
+
+  app.get(
+    "/families/:familyId/invitations",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string" } },
+        },
+        querystring: {
+          type: "object",
+          properties: { status: { type: "string", enum: ["PENDING", "ALL"] } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { status } = request.query as { status?: "PENDING" | "ALL" };
+      const invitations = await deps.getFamilyInvitationsQuery.execute({
+        familyId: FamilyId.of(familyId),
+        ...(status ? { status } : {}),
+      });
+      return reply.code(200).send(
+        invitations.map((invitation) => ({
+          ...invitation,
+          expiresAt: invitation.expiresAt.toISOString(),
         })),
       );
     },
@@ -204,6 +262,28 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
         revokedBy: request.userId,
       });
 
+      return reply.code(204).send();
+    },
+  );
+
+  app.post(
+    "/invitations/:invitationId/decline",
+    {
+      preHandler: [deps.authenticate],
+      schema: {
+        params: {
+          type: "object",
+          required: ["invitationId"],
+          properties: { invitationId: { type: "string" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { invitationId } = request.params as { invitationId: string };
+      await deps.declineInvitationUseCase.execute({
+        invitationId: InvitationId.of(invitationId),
+        userId: request.userId,
+      });
       return reply.code(204).send();
     },
   );

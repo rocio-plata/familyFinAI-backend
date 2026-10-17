@@ -5,6 +5,7 @@ import { EmailAddress } from "../../../../shared-kernel/domain/email-address.js"
 import { addDays } from "../../../../shared-kernel/domain/util/date.js";
 import { InvitationExpiredError } from "../errors/invitation-expired.error.js";
 import { InvitationNotAcceptedError } from "../errors/invitation-not-accepted.error.js";
+import { InvitationNotForUserError } from "../errors/invitation-not-for-user.error.js";
 import { InvitationNotPendingError } from "../errors/invitation-not-pending.error.js";
 import { InvitationAccepted } from "../events/invitation-accepted.event.js";
 import { MemberInvited } from "../events/member-invited.event.js";
@@ -22,6 +23,7 @@ interface ReconstituteInvitationProps {
   status: InvitationStatus;
   expiresAt: Date;
   invitedUserId: string | null;
+  invitedBy: string;
 }
 
 class Invitation {
@@ -35,6 +37,7 @@ class Invitation {
     private _status: InvitationStatus,
     private readonly _expiresAt: Date,
     private _invitedUserId: UserId | null, // se completa recién al aceptar
+    private readonly _invitedBy: UserId,
   ) {}
 
   get id(): InvitationId {
@@ -60,7 +63,16 @@ class Invitation {
     return this._invitedUserId;
   }
 
-  static create(familyId: FamilyId, email: EmailAddress, role: Role): Invitation {
+  get invitedBy(): UserId {
+    return this._invitedBy;
+  }
+
+  static create(
+    familyId: FamilyId,
+    email: EmailAddress,
+    role: Role,
+    invitedBy: UserId = UserId.generate(),
+  ): Invitation {
     const invitation = new Invitation(
       InvitationId.generate(),
       familyId,
@@ -69,6 +81,7 @@ class Invitation {
       InvitationStatus.Pending,
       addDays(new Date(), 7),
       null,
+      invitedBy,
     );
     invitation.domainEvents.push(new MemberInvited(familyId, email)); // cuando esté integrado con eventos de dominio, se puede agregar un evento de "MemberInvited" aquí
     return invitation;
@@ -83,6 +96,7 @@ class Invitation {
       props.status,
       props.expiresAt,
       props.invitedUserId ? UserId.of(props.invitedUserId) : null,
+      UserId.of(props.invitedBy),
     );
   }
 
@@ -102,6 +116,17 @@ class Invitation {
       throw new InvitationNotPendingError(this._id);
     }
     this._status = InvitationStatus.Revoked;
+  }
+
+  decline(email: EmailAddress): void {
+    if (!this._invitedEmail.equals(email)) {
+      throw new InvitationNotForUserError(this._id);
+    }
+    if (this._status !== InvitationStatus.Pending) {
+      throw new InvitationNotPendingError(this._id);
+    }
+    if (this._expiresAt < new Date()) throw new InvitationExpiredError(this._id);
+    this._status = InvitationStatus.Declined;
   }
 
   pullDomainEvents(): DomainEvent[] {

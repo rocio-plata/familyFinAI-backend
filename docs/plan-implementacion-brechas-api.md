@@ -281,6 +281,11 @@ Entre comprobar "no hay items" y guardar el cambio, otra petición podría crear
 
 ## Fase 2 — Invitaciones y miembros
 
+> **Estado actual:** implementados A1-A6: invitaciones propias, decline, listado administrativo,
+> perfiles con `userId`, familias con `defaultCurrency`/`memberCount` y miembros con `displayName`
+> y email visible únicamente para `OWNER`. La migración `0010_tiny_may_parker.sql` agrega
+> `DECLINED` e `invited_by`.
+
 ### 2.1 A6 y A5: perfil y familias
 
 1. **A6** — `GET /me/profile` incluye `userId`.

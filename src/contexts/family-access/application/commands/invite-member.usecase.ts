@@ -42,7 +42,7 @@ class InviteMemberUseCase {
       throw new AlreadyMemberError(command.email.toString());
     }
 
-    const invitation = family.inviteMember(command.email, command.role);
+    const invitation = family.inviteMember(command.email, command.role, command.invitedBy);
     await this.invitationRepository.save(invitation);
 
     for (const event of invitation.pullDomainEvents()) {

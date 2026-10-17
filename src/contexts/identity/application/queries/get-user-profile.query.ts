@@ -8,6 +8,7 @@ interface GetUserProfileInput {
 }
 
 interface UserProfileDTO {
+  userId: UserId;
   email: string;
   displayName: string;
   createdAt: Date;
@@ -23,6 +24,7 @@ class GetUserProfileQuery {
     }
 
     return {
+      userId: user.id,
       email: user.email.toString(),
       displayName: user.displayName.toString(),
       createdAt: user.createdAt,

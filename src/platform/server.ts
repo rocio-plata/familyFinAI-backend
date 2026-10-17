@@ -109,7 +109,7 @@ const app = buildApp({
   familyAccess: {
     familyRepository,
     invitationRepository,
-    userDirectory: new IdentityUserDirectoryAdapter(getUserIdByEmailQuery),
+    userDirectory: new IdentityUserDirectoryAdapter(getUserIdByEmailQuery, userRepository),
     eventBus,
     unitOfWork,
     financialActivity: new FamilyFinancialActivityAdapter(

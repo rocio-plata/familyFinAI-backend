@@ -44,4 +44,50 @@ describe("GetFamilyMembersQuery", () => {
       FamilyNotFoundError,
     );
   });
+
+  test("devuelve displayName y email solo para quien consulta como Owner", async () => {
+    const memberId = UserId.generate();
+    family.addMemberFromInvitationData(memberId, Role.member());
+    await familyRepository.save(family);
+    const userDirectory = {
+      findUserIdByEmail: async () => null,
+      findProfilesByIds: async () => [
+        { userId: ownerId, displayName: "Rocío", email: "rocio@example.com" },
+        { userId: memberId, displayName: "Alex", email: "alex@example.com" },
+      ],
+    };
+    query = new GetFamilyMembersQuery(familyRepository, userDirectory);
+
+    const members = await query.execute({
+      familyId: family.id,
+      requestedBy: ownerId,
+      requestedByRole: Role.owner(),
+    });
+
+    assert.equal(
+      members.find((member) => member.userId.equals(ownerId))?.email,
+      "rocio@example.com",
+    );
+    assert.equal(members.find((member) => member.userId.equals(memberId))?.displayName, "Alex");
+  });
+
+  test("oculta el email cuando quien consulta es Member y tolera perfiles ausentes", async () => {
+    const memberId = UserId.generate();
+    family.addMemberFromInvitationData(memberId, Role.member());
+    await familyRepository.save(family);
+    const userDirectory = {
+      findUserIdByEmail: async () => null,
+      findProfilesByIds: async () => [],
+    };
+    query = new GetFamilyMembersQuery(familyRepository, userDirectory);
+
+    const members = await query.execute({
+      familyId: family.id,
+      requestedBy: memberId,
+      requestedByRole: Role.member(),
+    });
+
+    assert.equal(members[0]?.displayName, null);
+    assert.equal("email" in (members[0] ?? {}), false);
+  });
 });
