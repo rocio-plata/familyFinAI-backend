@@ -14,7 +14,7 @@
     "test:integration": "node --env-file-if-exists=.env --import tsx/esm --test 'tests/integration/**/*.test.ts'",
     "test:e2e": "node --env-file-if-exists=.env --import tsx/esm --test 'tests/e2e/**/*.test.ts'",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "node --env-file-if-exists=.env ./node_modules/drizzle-kit/bin.cjs migrate",
     "db:studio": "drizzle-kit studio",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",

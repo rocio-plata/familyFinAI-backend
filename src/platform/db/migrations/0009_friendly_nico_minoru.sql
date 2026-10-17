@@ -16,4 +16,3 @@ ALTER TABLE "payment_method_period_aggregates" ALTER COLUMN "total_expense_minor
 ALTER TABLE "payment_method_period_aggregates" ALTER COLUMN "total_income_minor" TYPE bigint USING ROUND("total_income_minor" * CASE WHEN "currency" IN ('USD', 'EUR') THEN 100 ELSE 1 END)::bigint;--> statement-breakpoint
 ALTER TABLE "suggestions" RENAME COLUMN "suggested_amount" TO "suggested_amount_minor";--> statement-breakpoint
 ALTER TABLE "suggestions" ALTER COLUMN "suggested_amount_minor" TYPE bigint USING ROUND("suggested_amount_minor" * CASE WHEN "suggested_currency" IN ('USD', 'EUR') THEN 100 ELSE 1 END)::bigint;--> statement-breakpoint
-ALTER TABLE "suggestions" RENAME COLUMN "suggested_amount" TO "suggested_amount_minor";
