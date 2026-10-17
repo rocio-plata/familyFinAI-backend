@@ -7,7 +7,7 @@ import type { GetCategoriesQuery } from "../../../financial-tracking/application
 import type { CategoryName } from "../../../financial-tracking/domain/value-objects/category-name.js";
 import type { BudgetConfigurationRepository } from "../../domain/repositories/budget-configuration.repository.js";
 import type { BudgetPeriodStatusRepository } from "../../domain/repositories/budget-period-status.repository.js";
-import type { BudgetBalance } from "../../domain/value-objects/budget-balance.js";
+import { BudgetBalance } from "../../domain/value-objects/budget-balance.js";
 
 interface GetBudgetsInput {
   familyId: FamilyId;
@@ -57,10 +57,7 @@ class GetBudgetsQuery {
         const spent = status?.spent ?? Money.of(0, limitAmount.currency);
         const remaining = status
           ? status.remaining
-          : {
-              amount: limitAmount.amount - spent.amount,
-              currency: limitAmount.currency,
-            };
+          : BudgetBalance.of(limitAmount.amount - spent.amount, limitAmount.currency);
 
         return {
           budgetConfigurationId: configuration.id.toString(),
