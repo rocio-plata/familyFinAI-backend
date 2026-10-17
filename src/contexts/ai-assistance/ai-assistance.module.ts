@@ -10,7 +10,10 @@ import { ConfirmSuggestionUseCase } from "./application/commands/confirm-suggest
 import { DiscardSuggestionUseCase } from "./application/commands/discard-suggestion.usecase.js";
 import { ParseNaturalLanguageExpenseUseCase } from "./application/commands/parse-natural-language-expense.usecase.js";
 import { ScanReceiptUseCase } from "./application/commands/scan-receipt.usecase.js";
+import { GetPendingSuggestionsQuery } from "./application/queries/get-pending-suggestions.query.js";
+import { AiUsagePolicy } from "./application/services/ai-usage-policy.js";
 import type { CategoryLookupPort } from "./domain/ports/category-lookup.port.js";
+import type { AiUsageRepository } from "./domain/repositories/ai-usage.repository.js";
 import type { MerchantCategoryHistoryRepository } from "./domain/repositories/merchant-category-history.repository.js";
 import type { SuggestionRepository } from "./domain/repositories/suggestion.repository.js";
 import { registerAiAssistanceRoutes } from "./infrastructure/http/ai-assistance.routes.js";
@@ -24,6 +27,7 @@ interface AiAssistanceModuleDependencies {
   getCategoriesQuery: GetCategoriesQuery;
   getFamilyMembershipQuery: GetFamilyMembershipQuery;
   createFinancialItemUseCase: CreateFinancialItemUseCase;
+  aiUsageRepository?: AiUsageRepository;
 }
 
 interface AiAssistanceModule {
@@ -32,6 +36,7 @@ interface AiAssistanceModule {
     scanReceipt: ScanReceiptUseCase;
     confirmSuggestion: ConfirmSuggestionUseCase;
     discardSuggestion: DiscardSuggestionUseCase;
+    getPendingSuggestions: GetPendingSuggestionsQuery;
   };
   registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void;
 }
@@ -52,11 +57,15 @@ function buildAiAssistanceModule(deps: AiAssistanceModuleDependencies): AiAssist
   const parser = new FakeNaturalLanguageParser();
   const scanner = new FakeReceiptScanner();
   const categoryLookup = new FinancialTrackingCategoryLookup(deps.getCategoriesQuery);
+  const usagePolicy = deps.aiUsageRepository
+    ? new AiUsagePolicy(deps.aiUsageRepository)
+    : undefined;
   const useCases = {
     parseNaturalLanguageExpense: new ParseNaturalLanguageExpenseUseCase(
       parser,
       deps.suggestionRepository,
       deps.eventBus,
+      usagePolicy,
     ),
     scanReceipt: new ScanReceiptUseCase(
       scanner,
@@ -64,6 +73,7 @@ function buildAiAssistanceModule(deps: AiAssistanceModuleDependencies): AiAssist
       categoryLookup,
       deps.suggestionRepository,
       deps.eventBus,
+      usagePolicy,
     ),
     confirmSuggestion: new ConfirmSuggestionUseCase(
       deps.suggestionRepository,
@@ -72,6 +82,7 @@ function buildAiAssistanceModule(deps: AiAssistanceModuleDependencies): AiAssist
       deps.eventBus,
     ),
     discardSuggestion: new DiscardSuggestionUseCase(deps.suggestionRepository, deps.eventBus),
+    getPendingSuggestions: new GetPendingSuggestionsQuery(deps.suggestionRepository),
   };
 
   return {
@@ -85,6 +96,8 @@ function buildAiAssistanceModule(deps: AiAssistanceModuleDependencies): AiAssist
         scanReceiptUseCase: useCases.scanReceipt,
         confirmSuggestionUseCase: useCases.confirmSuggestion,
         discardSuggestionUseCase: useCases.discardSuggestion,
+        getPendingSuggestionsQuery: useCases.getPendingSuggestions,
+        aiUsagePolicy: usagePolicy,
       });
     },
   };

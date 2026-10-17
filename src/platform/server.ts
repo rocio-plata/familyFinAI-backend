@@ -1,7 +1,9 @@
 // /src/platform/server.ts
 
+import { DrizzleAiUsageRepository } from "../contexts/ai-assistance/infrastructure/persistence/drizzle-ai-usage.repository.js";
 import { DrizzleMerchantCategoryHistoryRepository } from "../contexts/ai-assistance/infrastructure/persistence/drizzle-merchant-category-history.repository.js";
 import { DrizzleSuggestionRepository } from "../contexts/ai-assistance/infrastructure/persistence/drizzle-suggestion.repository.js";
+import { InMemoryAiUsageRepository } from "../contexts/ai-assistance/infrastructure/persistence/in-memory-ai-usage.repository.js";
 import { InMemoryMerchantCategoryHistoryRepository } from "../contexts/ai-assistance/infrastructure/persistence/in-memory-merchant-category-history.repository.js";
 import { InMemorySuggestionRepository } from "../contexts/ai-assistance/infrastructure/persistence/in-memory-suggestion.repository.js";
 import { DrizzleBudgetConfigurationRepository } from "../contexts/budgeting/infrastructure/persistence/drizzle-budget-configuration.repository.js";
@@ -101,6 +103,9 @@ const suggestionRepository = usePostgres
 const merchantCategoryHistoryRepository = usePostgres
   ? new DrizzleMerchantCategoryHistoryRepository()
   : new InMemoryMerchantCategoryHistoryRepository();
+const aiUsageRepository = usePostgres
+  ? new DrizzleAiUsageRepository()
+  : new InMemoryAiUsageRepository();
 const unitOfWork = usePostgres ? new DrizzleUnitOfWork() : new DirectUnitOfWork();
 
 const app = buildApp({
@@ -150,6 +155,7 @@ const app = buildApp({
     suggestionRepository,
     merchantCategoryHistoryRepository,
     eventBus,
+    aiUsageRepository,
   },
 });
 

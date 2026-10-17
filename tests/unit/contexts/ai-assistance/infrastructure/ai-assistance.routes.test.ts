@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import Fastify from "fastify";
+import type { ConfirmedSuggestionCommand } from "../../../../../src/contexts/ai-assistance/application/commands/confirm-suggestion.usecase.js";
 import { ConfirmSuggestionUseCase } from "../../../../../src/contexts/ai-assistance/application/commands/confirm-suggestion.usecase.js";
 import { DiscardSuggestionUseCase } from "../../../../../src/contexts/ai-assistance/application/commands/discard-suggestion.usecase.js";
 import { ParseNaturalLanguageExpenseUseCase } from "../../../../../src/contexts/ai-assistance/application/commands/parse-natural-language-expense.usecase.js";
@@ -25,7 +26,22 @@ async function createApp() {
   const historyRepository = new InMemoryMerchantCategoryHistoryRepository();
   const eventBus = new FakeEventBus();
   const categoryLookup = { findByNameHint: async () => categoryId };
-  const createFinancialItem = { execute: async () => undefined };
+  const createFinancialItem = {
+    execute: async (input: ConfirmedSuggestionCommand) => ({
+      id: { toString: () => "44444444-4444-4444-8444-444444444444" },
+      type: "EXPENSE",
+      amount: input.amount,
+      categoryAssignment: {
+        categoryId: input.categoryId,
+        tagId: input.tagId,
+      },
+      paymentMethodId: undefined,
+      title: input.title,
+      note: null,
+      occurredOn: input.occurredOn,
+      createdAt: new Date("2026-10-17T00:00:00.000Z"),
+    }),
+  };
   const app = Fastify({ logger: false });
   registerErrorHandler(app);
 
@@ -90,15 +106,17 @@ describe("AI Assistance HTTP routes", () => {
   test("acepta un recibo multipart", async () => {
     const { app } = await createApp();
     const boundary = "ai-assistance-boundary";
-    const payload = [
+    const multipartPrefix = `${[
       `--${boundary}`,
       'Content-Disposition: form-data; name="file"; filename="jumbo-25000.jpg"',
       "Content-Type: image/jpeg",
       "",
-      "fake-image-content",
-      `--${boundary}--`,
-      "",
-    ].join("\r\n");
+    ].join("\r\n")}\r\n`;
+    const payload = Buffer.concat([
+      Buffer.from(multipartPrefix),
+      Buffer.from([0xff, 0xd8, 0xff, 0x00]),
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
 
     const response = await app.inject({
       method: "POST",
@@ -125,7 +143,7 @@ describe("AI Assistance HTTP routes", () => {
       url: `/families/${familyId}/suggestions/${suggestionId}/confirm`,
       payload: { categoryId, title: "Bencina" },
     });
-    assert.equal(confirmed.statusCode, 204);
+    assert.equal(confirmed.statusCode, 201);
 
     const discarded = await app.inject({
       method: "POST",

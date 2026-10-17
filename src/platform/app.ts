@@ -40,7 +40,7 @@ interface AppDependencies {
   budgeting?: BudgetingModuleDependencies;
   aiAssistance?: Pick<
     AiAssistanceModuleDependencies,
-    "suggestionRepository" | "merchantCategoryHistoryRepository" | "eventBus"
+    "suggestionRepository" | "merchantCategoryHistoryRepository" | "eventBus" | "aiUsageRepository"
   >;
   logLevel?: string;
 }
