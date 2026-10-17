@@ -40,11 +40,11 @@ const suggestionParams = {
   },
 };
 
-async function registerAiAssistanceRoutes(
+function registerAiAssistanceRoutes(
   app: FastifyInstance,
   deps: AiAssistanceRoutesDependencies,
-): Promise<void> {
-  await app.register(multipart, { limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
+): void {
+  app.register(multipart, { limits: { files: 1, fileSize: 10 * 1024 * 1024 } });
 
   const preHandler = [deps.authenticate, deps.requireFamilyMembership()];
 

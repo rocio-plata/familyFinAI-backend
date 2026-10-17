@@ -88,7 +88,7 @@ function buildAiAssistanceModule(deps: AiAssistanceModuleDependencies): AiAssist
   return {
     useCases,
     registerRoutes(app: FastifyInstance, authenticate: preHandlerHookHandler): void {
-      void registerAiAssistanceRoutes(app, {
+      registerAiAssistanceRoutes(app, {
         authenticate,
         requireFamilyMembership: (minRole) =>
           requireFamilyMembership(deps.getFamilyMembershipQuery, minRole),
