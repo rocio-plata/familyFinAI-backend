@@ -90,8 +90,7 @@ describe("GET /families/:familyId/items", () => {
     assert.equal(response.statusCode, 200);
     const body = JSON.parse(response.body);
     assert.equal(body.length, 2);
-    assert.equal(body[0].amount, 5000);
-    assert.equal(body[0].currency, "CLP");
+    assert.deepEqual(body[0].amount, { amount: 5000, currency: "CLP" });
     assert.equal(body[0].categoryId, expenseCategoryId.toString());
     assert.equal(body[0].tagId, expenseTagId.toString());
     assert.equal(body[0].title, "Supermercado");

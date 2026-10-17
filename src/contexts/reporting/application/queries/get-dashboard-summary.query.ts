@@ -2,6 +2,7 @@
 
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
+import { calculatePercentage } from "../../../../shared-kernel/domain/percentage.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
@@ -51,8 +52,7 @@ class GetDashboardSummaryQuery {
         .map((aggregate) => ({
           categoryId: aggregate.categoryId,
           totalExpense: aggregate.totalExpense,
-          percentage:
-            totalExpenses === 0 ? 0 : (aggregate.totalExpense.amount / totalExpenses) * 100,
+          percentage: calculatePercentage(aggregate.totalExpense.amount, totalExpenses),
         }))
         .sort((first, second) => second.totalExpense.amount - first.totalExpense.amount),
     };

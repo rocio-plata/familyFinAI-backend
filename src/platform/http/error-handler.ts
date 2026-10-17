@@ -7,7 +7,11 @@ function registerErrorHandler(app: FastifyInstance): void {
   app.setErrorHandler((error: FastifyError | DomainError, request, reply) => {
     if (error instanceof DomainError) {
       const status = resolveHttpStatus(error);
-      return reply.code(status).send({ error: error.code, message: error.message });
+      return reply.code(status).send({
+        error: error.code,
+        message: error.message,
+        ...("details" in error && error.details !== undefined ? { details: error.details } : {}),
+      });
     }
 
     if ("validation" in error && error.validation) {

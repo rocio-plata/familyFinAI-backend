@@ -1,6 +1,7 @@
 // src/contexts/ai-assistance/infrastructure/http/ai-assistance.routes.ts
 import multipart from "@fastify/multipart";
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
+import { toMoneyDto } from "../../../../platform/http/money.dto.js";
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
@@ -103,7 +104,7 @@ async function registerAiAssistanceRoutes(
         body: {
           type: "object",
           properties: {
-            amount: { type: "number", minimum: 0 },
+            amount: { type: "integer", minimum: 1 },
             currency: { type: "string", minLength: 1 },
             categoryId: { type: "string", minLength: 1 },
             tagId: { type: ["string", "null"], minLength: 1 },
@@ -184,8 +185,7 @@ function serializeSuggestion(suggestion: {
     requestedBy: suggestion.requestedBy,
     status: suggestion.status,
     source: suggestion.merchantName ? "RECEIPT" : "TEXT",
-    amount: suggestion.suggestedAmount.amount,
-    currency: suggestion.suggestedAmount.currency.toString(),
+    amount: toMoneyDto(suggestion.suggestedAmount),
     categoryId: suggestion.suggestedCategoryId,
     tagId: suggestion.suggestedTagId,
     occurredOn: suggestion.suggestedDate.value.toISOString(),

@@ -68,7 +68,7 @@ describe("AI Assistance HTTP routes", () => {
       payload: { rawText: "Gasté $25.000 en bencina" },
     });
     assert.equal(response.statusCode, 201);
-    assert.equal(response.json().amount, 25000);
+    assert.deepEqual(response.json().amount, { amount: 25000, currency: "CLP" });
 
     const unauthorizedApp = Fastify({ logger: false });
     registerErrorHandler(unauthorizedApp);

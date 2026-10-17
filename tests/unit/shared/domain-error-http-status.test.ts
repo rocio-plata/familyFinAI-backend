@@ -25,17 +25,20 @@ describe("resolveHttpStatus", () => {
   });
 
   test("errores de permisos insuficientes devuelven 403", () => {
-    assert.equal(resolveHttpStatus({ code: "FAMILY_ACCESS.INSUFFICIENT_ROLE" }), 403);
+    assert.equal(resolveHttpStatus({ code: "FAMILY.INSUFFICIENT_ROLE" }), 403);
+    assert.equal(resolveHttpStatus({ code: "FAMILY.NOT_A_MEMBER" }), 403);
   });
 
   test("errores de autenticación devuelven 401", () => {
+    assert.equal(resolveHttpStatus({ code: "AUTH.MISSING_TOKEN" }), 401);
+    assert.equal(resolveHttpStatus({ code: "AUTH.INVALID_TOKEN" }), 401);
     assert.equal(resolveHttpStatus({ code: "AUTH.INVALID_REFRESH_TOKEN" }), 401);
     assert.equal(resolveHttpStatus({ code: "AUTH.POSSIBLE_TOKEN_THEFT" }), 401);
     assert.equal(resolveHttpStatus({ code: "IDENTITY.INVALID_CREDENTIALS" }), 401);
   });
 
   test("cualquier otro error de dominio devuelve 400 por defecto", () => {
-    assert.equal(resolveHttpStatus({ code: "SHARED.INVALID_MONEY" }), 400);
+    assert.equal(resolveHttpStatus({ code: "SHARED.INVALID_AMOUNT" }), 400);
     assert.equal(resolveHttpStatus({ code: "FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER" }), 400);
   });
 });

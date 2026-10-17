@@ -3,6 +3,7 @@ import { UnsupportedCurrencyError } from "../errors/unsupported-currency.error.j
 
 const SUPPORTED_CURRENCIES = ["CLP", "USD", "EUR"] as const;
 type CurrencyCode = (typeof SUPPORTED_CURRENCIES)[number];
+const CURRENCY_EXPONENTS: Record<CurrencyCode, number> = { CLP: 0, USD: 2, EUR: 2 };
 
 const DEFAULT_CURRENCY: CurrencyCode = "CLP";
 
@@ -22,6 +23,10 @@ class Currency {
 
   toString(): string {
     return this.code;
+  }
+
+  get exponent(): number {
+    return CURRENCY_EXPONENTS[this.code];
   }
 
   equals(other: Currency): boolean {

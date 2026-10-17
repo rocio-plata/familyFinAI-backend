@@ -100,15 +100,14 @@ describe("GET /families/:familyId/reports/by-payment-method", () => {
     const body = JSON.parse(response.body) as {
       paymentMethodId: string;
       paymentMethodName: string;
-      amount: number;
-      currency: string;
+      amount: { amount: number; currency: string };
     }[];
     assert.equal(body.length, 2);
     const cashEntry = body.find((entry) => entry.paymentMethodName === "Efectivo");
     const cardEntry = body.find((entry) => entry.paymentMethodName === "Tarjeta");
-    assert.equal(cashEntry?.amount, 15_000);
-    assert.equal(cashEntry?.currency, "CLP");
-    assert.equal(cardEntry?.amount, 9_000);
+    assert.equal(cashEntry?.amount.amount, 15_000);
+    assert.equal(cashEntry?.amount.currency, "CLP");
+    assert.equal(cardEntry?.amount.amount, 9_000);
   });
 
   test("devuelve un array vacío para un período sin movimientos", async () => {

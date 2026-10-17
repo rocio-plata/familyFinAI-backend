@@ -88,7 +88,7 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
       const groceriesEntryAfterCreate = breakdownAfterCreate
         .json()
         .find((entry: { categoryId: string }) => entry.categoryId === groceriesCategoryId);
-      assert.equal(groceriesEntryAfterCreate?.amount, 10000);
+      assert.equal(groceriesEntryAfterCreate?.amount.amount, 10000);
 
       const updateItemResponse = await app.inject({
         method: "PATCH",
@@ -106,7 +106,7 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
       const groceriesEntryAfterUpdate = breakdownAfterUpdate
         .json()
         .find((entry: { categoryId: string }) => entry.categoryId === groceriesCategoryId);
-      assert.equal(groceriesEntryAfterUpdate?.amount, 15000);
+      assert.equal(groceriesEntryAfterUpdate?.amount.amount, 15000);
 
       const reclassifyResponse = await app.inject({
         method: "PATCH",
@@ -123,12 +123,12 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
       });
       const entries = breakdownAfterReclassify.json() as {
         categoryId: string;
-        amount: number;
+        amount: { amount: number; currency: string };
       }[];
       const transportEntry = entries.find((entry) => entry.categoryId === transportCategoryId);
       const groceriesEntry = entries.find((entry) => entry.categoryId === groceriesCategoryId);
-      assert.equal(transportEntry?.amount, 15000);
-      assert.equal(groceriesEntry?.amount ?? 0, 0);
+      assert.equal(transportEntry?.amount.amount, 15000);
+      assert.equal(groceriesEntry?.amount.amount ?? 0, 0);
 
       const deleteItemResponse = await app.inject({
         method: "DELETE",
@@ -144,12 +144,12 @@ describe("Flujo E2E: ciclo de vida de un movimiento financiero", () => {
       });
       const entriesAfterDelete = breakdownAfterDelete.json() as {
         categoryId: string;
-        amount: number;
+        amount: { amount: number; currency: string };
       }[];
       const transportEntryAfterDelete = entriesAfterDelete.find(
         (entry) => entry.categoryId === transportCategoryId,
       );
-      assert.equal(transportEntryAfterDelete?.amount ?? 0, 0);
+      assert.equal(transportEntryAfterDelete?.amount.amount ?? 0, 0);
     } finally {
       // se borra siempre, sin depender de que el flujo del test haya llegado al DELETE del
       // movimiento: si una aserción falla antes, el item seguiría vivo y bloquearía por FK

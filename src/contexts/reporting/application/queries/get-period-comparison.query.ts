@@ -1,6 +1,7 @@
 // src/contexts/reporting/application/queries/get-period-comparison.query.ts
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
+import { calculateVariation } from "../../../../shared-kernel/domain/percentage.js";
 import type { Period } from "../../../../shared-kernel/domain/period.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
@@ -96,7 +97,7 @@ class GetPeriodComparisonQuery {
   private toVariation(firstAmount: number, secondAmount: number): PeriodVariationDTO {
     return {
       absolute: secondAmount - firstAmount,
-      percentage: firstAmount === 0 ? 0 : ((secondAmount - firstAmount) / firstAmount) * 100,
+      percentage: calculateVariation(firstAmount, secondAmount) ?? 0,
     };
   }
 }

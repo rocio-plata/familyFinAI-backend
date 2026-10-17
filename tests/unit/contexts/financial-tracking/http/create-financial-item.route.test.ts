@@ -93,7 +93,7 @@ describe("POST /families/:familyId/items", () => {
       url: `/families/${familyId}/items`,
       headers: { authorization: memberAuthorization },
       payload: {
-        amount: 25.5,
+        amount: 2550,
         categoryId,
         tagId,
         title: "Compra semanal",
@@ -106,8 +106,7 @@ describe("POST /families/:familyId/items", () => {
     const body = JSON.parse(response.body);
     assert.ok(body.id);
     assert.equal(body.type, "EXPENSE");
-    assert.equal(body.amount, 25.5);
-    assert.equal(body.currency, "USD");
+    assert.deepEqual(body.amount, { amount: 2550, currency: "USD" });
     assert.equal(body.categoryId, categoryId);
     assert.equal(body.paymentMethodId, paymentMethodId);
     assert.equal(body.tagId, tagId);
@@ -134,7 +133,7 @@ describe("POST /families/:familyId/items", () => {
     assert.equal(response.statusCode, 201);
     const body = JSON.parse(response.body);
     assert.equal(body.type, "INCOME");
-    assert.equal(body.currency, "CLP");
+    assert.deepEqual(body.amount, { amount: 1000, currency: "CLP" });
     assert.equal(body.tagId, null);
   });
 
@@ -166,7 +165,7 @@ describe("POST /families/:familyId/items", () => {
       url: `/families/${familyId}/items`,
       headers: { authorization: outsiderAuthorization },
       payload: {
-        amount: 25.5,
+        amount: 2550,
         categoryId,
         paymentMethodId,
         title: "Compra semanal",

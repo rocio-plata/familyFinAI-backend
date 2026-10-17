@@ -16,8 +16,15 @@ describe("Money", () => {
       assert.doesNotThrow(() => Money.of(1000, clp));
     });
 
-    it("lanza InvalidMoneyError para monto negativo", () => {
-      assert.throws(() => Money.of(-1, clp), { name: "InvalidMoneyError" });
+    it("lanza InvalidAmountError para importes no enteros o inseguros", () => {
+      assert.throws(() => Money.of(1.5, clp), { name: "InvalidAmountError" });
+      assert.throws(() => Money.of(Number.NaN, clp), { name: "InvalidAmountError" });
+      assert.throws(() => Money.of(Number.POSITIVE_INFINITY, clp), {
+        name: "InvalidAmountError",
+      });
+      assert.throws(() => Money.of(Number.MAX_SAFE_INTEGER + 1, clp), {
+        name: "InvalidAmountError",
+      });
     });
   });
 
@@ -35,10 +42,14 @@ describe("Money", () => {
       assert.equal(result.amount, 300);
     });
 
-    it("lanza InvalidMoneyError al sumar monedas distintas", () => {
+    it("lanza CurrencyMismatchError al sumar monedas distintas", () => {
       assert.throws(() => Money.of(100, clp).add(Money.of(100, usd)), {
-        name: "InvalidMoneyError",
+        name: "CurrencyMismatchError",
       });
+    });
+
+    it("suma unidades menores sin introducir decimales", () => {
+      assert.equal(Money.ofMinor(10, usd).add(Money.ofMinor(20, usd)).minorUnits, 30);
     });
   });
 
@@ -55,10 +66,29 @@ describe("Money", () => {
       assert.ok(!Money.of(50, clp).isGreaterThan(Money.of(100, clp)));
     });
 
-    it("lanza InvalidMoneyError al comparar monedas distintas", () => {
+    it("lanza CurrencyMismatchError al comparar monedas distintas", () => {
       assert.throws(() => Money.of(100, clp).isGreaterThan(Money.of(50, usd)), {
-        name: "InvalidMoneyError",
+        name: "CurrencyMismatchError",
       });
+    });
+  });
+
+  describe("operaciones exactas", () => {
+    it("permite restar y obtener un saldo negativo", () => {
+      const result = Money.ofMinor(10, usd).subtract(Money.ofMinor(20, usd));
+
+      assert.equal(result.minorUnits, -10);
+      assert.equal(result.isPositive(), false);
+      assert.equal(result.isZero(), false);
+    });
+
+    it("compara igualdad por unidades y moneda", () => {
+      assert.equal(Money.ofMinor(1599, usd).equals(Money.ofMinor(1599, Currency.of("USD"))), true);
+      assert.equal(Money.ofMinor(1599, usd).equals(Money.ofMinor(1600, usd)), false);
+    });
+
+    it("serializa un DTO Money", () => {
+      assert.deepEqual(Money.ofMinor(1599, usd).toDto(), { amount: 1599, currency: "USD" });
     });
   });
 });

@@ -2,6 +2,7 @@
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
+import { InvalidAmountError } from "../../../../shared-kernel/errors/invalid-amount.error.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import { UserId } from "../../../family-access/domain/value-objects/user-id.js";
 import { CannotReclassifyAcrossTypesError } from "../errors/cannot-reclassify-across-types.error.js";
@@ -98,6 +99,8 @@ class FinancialItem {
   }
 
   static create(props: CreateFinancialItemProps, resolvedType: FinancialItemType): FinancialItem {
+    if (!props.amount.isPositive()) throw new InvalidAmountError("debe ser mayor que cero");
+
     const item = new FinancialItem(
       FinancialItemId.generate(),
       props.familyId,

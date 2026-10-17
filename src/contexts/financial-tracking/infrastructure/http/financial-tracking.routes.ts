@@ -1,5 +1,6 @@
 // src/contexts/financial-tracking/infrastructure/http/financial-tracking.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
+import { toMoneyDto } from "../../../../platform/http/money.dto.js";
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
 import type { GetFamilyDefaultCurrencyQuery } from "../../../family-access/application/queries/get-family-default-currency.query.js";
@@ -310,7 +311,7 @@ function registerFinancialTrackingRoutes(
           type: "object",
           required: ["amount", "categoryId", "title", "occurredOn"],
           properties: {
-            amount: { type: "number" },
+            amount: { type: "integer", minimum: 1 },
             currency: { type: "string", minLength: 1 },
             categoryId: { type: "string", minLength: 1 },
             paymentMethodId: { type: "string", minLength: 1 },
@@ -357,8 +358,7 @@ function registerFinancialTrackingRoutes(
       return reply.code(201).send({
         id: item.id.toString(),
         type: item.type,
-        amount: item.amount.amount,
-        currency: item.amount.currency.toString(),
+        amount: toMoneyDto(item.amount),
         categoryId: item.categoryAssignment.categoryId.toString(),
         tagId: item.categoryAssignment.tagId?.toString() ?? null,
         paymentMethodId: item.paymentMethodId.toString(),
@@ -426,8 +426,7 @@ function registerFinancialTrackingRoutes(
           familyId: item.familyId.toString(),
           recordedBy: item.recordedBy.toString(),
           type: item.type,
-          amount: item.amount.amount,
-          currency: item.amount.currency.toString(),
+          amount: toMoneyDto(item.amount),
           categoryId: item.categoryId.toString(),
           tagId: item.tagId?.toString() ?? null,
           title: item.title.toString(),
@@ -457,7 +456,7 @@ function registerFinancialTrackingRoutes(
           minProperties: 1,
           additionalProperties: false,
           properties: {
-            amount: { type: "number" },
+            amount: { type: "integer", minimum: 1 },
             currency: { type: "string", minLength: 1 },
             occurredOn: {
               type: "string",
@@ -466,10 +465,6 @@ function registerFinancialTrackingRoutes(
             title: { type: "string", minLength: 1 },
             note: { type: ["string", "null"] },
             paymentMethodId: { type: "string", minLength: 1 },
-          },
-          dependencies: {
-            amount: ["currency"],
-            currency: ["amount"],
           },
           allOf: [
             { not: { required: ["categoryId"] } },
@@ -508,8 +503,7 @@ function registerFinancialTrackingRoutes(
       return reply.code(200).send({
         id: item.id.toString(),
         type: item.type,
-        amount: item.amount.amount,
-        currency: item.amount.currency.toString(),
+        amount: toMoneyDto(item.amount),
         categoryId: item.categoryAssignment.categoryId.toString(),
         tagId: item.categoryAssignment.tagId?.toString() ?? null,
         paymentMethodId: item.paymentMethodId.toString(),
@@ -561,8 +555,7 @@ function registerFinancialTrackingRoutes(
       return reply.code(200).send({
         id: item.id.toString(),
         type: item.type,
-        amount: item.amount.amount,
-        currency: item.amount.currency.toString(),
+        amount: toMoneyDto(item.amount),
         categoryId: item.categoryAssignment.categoryId.toString(),
         tagId: item.categoryAssignment.tagId?.toString() ?? null,
         title: item.title.toString(),

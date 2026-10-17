@@ -88,8 +88,7 @@ describe("PATCH /families/:familyId/items/:itemId", () => {
 
     assert.equal(response.statusCode, 200);
     const body = JSON.parse(response.body);
-    assert.equal(body.amount, 7500);
-    assert.equal(body.currency, "USD");
+    assert.deepEqual(body.amount, { amount: 7500, currency: "USD" });
     assert.equal(body.title, "Compra en farmacia");
     assert.equal(body.note, "Con receta");
     assert.equal(body.occurredOn, "2026-08-02T12:00:00.000Z");

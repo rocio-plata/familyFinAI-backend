@@ -1,10 +1,12 @@
 // /src/platform/auth/authenticate.middleware.ts
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserId } from "../../contexts/family-access/domain/value-objects/user-id.js";
+import { InvalidTokenError } from "./errors/invalid-token.error.js";
+import { MissingTokenError } from "./errors/missing-token.error.js";
 import type { JwtSigner } from "./jwt-signer.js";
 
 function authenticate(jwtSigner: JwtSigner) {
-  return async (request: FastifyRequest, reply: FastifyReply) => {
+  return async (request: FastifyRequest, _reply: FastifyReply) => {
     const authHeader = request.headers.authorization;
     const token = extractBearerToken(authHeader);
     request.log.debug(
@@ -12,14 +14,14 @@ function authenticate(jwtSigner: JwtSigner) {
       "authenticate: token recibido",
     );
 
-    if (!token) return reply.code(401).send({ error: "Missing token" });
+    if (!token) throw new MissingTokenError();
 
     try {
       const payload = await jwtSigner.verify(token);
       request.userId = UserId.of(payload.sub);
     } catch (err) {
       request.log.debug({ err }, "authenticate: verificación de token fallida");
-      return reply.code(401).send({ error: "Invalid or expired token" });
+      throw new InvalidTokenError();
     }
   };
 }

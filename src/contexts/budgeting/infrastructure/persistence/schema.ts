@@ -1,9 +1,9 @@
 // src/contexts/budgeting/infrastructure/persistence/schema.ts
 import {
+  bigint,
   boolean,
   index,
   jsonb,
-  numeric,
   pgTable,
   uniqueIndex,
   uuid,
@@ -16,7 +16,7 @@ export const budgetConfigurations = pgTable(
     id: uuid("id").primaryKey(),
     familyId: uuid("family_id").notNull(),
     categoryId: uuid("category_id").notNull(),
-    defaultAmount: numeric("default_amount", { precision: 14, scale: 2 }).notNull(),
+    defaultAmountMinor: bigint("default_amount_minor", { mode: "number" }).notNull(),
     defaultCurrency: varchar("default_currency", { length: 3 }).notNull(),
     overrides: jsonb("overrides").notNull().default({}),
     isActive: boolean("is_active").notNull().default(true),
@@ -37,8 +37,8 @@ export const budgetPeriodStatuses = pgTable(
     familyId: uuid("family_id").notNull(),
     categoryId: uuid("category_id").notNull(),
     period: varchar("period", { length: 7 }).notNull(),
-    limitAmount: numeric("limit_amount", { precision: 14, scale: 2 }).notNull(),
-    spent: numeric("spent", { precision: 14, scale: 2 }).notNull().default("0"),
+    limitAmountMinor: bigint("limit_amount_minor", { mode: "number" }).notNull(),
+    spentMinor: bigint("spent_minor", { mode: "number" }).notNull().default(0),
     currency: varchar("currency", { length: 3 }).notNull(),
   },
   (table) => ({
