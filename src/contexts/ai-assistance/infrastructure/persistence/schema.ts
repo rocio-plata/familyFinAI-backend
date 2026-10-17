@@ -37,6 +37,7 @@ export const suggestions = pgTable(
     suggestedCategoryId: uuid("suggested_category_id"),
     suggestedTagId: uuid("suggested_tag_id"),
     suggestedDate: timestamp("suggested_date").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
     suggestedTitle: varchar("suggested_title", { length: 100 }),
     confidence: real("confidence").notNull(),
     status: suggestionStatusEnum("status").notNull().default("PENDING"),
@@ -61,5 +62,17 @@ export const merchantCategoryHistory = pgTable(
       table.familyId,
       table.merchantName,
     ),
+  }),
+);
+
+export const aiUsage = pgTable(
+  "ai_usage",
+  {
+    userId: uuid("user_id").notNull(),
+    day: varchar("day", { length: 10 }).notNull(),
+    used: integer("used").notNull().default(0),
+  },
+  (table) => ({
+    userDayKey: uniqueIndex("ai_usage_user_day_key").on(table.userId, table.day),
   }),
 );

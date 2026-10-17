@@ -12,6 +12,7 @@ const SUFFIX_RULES: Array<{ suffix: string; status: number }> = [
 ];
 
 const PREFIX_RULES: Array<{ prefix: string; status: number }> = [
+  { prefix: "AI.USAGE_LIMIT_EXCEEDED", status: 429 },
   { prefix: "AUTH.MISSING_TOKEN", status: 401 },
   { prefix: "AUTH.INVALID_TOKEN", status: 401 },
   { prefix: "AUTH.INVALID_REFRESH_TOKEN", status: 401 },
@@ -20,6 +21,7 @@ const PREFIX_RULES: Array<{ prefix: string; status: number }> = [
   { prefix: "FAMILY.INVITATION_NOT_FOR_USER", status: 403 },
   { prefix: "FAMILY.INSUFFICIENT_ROLE", status: 403 },
   { prefix: "FAMILY.CURRENCY_LOCKED", status: 409 },
+  { prefix: "AI.CATEGORY_REQUIRED", status: 400 },
   { prefix: "SHARED.CURRENCY_MISMATCH", status: 409 },
   { prefix: "IDENTITY.INVALID_CREDENTIALS", status: 401 },
 ];

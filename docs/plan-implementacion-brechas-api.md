@@ -547,6 +547,14 @@ Con una sola moneda por familia (C1–C4) los reportes son más simples. Los **n
 
 ## Fase 5 — Sugerencias de IA
 
+> **Estado actual:** implementados S1, S2/S6, S7, S8 y S9: `GET /families/:familyId/suggestions`
+> lista las sugerencias pendientes aisladas por familia/usuario; las sugerencias tienen `expiresAt`
+> a 24 horas y confirmar/descartar una vencida devuelve `AI.SUGGESTION_EXPIRED`; `GET /ai-usage`
+> expone el cupo diario y los uploads validan campo, MIME y firma; `rawText` admite entre 1 y 500 caracteres,
+> los cuerpos de confirmación validan importes enteros, una categoría ausente devuelve
+> `AI.CATEGORY_REQUIRED` y la confirmación responde `201` con el `FinancialItem` creado. El listado,
+> caducidad, límites de uso y validación completa de recibos continúan pendientes.
+
 Todo se desarrolla contra el **adaptador fake determinístico**.
 
 ### 5.1 Extracción de montos con decimales

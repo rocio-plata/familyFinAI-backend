@@ -4,6 +4,7 @@ import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
 import { TransactionDate } from "../../../financial-tracking/domain/value-objects/transaction-date.js";
+import { SuggestionExpiredError } from "../errors/suggestion-expired.error.js";
 import { SuggestionNotPendingError } from "../errors/suggestion-not-pending.error.js";
 import { SuggestionConfirmed } from "../events/suggestion-confirmed.event.js";
 import { SuggestionDiscarded } from "../events/suggestion-discarded.event.js";
@@ -44,6 +45,7 @@ type ReconstituteReceiptSuggestionProps = {
   suggestedTitle: string | null;
   confidence: number;
   status: SuggestionStatus;
+  expiresAt?: Date;
 };
 
 class ReceiptSuggestion {
@@ -62,6 +64,7 @@ class ReceiptSuggestion {
     private readonly _suggestedTitle: string | null,
     private readonly _confidence: ConfidenceScore,
     private _status: SuggestionStatus,
+    private readonly _expiresAt: Date,
   ) {}
 
   get id(): SuggestionId {
@@ -104,6 +107,10 @@ class ReceiptSuggestion {
     return this._status;
   }
 
+  get expiresAt(): Date {
+    return this._expiresAt;
+  }
+
   static fromScan(props: ReceiptScanProps): ReceiptSuggestion {
     const suggestion = new ReceiptSuggestion(
       SuggestionId.generate(),
@@ -118,6 +125,7 @@ class ReceiptSuggestion {
       props.suggestedTitle ?? null,
       props.confidence,
       SuggestionStatus.Pending,
+      new Date(Date.now() + 24 * 60 * 60 * 1000),
     );
     suggestion.domainEvents.push(
       new SuggestionGenerated(suggestion.id, suggestion.familyId, "RECEIPT"),
@@ -139,6 +147,7 @@ class ReceiptSuggestion {
       props.suggestedTitle,
       ConfidenceScore.create(props.confidence),
       props.status,
+      props.expiresAt ?? new Date(props.suggestedDate.getTime() + 24 * 60 * 60 * 1000),
     );
   }
 
@@ -176,6 +185,7 @@ class ReceiptSuggestion {
 
   private ensurePending(): void {
     if (this.status !== SuggestionStatus.Pending) throw new SuggestionNotPendingError();
+    if (this.expiresAt <= new Date()) throw new SuggestionExpiredError();
   }
 }
 

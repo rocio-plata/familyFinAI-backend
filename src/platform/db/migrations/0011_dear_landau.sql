@@ -1,0 +1,1 @@
+ALTER TABLE "suggestions" ADD COLUMN "expires_at" timestamp NOT NULL;

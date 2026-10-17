@@ -11,6 +11,8 @@ import type { ConfirmSuggestionUseCase } from "../../application/commands/confir
 import type { DiscardSuggestionUseCase } from "../../application/commands/discard-suggestion.usecase.js";
 import type { ParseNaturalLanguageExpenseUseCase } from "../../application/commands/parse-natural-language-expense.usecase.js";
 import type { ScanReceiptUseCase } from "../../application/commands/scan-receipt.usecase.js";
+import type { GetPendingSuggestionsQuery } from "../../application/queries/get-pending-suggestions.query.js";
+import type { AiUsagePolicy } from "../../application/services/ai-usage-policy.js";
 import { SuggestionId } from "../../domain/value-objects/suggestion-id.js";
 
 interface AiAssistanceRoutesDependencies {
@@ -20,6 +22,8 @@ interface AiAssistanceRoutesDependencies {
   scanReceiptUseCase: ScanReceiptUseCase;
   confirmSuggestionUseCase: ConfirmSuggestionUseCase;
   discardSuggestionUseCase: DiscardSuggestionUseCase;
+  getPendingSuggestionsQuery: GetPendingSuggestionsQuery;
+  aiUsagePolicy: AiUsagePolicy | undefined;
 }
 
 const familyParams = {
@@ -44,6 +48,30 @@ async function registerAiAssistanceRoutes(
 
   const preHandler = [deps.authenticate, deps.requireFamilyMembership()];
 
+  app.get(
+    "/families/:familyId/ai-usage",
+    { preHandler, schema: { params: familyParams } },
+    async (request, reply) => {
+      const status = deps.aiUsagePolicy
+        ? await deps.aiUsagePolicy.status(request.userId.toString())
+        : { limit: 0, used: 0, remaining: 0, resetsAt: new Date().toISOString() };
+      return reply.code(200).send(status);
+    },
+  );
+
+  app.get(
+    "/families/:familyId/suggestions",
+    { preHandler, schema: { params: familyParams } },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const suggestions = await deps.getPendingSuggestionsQuery.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+      });
+      return reply.code(200).send(suggestions.map(serializeSuggestion));
+    },
+  );
+
   app.post(
     "/families/:familyId/suggestions/text",
     {
@@ -53,7 +81,7 @@ async function registerAiAssistanceRoutes(
         body: {
           type: "object",
           required: ["rawText"],
-          properties: { rawText: { type: "string", minLength: 1 } },
+          properties: { rawText: { type: "string", minLength: 1, maxLength: 500 } },
         },
       },
     },
@@ -81,7 +109,19 @@ async function registerAiAssistanceRoutes(
           message: "Se requiere una imagen de recibo",
         });
       }
+      if (file.fieldname !== "file") {
+        return reply.code(400).send({
+          error: "HTTP.INVALID_REQUEST_BODY",
+          message: "El campo del archivo debe llamarse file",
+        });
+      }
       const buffer = await file.toBuffer();
+      if (!isSupportedImage(file.mimetype, buffer)) {
+        return reply.code(400).send({
+          error: "AI.UNSUPPORTED_IMAGE_TYPE",
+          message: "Formato de imagen no admitido. Usa JPEG, PNG o WebP",
+        });
+      }
       const suggestion = await deps.scanReceiptUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
@@ -127,7 +167,7 @@ async function registerAiAssistanceRoutes(
         occurredOn?: string;
         title?: string;
       };
-      await deps.confirmSuggestionUseCase.execute({
+      const item = await deps.confirmSuggestionUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
         suggestionId: SuggestionId.of(suggestionId),
@@ -143,7 +183,7 @@ async function registerAiAssistanceRoutes(
           ...(body.title === undefined ? {} : { title: body.title }),
         },
       });
-      return reply.code(204).send();
+      return reply.code(201).send(serializeFinancialItem(item));
     },
   );
 
@@ -164,6 +204,21 @@ async function registerAiAssistanceRoutes(
   );
 }
 
+function isSupportedImage(contentType: string, bytes: Buffer): boolean {
+  if (contentType === "image/jpeg") {
+    return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (contentType === "image/png") {
+    return bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  }
+  if (contentType === "image/webp") {
+    return (
+      bytes.subarray(0, 4).toString() === "RIFF" && bytes.subarray(8, 12).toString() === "WEBP"
+    );
+  }
+  return false;
+}
+
 function serializeSuggestion(suggestion: {
   id: { toString(): string };
   familyId: string;
@@ -174,6 +229,7 @@ function serializeSuggestion(suggestion: {
   suggestedTagId: string | null;
   suggestedDate: TransactionDate;
   confidence: { value: number };
+  expiresAt: Date;
   suggestedTitle: string | null;
   rawInput?: string;
   merchantName?: { toString(): string };
@@ -191,6 +247,7 @@ function serializeSuggestion(suggestion: {
     occurredOn: suggestion.suggestedDate.value.toISOString(),
     title: suggestion.suggestedTitle,
     confidence: suggestion.confidence.value,
+    expiresAt: suggestion.expiresAt.toISOString(),
     ...(suggestion.rawInput === undefined ? {} : { rawInput: suggestion.rawInput }),
     ...(suggestion.merchantName === undefined
       ? {}
@@ -198,6 +255,31 @@ function serializeSuggestion(suggestion: {
     ...(suggestion.receiptImageRef === undefined
       ? {}
       : { receiptImageRef: suggestion.receiptImageRef.toString() }),
+  };
+}
+
+function serializeFinancialItem(item: {
+  id: { toString(): string };
+  type: string;
+  amount: Money;
+  categoryAssignment: { categoryId: { toString(): string }; tagId: { toString(): string } | null };
+  paymentMethodId?: { toString(): string };
+  title: { toString(): string };
+  note: { toString(): string } | null;
+  occurredOn: TransactionDate;
+  createdAt: Date;
+}) {
+  return {
+    id: item.id.toString(),
+    type: item.type,
+    amount: toMoneyDto(item.amount),
+    categoryId: item.categoryAssignment.categoryId.toString(),
+    tagId: item.categoryAssignment.tagId?.toString() ?? null,
+    paymentMethodId: item.paymentMethodId?.toString() ?? null,
+    title: item.title.toString(),
+    note: item.note?.toString() ?? null,
+    occurredOn: item.occurredOn.value.toISOString(),
+    createdAt: item.createdAt.toISOString(),
   };
 }
 

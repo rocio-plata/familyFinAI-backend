@@ -20,6 +20,7 @@ import type { SuggestionRepository } from "../../domain/repositories/suggestion.
 import { ConfidenceScore } from "../../domain/value-objects/confidence-score.js";
 import { MerchantName } from "../../domain/value-objects/merchant-name.js";
 import { ReceiptImageRef } from "../../domain/value-objects/receipt-image-ref.js";
+import type { AiUsagePolicy } from "../services/ai-usage-policy.js";
 
 type ScanReceiptInput = {
   familyId: FamilyId;
@@ -34,9 +35,11 @@ class ScanReceiptUseCase {
     private readonly categoryLookup: CategoryLookupPort,
     private readonly suggestionRepository: SuggestionRepository,
     private readonly eventBus: EventBus,
+    private readonly usagePolicy?: AiUsagePolicy,
   ) {}
 
   async execute(input: ScanReceiptInput): Promise<ReceiptSuggestion> {
+    await this.usagePolicy?.assertAvailable(input.requestedBy.toString());
     const context: FamilyContext = {
       familyId: input.familyId.toString(),
       requestedBy: input.requestedBy.toString(),
@@ -78,6 +81,7 @@ class ScanReceiptUseCase {
     });
 
     await this.suggestionRepository.save(suggestion);
+    await this.usagePolicy?.consume(input.requestedBy.toString());
     for (const event of suggestion.pullDomainEvents()) {
       await this.eventBus.publish(event);
     }

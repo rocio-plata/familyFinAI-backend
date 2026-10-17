@@ -15,6 +15,12 @@ class InMemorySuggestionRepository implements SuggestionRepository {
   async findById(suggestionId: SuggestionId): Promise<Suggestion | null> {
     return this.suggestions.get(suggestionId.toString()) ?? null;
   }
+
+  async findByFamilyIdAndRequestedBy(familyId: string, requestedBy: string): Promise<Suggestion[]> {
+    return [...this.suggestions.values()].filter(
+      (suggestion) => suggestion.familyId === familyId && suggestion.requestedBy === requestedBy,
+    );
+  }
 }
 
 export { InMemorySuggestionRepository };

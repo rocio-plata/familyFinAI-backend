@@ -74,6 +74,21 @@ y nunca lo recibe por querystring.
 Los períodos de Reporting y Budgeting se resuelven en la zona `REPORTING_TIMEZONE`, cuyo valor
 predeterminado es `America/Santiago`. La consulta `trend` admite como máximo 24 meses.
 
+La confirmación de sugerencias IA responde `201 Created` con el movimiento financiero creado. El
+texto de entrada acepta entre 1 y 500 caracteres y una confirmación sin categoría devuelve
+`AI.CATEGORY_REQUIRED`.
+
+`GET /families/:familyId/suggestions` devuelve únicamente las sugerencias `PENDING` del usuario
+autenticado dentro de la familia indicada.
+
+Las sugerencias incluyen `expiresAt` y caducan 24 horas después de su creación. Confirmar o
+descartar una sugerencia vencida devuelve `AI.SUGGESTION_EXPIRED`.
+
+`GET /families/:familyId/ai-usage` devuelve `{ limit, used, remaining, resetsAt }`. El límite
+diario predeterminado es 30 sugerencias por usuario y se reinicia según `AI_USAGE_TIMEZONE`.
+Los recibos multipart deben usar el campo `file`, pesar como máximo 10 MB y contener JPEG, PNG o
+WebP válidos según su firma de bytes.
+
 ### 3.1 Salud del Sistema
 
 #### `GET /health`

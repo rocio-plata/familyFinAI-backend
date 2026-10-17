@@ -1,5 +1,5 @@
 // src/contexts/ai-assistance/infrastructure/persistence/drizzle-suggestion.repository.ts
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../../../../platform/db/connection.js";
 import { ExpenseSuggestion } from "../../domain/entities/expense-suggestion.js";
 import { ReceiptSuggestion } from "../../domain/entities/receipt-suggestion.js";
@@ -30,6 +30,7 @@ class DrizzleSuggestionRepository implements SuggestionRepository {
         suggestedCategoryId: suggestion.suggestedCategoryId,
         suggestedTagId: suggestion.suggestedTagId,
         suggestedDate: suggestion.suggestedDate.value,
+        expiresAt: suggestion.expiresAt,
         suggestedTitle: suggestion.suggestedTitle,
         confidence: suggestion.confidence.value,
         status: suggestion.status,
@@ -67,6 +68,7 @@ class DrizzleSuggestionRepository implements SuggestionRepository {
       suggestedCategoryId: row.suggestedCategoryId,
       suggestedTagId: row.suggestedTagId,
       suggestedDate: row.suggestedDate,
+      expiresAt: row.expiresAt,
       suggestedTitle: row.suggestedTitle,
       confidence: row.confidence,
       status: toSuggestionStatus(row.status),
@@ -74,6 +76,49 @@ class DrizzleSuggestionRepository implements SuggestionRepository {
         row.suggestedType === "INCOME" ? SuggestionType.Income : SuggestionType.Expense,
     };
 
+    if (row.source === "RECEIPT" && row.merchantName && row.receiptImageRef) {
+      return ReceiptSuggestion.reconstitute({
+        ...base,
+        merchantName: row.merchantName,
+        receiptImageRef: row.receiptImageRef,
+      });
+    }
+    if (row.source === "TEXT" && row.rawInput !== null) {
+      return ExpenseSuggestion.reconstitute({ ...base, rawInput: row.rawInput });
+    }
+    return null;
+  }
+
+  async findByFamilyIdAndRequestedBy(familyId: string, requestedBy: string): Promise<Suggestion[]> {
+    const rows = await db
+      .select()
+      .from(suggestions)
+      .where(and(eq(suggestions.familyId, familyId), eq(suggestions.requestedBy, requestedBy)));
+    const result: Suggestion[] = [];
+    for (const row of rows) {
+      const suggestion = await this.toDomainFromRow(row);
+      if (suggestion) result.push(suggestion);
+    }
+    return result;
+  }
+
+  private toDomainFromRow(row: typeof suggestions.$inferSelect): Suggestion | null {
+    const base = {
+      id: row.id,
+      familyId: row.familyId,
+      requestedBy: row.requestedBy,
+      suggestedAmount: row.suggestedAmountMinor,
+      currency: row.suggestedCurrency,
+      suggestedCategoryId: row.suggestedCategoryId,
+      suggestedTagId: row.suggestedTagId,
+      suggestedDate: row.suggestedDate,
+      expiresAt: row.expiresAt,
+      suggestedTitle: row.suggestedTitle,
+      confidence: row.confidence,
+      status: toSuggestionStatus(row.status),
+      suggestedType:
+        row.suggestedType === "INCOME" ? SuggestionType.Income : SuggestionType.Expense,
+    };
     if (row.source === "RECEIPT" && row.merchantName && row.receiptImageRef) {
       return ReceiptSuggestion.reconstitute({
         ...base,

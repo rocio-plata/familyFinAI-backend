@@ -8,6 +8,7 @@ type Suggestion = ExpenseSuggestion | ReceiptSuggestion;
 interface SuggestionRepository {
   save(suggestion: Suggestion): Promise<void>;
   findById(suggestionId: SuggestionId): Promise<Suggestion | null>;
+  findByFamilyIdAndRequestedBy(familyId: string, requestedBy: string): Promise<Suggestion[]>;
 }
 
 export type { Suggestion, SuggestionRepository };

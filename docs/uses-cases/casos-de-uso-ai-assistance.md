@@ -6,6 +6,13 @@ pendientes de diseño. Sigue la misma convención usada en los documentos anteri
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
 disparados**.
 
+La confirmación exitosa de una sugerencia devuelve el `FinancialItem` creado con status HTTP 201;
+el texto libre está limitado a 500 caracteres y una sugerencia sin categoría requiere una elección
+explícita antes de confirmar.
+
+Las sugerencias pendientes se consultan con `GET /families/:familyId/suggestions`, aisladas por
+familia y usuario autenticado.
+
 Recordatorio de arquitectura: `AI Assistance` es un contexto **genérico**, regido por la filosofía **"la IA propone, el usuario confirma"** — nunca escribe directamente en `Financial Tracking`. Cada capacidad de IA se define como un **puerto** (`NaturalLanguageParserPort`, `ReceiptScannerPort`, `NaturalLanguageQueryPort`), implementado por un **adaptador** que traduce la respuesta del proveedor externo a conceptos del propio dominio (Anticorruption Layer).
 
 ---
