@@ -15,6 +15,7 @@ function buildTestFamilyAccessDependencies(
     invitationRepository: overrides.invitationRepository ?? new InMemoryInvitationRepository(),
     userDirectory: overrides.userDirectory ?? new FakeUserDirectory(),
     eventBus: overrides.eventBus ?? new FakeEventBus(),
+    ...(overrides.financialActivity ? { financialActivity: overrides.financialActivity } : {}),
   };
 }
 

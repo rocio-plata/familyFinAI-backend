@@ -26,6 +26,7 @@ Registra un nuevo gasto o ingreso.
 - **Actor**: un `Member` de la familia (cualquier rol — según la especificación original, todos los miembros pueden registrar movimientos).
 - **Precondiciones**: la familia existe; la categoría indicada existe, pertenece a la familia y está `Active` (no `Deprecated`); si se indica tag, pertenece a esa categoría.
 - **Entrada**: `familyId`, `recordedBy` (UserId, del token), `amount`, `currency` (opcional, default `family.defaultCurrency`), `categoryId`, `tagId` (opcional), `title`, `note` (opcional), `occurredOn`.
+- **Regla de moneda**: el importe debe usar la moneda actual de la familia; una moneda explícita distinta se rechaza con `SHARED.CURRENCY_MISMATCH`.
 - **Flujo principal**:
   1. Se valida cada campo como su Value Object correspondiente (`Money`, `Title`, `Note`, `TransactionDate`).
   2. Se busca la `Category` por `categoryId`; se valida que pertenezca a la familia y esté `Active`.

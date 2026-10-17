@@ -1,6 +1,8 @@
 // /src/contexts/financial-tracking/application/commands/update-financial-item.usecase.ts
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { Money } from "../../../../shared-kernel/domain/money.js";
+import { CurrencyMismatchError } from "../../../../shared-kernel/errors/currency-mismatch.error.js";
+import type { GetFamilyDefaultCurrencyQuery } from "../../../family-access/application/queries/get-family-default-currency.query.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { FinancialItem } from "../../domain/entities/financial-item.js";
 import { FinancialItemNotFoundError } from "../../domain/errors/financial-item-not-found.error.js";
@@ -28,6 +30,7 @@ class UpdateFinancialItemUseCase {
     private readonly itemRepository: FinancialItemRepository,
     private readonly eventBus: EventBus,
     private readonly paymentMethodRepository: PaymentMethodRepository,
+    private readonly getFamilyDefaultCurrencyQuery?: GetFamilyDefaultCurrencyQuery,
   ) {}
 
   async execute(input: UpdateFinancialItemInput): Promise<FinancialItem> {
@@ -40,6 +43,18 @@ class UpdateFinancialItemUseCase {
     // 2. Validar que pertenezca a la familia
     if (item.familyId.toString() !== input.familyId.toString()) {
       throw new FinancialItemNotFoundError(input.itemId.toString());
+    }
+
+    if (input.amount !== undefined && this.getFamilyDefaultCurrencyQuery) {
+      const familyCurrency = await this.getFamilyDefaultCurrencyQuery.execute({
+        familyId: input.familyId,
+      });
+      if (!familyCurrency.equals(input.amount.currency)) {
+        throw new CurrencyMismatchError(
+          familyCurrency.toString(),
+          input.amount.currency.toString(),
+        );
+      }
     }
 
     if (input.paymentMethodId) {

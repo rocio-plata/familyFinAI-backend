@@ -1,7 +1,10 @@
 // /src/contexts/family-access/application/commands/change-default-currency.usecase.ts
 
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
+import { CurrencyLockedError } from "../../domain/errors/currency-locked.error.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
+import { CurrencyChangePolicy } from "../../domain/policies/currency-change-policy.js";
+import type { FamilyFinancialActivityPort } from "../../domain/ports/family-financial-activity.port.js";
 import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
 import type { UserId } from "../../domain/value-objects/user-id.js";
@@ -13,13 +16,25 @@ interface ChangeDefaultCurrencyCommand {
 }
 
 class ChangeDefaultCurrencyUseCase {
-  constructor(private readonly familyRepository: FamilyRepository) {}
+  constructor(
+    private readonly familyRepository: FamilyRepository,
+    private readonly financialActivity?: FamilyFinancialActivityPort,
+    private readonly currencyChangePolicy = new CurrencyChangePolicy(),
+  ) {}
 
   async execute(command: ChangeDefaultCurrencyCommand): Promise<void> {
     const family = await this.familyRepository.findById(command.familyId);
     if (!family) throw new FamilyNotFoundError(command.familyId);
 
     const currency = Currency.of(command.newCurrency);
+    if (!family.defaultCurrency.equals(currency) && this.financialActivity) {
+      const [hasItems, hasActiveBudgets] = await Promise.all([
+        this.financialActivity.hasItems(command.familyId),
+        this.financialActivity.hasActiveBudgets(command.familyId),
+      ]);
+      const reasons = this.currencyChangePolicy.evaluate(hasItems, hasActiveBudgets);
+      if (reasons.length > 0) throw new CurrencyLockedError(reasons);
+    }
     family.changeDefaultCurrency(currency, command.changedBy);
 
     await this.familyRepository.save(family);

@@ -19,6 +19,7 @@ interface FinancialItemRepository {
   save(item: FinancialItem): Promise<void>;
   findById(id: FinancialItemId): Promise<FinancialItem | null>;
   findByFamilyId(familyId: FamilyId, filters?: FinancialItemFilters): Promise<FinancialItem[]>;
+  existsByFamilyId(familyId: FamilyId): Promise<boolean>;
   delete(id: FinancialItemId): Promise<void>;
   countByCategory(categoryId: CategoryId): Promise<number>;
   countByTag(tagId: TagId): Promise<number>;

@@ -6,6 +6,10 @@ aplicación; los pendientes reales se indican al final del documento.
 
 Convención: cada caso de uso indica **actor**, **precondiciones**, **flujo principal**, **flujos alternativos/errores**, y **eventos de dominio disparados**.
 
+La moneda familiar se puede consultar mediante `GET /families/:familyId/settings`. El cambio de
+moneda requiere rol `OWNER` y se bloquea cuando existen movimientos o presupuestos activos; las
+razones se devuelven como `ITEMS_EXIST` y/o `ACTIVE_BUDGETS_EXIST`.
+
 ---
 
 ## 1. CreateFamily

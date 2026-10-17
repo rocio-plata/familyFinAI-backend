@@ -49,10 +49,12 @@ function buildBudgetingModule(
   );
   const updateDefaultBudgetAmountUseCase = new UpdateDefaultBudgetAmountUseCase(
     deps.budgetConfigurationRepository,
+    getFamilyDefaultCurrencyQuery,
   );
   const setBudgetOverrideForPeriodUseCase = new SetBudgetOverrideForPeriodUseCase(
     deps.budgetConfigurationRepository,
     deps.budgetPeriodStatusRepository,
+    getFamilyDefaultCurrencyQuery,
   );
   const removeBudgetOverrideForPeriodUseCase = new RemoveBudgetOverrideForPeriodUseCase(
     deps.budgetConfigurationRepository,

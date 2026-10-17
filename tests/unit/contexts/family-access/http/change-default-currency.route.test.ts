@@ -11,21 +11,24 @@ import { buildApp } from "../../../../../src/platform/app.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
 import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";
+import { FakeFamilyFinancialActivity } from "../doubles/fake-family-financial-activity.js";
 import { InMemoryFamilyRepository } from "../doubles/in-memory-family.repository.js";
 
 describe("PATCH /families/:familyId/settings/currency", () => {
   let app: FastifyInstance;
   let familyRepository: InMemoryFamilyRepository;
   let jwtService: FakeJwtService;
+  let financialActivity: FakeFamilyFinancialActivity;
 
   beforeEach(() => {
     familyRepository = new InMemoryFamilyRepository();
     jwtService = new FakeJwtService();
+    financialActivity = new FakeFamilyFinancialActivity();
 
     app = buildApp({
       jwtService,
       identity: buildTestIdentityDependencies(),
-      familyAccess: buildTestFamilyAccessDependencies({ familyRepository }),
+      familyAccess: buildTestFamilyAccessDependencies({ familyRepository, financialActivity }),
     });
   });
 
@@ -141,5 +144,50 @@ describe("PATCH /families/:familyId/settings/currency", () => {
     });
 
     assert.equal(response.statusCode, 403);
+  });
+
+  test("devuelve 409 y las razones cuando la moneda está bloqueada", async () => {
+    const ownerId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    await familyRepository.save(family);
+    financialActivity.setItemsExist(true);
+    financialActivity.setActiveBudgetsExist(true);
+    const token = await jwtService.sign(ownerId);
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${family.id.toString()}/settings/currency`,
+      headers: { authorization: `Bearer ${token}` },
+      payload: { newCurrency: "USD" },
+    });
+
+    assert.equal(response.statusCode, 409);
+    assert.deepEqual(JSON.parse(response.body).details.reasons, [
+      "ITEMS_EXIST",
+      "ACTIVE_BUDGETS_EXIST",
+    ]);
+  });
+
+  test("devuelve el estado de bloqueo a cualquier miembro", async () => {
+    const ownerId = UserId.generate();
+    const memberId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    family.addMemberFromInvitationData(memberId, Role.member());
+    await familyRepository.save(family);
+    financialActivity.setItemsExist(true);
+    const token = await jwtService.sign(memberId);
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${family.id.toString()}/settings`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.body), {
+      defaultCurrency: "CLP",
+      currencyLocked: true,
+      currencyLockReasons: ["ITEMS_EXIST"],
+    });
   });
 });

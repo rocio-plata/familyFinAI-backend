@@ -18,6 +18,7 @@ const PREFIX_RULES: Array<{ prefix: string; status: number }> = [
   { prefix: "AUTH.POSSIBLE_TOKEN_THEFT", status: 401 },
   { prefix: "FAMILY.NOT_A_MEMBER", status: 403 },
   { prefix: "FAMILY.INSUFFICIENT_ROLE", status: 403 },
+  { prefix: "FAMILY.CURRENCY_LOCKED", status: 409 },
   { prefix: "SHARED.CURRENCY_MISMATCH", status: 409 },
   { prefix: "IDENTITY.INVALID_CREDENTIALS", status: 401 },
 ];

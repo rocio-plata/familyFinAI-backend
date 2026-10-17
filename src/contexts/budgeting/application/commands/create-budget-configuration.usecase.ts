@@ -1,6 +1,7 @@
 // src/contexts/budgeting/application/commands/create-budget-configuration.usecase.ts
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import type { Money } from "../../../../shared-kernel/domain/money.js";
+import { CurrencyMismatchError } from "../../../../shared-kernel/errors/currency-mismatch.error.js";
 import { FamilyNotFoundError } from "../../../family-access/domain/errors/family-not-found.error.js";
 import type { FamilyRepository } from "../../../family-access/domain/repositories/family.repository.js";
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
@@ -34,6 +35,12 @@ class CreateBudgetConfigurationUseCase {
     const family = await this.familyRepository.findById(input.familyId);
     if (!family) {
       throw new FamilyNotFoundError(input.familyId);
+    }
+    if (!family.defaultCurrency.equals(input.defaultAmount.currency)) {
+      throw new CurrencyMismatchError(
+        family.defaultCurrency.toString(),
+        input.defaultAmount.currency.toString(),
+      );
     }
 
     const categories = await this.getCategoriesQuery.execute({
