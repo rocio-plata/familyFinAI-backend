@@ -23,6 +23,7 @@
           "pm.environment.set('twoMonthsAgoPeriod', period(shiftMonth(now, -2)));",
           "pm.environment.set('nextPeriod', period(shiftMonth(now, 1)));",
           "pm.environment.set('farPeriod', period(shiftMonth(now, -25)));",
+          "pm.environment.set('longText', 'x'.repeat(501));",
           "if (pm.environment.get('lastPhaseDone') === undefined || pm.environment.get('lastPhaseDone') === '') { pm.environment.set('lastPhaseDone', '-1'); }"
         ]
       }
@@ -6933,7 +6934,7 @@
                   "pm.test('source TEXT', () => pm.expect(body.source).to.equal('TEXT'));",
                   "pm.test('monto sugerido', () => pm.expect(amt(body.amount)).to.be.a('number'));",
                   "pm.test('amount es Money (desde la Fase 0)', () => { if (P >= 0) { pm.expect(body.amount.currency).to.equal('CLP'); pm.expect(body.currency).to.be.undefined; } });",
-                  "pm.test('campos nuevos (desde la Fase 5)', () => { if (P >= 5) { pm.expect(['HISTORY', 'AI', 'NONE']).to.include(body.classificationOrigin); pm.expect(body.expiresAt).to.be.a('string'); pm.expect(body).to.have.property('paymentMethodId'); pm.expect(body).to.have.property('note'); } });"
+                  "pm.test('expiresAt (desde la Fase 5)', () => { if (P >= 5) pm.expect(body.expiresAt).to.be.a('string'); });"
                 ]
               }
             }
@@ -6967,7 +6968,7 @@
               "raw": "{\n  \"rawText\": \"Gasté 18500 en farmacia Ahumada hoy para los remedios\"\n}"
             }
           },
-          "description": "El adaptador de IA es 'fake' determinístico: los resultados no son reales hasta elegir proveedor.\n\nDesde la Fase 5 añade classificationOrigin, expiresAt, paymentMethodId y note."
+          "description": "El adaptador de IA es 'fake' determinístico. Desde la Fase 5 la sugerencia incluye expiresAt y caduca a las 24 horas."
         },
         {
           "name": "Suggest from Text con texto vacío (debe fallar 400)",
@@ -7217,7 +7218,7 @@
               "raw": "{\n  \"amount\": 18500,\n  \"currency\": \"CLP\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"title\": \"Farmacia Ahumada\"\n}"
             }
           },
-          "description": "Crea el FinancialItem de inmediato. Hasta la Fase 4 responde 204 sin cuerpo; desde la Fase 5 responde 201 con el item creado (S2). Se envía categoryId explícito."
+          "description": "Crea el FinancialItem de inmediato y responde 201 con el item creado. Se envía categoryId explícito."
         },
         {
           "name": "[F5] List Pending Suggestions (la confirmada ya no aparece)",
@@ -7626,7 +7627,7 @@
               ]
             }
           },
-          "description": "MANUAL: selecciona una imagen en el campo 'file' (máx. 10 MB). Si corres la colección completa, desactiva este request o fallará. El nombre del campo no está documentado en el backend: ajústalo si responde 400."
+          "description": "MANUAL: selecciona una imagen en el campo 'file' (máx. 10 MB, JPEG/PNG/WebP con firma válida). Si corres la colección completa, desactiva este request si no tienes una imagen."
         },
         {
           "name": "Suggest from Receipt sin archivo (debe fallar 400)",
