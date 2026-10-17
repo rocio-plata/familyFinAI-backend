@@ -394,10 +394,6 @@ function registerFinancialTrackingRoutes(
             tagId: { type: "string", minLength: 1 },
             type: { type: "string", enum: ["EXPENSE", "INCOME"] },
           },
-          dependencies: {
-            from: ["to"],
-            to: ["from"],
-          },
         },
       },
     },
@@ -412,7 +408,8 @@ function registerFinancialTrackingRoutes(
       };
       const items = await deps.getFinancialItemsQuery.execute({
         familyId: FamilyId.of(familyId),
-        ...(from && to ? { period: { from: new Date(from), to: new Date(to) } } : {}),
+        ...(from ? { from: new Date(from) } : {}),
+        ...(to ? { to: new Date(to) } : {}),
         ...(categoryId ? { categoryId: CategoryId.of(categoryId) } : {}),
         ...(tagId ? { tagId: TagId.of(tagId) } : {}),
         ...(type
@@ -425,6 +422,7 @@ function registerFinancialTrackingRoutes(
           id: item.id.toString(),
           familyId: item.familyId.toString(),
           recordedBy: item.recordedBy.toString(),
+          paymentMethodId: item.paymentMethodId?.toString() ?? null,
           type: item.type,
           amount: toMoneyDto(item.amount),
           categoryId: item.categoryId.toString(),

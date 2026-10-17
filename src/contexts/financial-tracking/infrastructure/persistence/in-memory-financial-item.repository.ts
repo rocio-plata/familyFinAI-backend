@@ -86,6 +86,8 @@ function matchesFilters(
       return false;
     }
   }
+  if (filters?.from && item.occurredOn.value.getTime() < filters.from.getTime()) return false;
+  if (filters?.to && item.occurredOn.value.getTime() > filters.to.getTime()) return false;
   return true;
 }
 

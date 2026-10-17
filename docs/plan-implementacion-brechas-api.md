@@ -520,6 +520,10 @@ Con una sola moneda por familia (C1–C4) los reportes son más simples. Los **n
 
 ## Fase 4 — Movimientos
 
+> **Estado actual:** implementado I1: el listado de movimientos incluye `paymentMethodId` y los
+> filtros `from`/`to` pueden enviarse de forma independiente. La paginación por cursor y
+> `recordedByName` continúan pendientes en esta fase.
+
 ### 4.1 I1: `paymentMethodId` en el listado
 
 1. Test: `GET /items` incluye `paymentMethodId` en cada elemento (el `POST` ya lo trae).

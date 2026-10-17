@@ -17,6 +17,8 @@ import type { Title } from "../../domain/value-objects/title.js";
 interface GetFinancialItemsInput {
   familyId: FamilyId;
   period?: { from: Date; to: Date };
+  from?: Date;
+  to?: Date;
   categoryId?: CategoryId;
   tagId?: TagId;
   type?: FinancialItemType;
@@ -26,6 +28,7 @@ interface FinancialItemDTO {
   id: FinancialItemId;
   familyId: FamilyId;
   recordedBy: UserId;
+  paymentMethodId: import("../../domain/value-objects/payment-method-id.js").PaymentMethodId;
   type: FinancialItemType;
   amount: Money;
   categoryId: CategoryId;
@@ -42,6 +45,8 @@ class GetFinancialItemsQuery {
   async execute(input: GetFinancialItemsInput): Promise<FinancialItemDTO[]> {
     const filters: FinancialItemFilters = {};
     if (input.period) filters.period = input.period;
+    if (input.from) filters.from = input.from;
+    if (input.to) filters.to = input.to;
     if (input.categoryId) filters.categoryId = input.categoryId;
     if (input.tagId) filters.tagId = input.tagId;
     if (input.type) filters.type = input.type;
@@ -52,6 +57,7 @@ class GetFinancialItemsQuery {
       id: item.id,
       familyId: item.familyId,
       recordedBy: item.recordedBy,
+      paymentMethodId: item.paymentMethodId,
       type: item.type,
       amount: item.amount,
       categoryId: item.categoryAssignment.categoryId,

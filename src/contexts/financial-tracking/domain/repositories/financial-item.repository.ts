@@ -10,6 +10,8 @@ import type { TagId } from "../value-objects/tag-id.js";
 
 interface FinancialItemFilters {
   period?: { from: Date; to: Date };
+  from?: Date;
+  to?: Date;
   categoryId?: CategoryId;
   tagId?: TagId;
   type?: FinancialItemType;

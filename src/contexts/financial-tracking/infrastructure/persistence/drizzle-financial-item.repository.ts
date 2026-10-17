@@ -70,6 +70,8 @@ class DrizzleFinancialItemRepository implements FinancialItemRepository {
       conditions.push(gte(financialItems.occurredOn, filters.period.from));
       conditions.push(lte(financialItems.occurredOn, filters.period.to));
     }
+    if (filters?.from) conditions.push(gte(financialItems.occurredOn, filters.from));
+    if (filters?.to) conditions.push(lte(financialItems.occurredOn, filters.to));
 
     const rows = await db
       .select()
