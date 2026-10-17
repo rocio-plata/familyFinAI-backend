@@ -17,8 +17,8 @@ class DrizzleCategoryPeriodAggregateRepository implements CategoryPeriodAggregat
         familyId: aggregate.familyId.toString(),
         categoryId: aggregate.categoryId.toString(),
         period: aggregate.period.toString(),
-        totalExpense: aggregate.totalExpense.amount.toString(),
-        totalIncome: aggregate.totalIncome.amount.toString(),
+        totalExpenseMinor: aggregate.totalExpense.minorUnits,
+        totalIncomeMinor: aggregate.totalIncome.minorUnits,
         currency: aggregate.totalExpense.currency.toString(),
         itemCount: aggregate.itemCount.value,
       })
@@ -29,8 +29,8 @@ class DrizzleCategoryPeriodAggregateRepository implements CategoryPeriodAggregat
           categoryPeriodAggregates.period,
         ],
         set: {
-          totalExpense: aggregate.totalExpense.amount.toString(),
-          totalIncome: aggregate.totalIncome.amount.toString(),
+          totalExpenseMinor: aggregate.totalExpense.minorUnits,
+          totalIncomeMinor: aggregate.totalIncome.minorUnits,
           currency: aggregate.totalExpense.currency.toString(),
           itemCount: aggregate.itemCount.value,
         },
@@ -57,8 +57,8 @@ class DrizzleCategoryPeriodAggregateRepository implements CategoryPeriodAggregat
         categoryId: CategoryId.of(row.categoryId),
         period: Period.of(Number(row.period.slice(0, 4)), Number(row.period.slice(5, 7))),
         currency: Currency.of(row.currency),
-        totalExpense: Number(row.totalExpense),
-        totalIncome: Number(row.totalIncome),
+        totalExpense: row.totalExpenseMinor,
+        totalIncome: row.totalIncomeMinor,
         itemCount: row.itemCount,
       }),
     );

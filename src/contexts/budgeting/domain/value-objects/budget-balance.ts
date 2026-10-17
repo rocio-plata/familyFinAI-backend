@@ -14,6 +14,10 @@ class BudgetBalance {
     }
     return new BudgetBalance(amount, currency);
   }
+
+  toDto(): { amount: number; currency: string } {
+    return { amount: this.amount, currency: this.currency.toString() };
+  }
 }
 
 export { BudgetBalance };

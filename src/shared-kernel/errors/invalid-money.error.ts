@@ -2,10 +2,10 @@
 import { DomainError } from "./domain-error.js";
 
 class InvalidMoneyError extends DomainError {
-  readonly code = "SHARED.INVALID_MONEY";
+  readonly code = "SHARED.INVALID_AMOUNT";
 
   constructor() {
-    super("El monto no puede ser negativo");
+    super("El monto no es válido");
   }
 }
 

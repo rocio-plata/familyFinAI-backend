@@ -68,7 +68,7 @@ describe("Persistencia Drizzle de movimientos financieros (integración)", () =>
         familyId,
         recordedBy,
         paymentMethodId: paymentMethod.id,
-        amount: Money.of(1500, Currency.of("CLP")),
+        amount: Money.ofMinor(1599, Currency.of("USD")),
         category: CategoryAssignment.of(category.id),
         title: Title.of("Almuerzo"),
         occurredOn: TransactionDate.of(new Date("2026-01-15T12:00:00.000Z")),
@@ -80,7 +80,8 @@ describe("Persistencia Drizzle de movimientos financieros (integración)", () =>
     const found = await financialItemRepository.findById(item.id);
     assert.ok(found);
     assert.equal(found.title.toString(), "Almuerzo");
-    assert.equal(found.amount.amount, 1500);
+    assert.equal(found.amount.minorUnits, 1599);
+    assert.equal(found.amount.currency.toString(), "USD");
 
     assert.equal(await financialItemRepository.countByCategory(category.id), 1);
     assert.equal(await financialItemRepository.countByPaymentMethod(paymentMethod.id), 1);

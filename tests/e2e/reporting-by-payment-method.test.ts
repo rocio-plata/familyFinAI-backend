@@ -115,14 +115,13 @@ describe("Flujo E2E: reporte de gastos por medio de pago", () => {
       const entries = reportResponse.json() as {
         paymentMethodId: string;
         paymentMethodName: string;
-        amount: number;
-        currency: string;
+        amount: { amount: number; currency: string };
       }[];
       const cashEntry = entries.find((entry) => entry.paymentMethodId === cashPaymentMethod.id);
       const cardEntry = entries.find((entry) => entry.paymentMethodId === cardPaymentMethodId);
-      assert.equal(cashEntry?.amount, 12_000);
-      assert.equal(cashEntry?.currency, "CLP");
-      assert.equal(cardEntry?.amount, 7_500);
+      assert.equal(cashEntry?.amount.amount, 12_000);
+      assert.equal(cashEntry?.amount.currency, "CLP");
+      assert.equal(cardEntry?.amount.amount, 7_500);
     } finally {
       for (const familyId of createdFamilyIds) {
         await db.delete(financialItems).where(eq(financialItems.familyId, familyId));

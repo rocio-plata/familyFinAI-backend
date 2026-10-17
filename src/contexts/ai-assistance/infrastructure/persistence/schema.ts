@@ -1,8 +1,8 @@
 // src/contexts/ai-assistance/infrastructure/persistence/schema.ts
 import {
+  bigint,
   index,
   integer,
-  numeric,
   pgEnum,
   pgTable,
   real,
@@ -32,7 +32,7 @@ export const suggestions = pgTable(
     rawInput: text("raw_input"),
     receiptImageRef: text("receipt_image_ref"),
     merchantName: varchar("merchant_name", { length: 100 }),
-    suggestedAmount: numeric("suggested_amount", { precision: 14, scale: 2 }).notNull(),
+    suggestedAmountMinor: bigint("suggested_amount_minor", { mode: "number" }).notNull(),
     suggestedCurrency: varchar("suggested_currency", { length: 3 }).notNull(),
     suggestedCategoryId: uuid("suggested_category_id"),
     suggestedTagId: uuid("suggested_tag_id"),

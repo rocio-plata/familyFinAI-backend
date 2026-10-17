@@ -46,4 +46,12 @@ describe("Currency", () => {
       assert.equal(Currency.of("USD").toString(), "USD");
     });
   });
+
+  describe("exponent", () => {
+    it("devuelve cero para CLP y dos para USD y EUR", () => {
+      assert.equal(Currency.of("CLP").exponent, 0);
+      assert.equal(Currency.of("USD").exponent, 2);
+      assert.equal(Currency.of("EUR").exponent, 2);
+    });
+  });
 });

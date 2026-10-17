@@ -44,7 +44,7 @@ describe("reconstitución de financial-tracking", () => {
       recordedBy: UserId.generate().toString(),
       paymentMethodId: PaymentMethodId.generate().toString(),
       type: FinancialItemType.Income,
-      amount: 1250.5,
+      amount: 1250,
       currency: Currency.default().toString(),
       categoryId: "11111111-1111-4111-8111-111111111111",
       tagId: null,
@@ -55,7 +55,7 @@ describe("reconstitución de financial-tracking", () => {
     });
 
     assert.equal(item.type, FinancialItemType.Income);
-    assert.equal(item.amount.amount, 1250.5);
+    assert.equal(item.amount.amount, 1250);
     assert.ok(
       item.categoryAssignment.equals(CategoryAssignment.of(item.categoryAssignment.categoryId)),
     );

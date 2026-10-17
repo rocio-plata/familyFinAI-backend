@@ -17,8 +17,8 @@ class DrizzleBudgetPeriodStatusRepository implements BudgetPeriodStatusRepositor
         familyId: status.familyId.toString(),
         categoryId: status.categoryId.toString(),
         period: status.period.toString(),
-        limitAmount: status.limitAmount.amount.toString(),
-        spent: status.spent.amount.toString(),
+        limitAmountMinor: status.limitAmount.minorUnits,
+        spentMinor: status.spent.minorUnits,
         currency: status.limitAmount.currency.toString(),
       })
       .onConflictDoUpdate({
@@ -28,8 +28,8 @@ class DrizzleBudgetPeriodStatusRepository implements BudgetPeriodStatusRepositor
           budgetPeriodStatuses.period,
         ],
         set: {
-          limitAmount: status.limitAmount.amount.toString(),
-          spent: status.spent.amount.toString(),
+          limitAmountMinor: status.limitAmount.minorUnits,
+          spentMinor: status.spent.minorUnits,
           currency: status.limitAmount.currency.toString(),
         },
       });
@@ -53,8 +53,8 @@ class DrizzleBudgetPeriodStatusRepository implements BudgetPeriodStatusRepositor
           familyId: row.familyId,
           categoryId: row.categoryId,
           period: row.period,
-          limitAmount: Number(row.limitAmount),
-          spent: Number(row.spent),
+          limitAmount: row.limitAmountMinor,
+          spent: row.spentMinor,
           currency: row.currency,
         })
       : null;

@@ -1,5 +1,7 @@
 // src/contexts/reporting/infrastructure/http/reporting.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
+import { toMoneyDto } from "../../../../platform/http/money.dto.js";
+import { Money } from "../../../../shared-kernel/domain/money.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
 import { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { Role } from "../../../family-access/domain/value-objects/role.js";
@@ -54,8 +56,7 @@ function registerReportingRoutes(app: FastifyInstance, deps: ReportingRoutesDepe
       return expenses.map((entry) => ({
         paymentMethodId: entry.paymentMethodId.toString(),
         paymentMethodName: entry.paymentMethodName.toString(),
-        amount: entry.amount.amount,
-        currency: entry.amount.currency.toString(),
+        amount: toMoneyDto(entry.amount),
       }));
     },
   );
@@ -107,8 +108,7 @@ function registerReportingRoutes(app: FastifyInstance, deps: ReportingRoutesDepe
       return breakdown.map((entry) => ({
         categoryId: entry.categoryId.toString(),
         categoryName: entry.categoryName.toString(),
-        amount: entry.amount.amount,
-        currency: entry.amount.currency.toString(),
+        amount: toMoneyDto(entry.amount),
       }));
     },
   );
@@ -178,7 +178,7 @@ function registerReportingRoutes(app: FastifyInstance, deps: ReportingRoutesDepe
         period: point.period.toString(),
         totalExpenses: serializeMoney(point.totalExpenses),
         totalIncome: serializeMoney(point.totalIncome),
-        balance: point.balance,
+        balance: serializeMoney(Money.of(point.balance, point.totalExpenses.currency)),
       }));
     },
   );
@@ -222,19 +222,15 @@ function toFinancialItemType(value: "EXPENSE" | "INCOME"): FinancialItemType {
   return value === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense;
 }
 
-function serializeMoney(money: { amount: number; currency: { toString(): string } }) {
-  return { amount: money.amount, currency: money.currency.toString() };
+function serializeMoney(money: Money) {
+  return toMoneyDto(money);
 }
 
-function serializeTotals(totals: {
-  totalExpenses: Parameters<typeof serializeMoney>[0];
-  totalIncome: Parameters<typeof serializeMoney>[0];
-  balance: number;
-}) {
+function serializeTotals(totals: { totalExpenses: Money; totalIncome: Money; balance: number }) {
   return {
     totalExpenses: serializeMoney(totals.totalExpenses),
     totalIncome: serializeMoney(totals.totalIncome),
-    balance: totals.balance,
+    balance: serializeMoney(Money.of(totals.balance, totals.totalExpenses.currency)),
   };
 }
 
@@ -244,7 +240,7 @@ function serializeDashboardSummary(
   return {
     totalExpenses: serializeMoney(summary.totalExpenses),
     totalIncome: serializeMoney(summary.totalIncome),
-    balance: summary.balance,
+    balance: serializeMoney(Money.of(summary.balance, summary.totalExpenses.currency)),
     categoryBreakdown: summary.categoryBreakdown.map((entry) => ({
       categoryId: entry.categoryId.toString(),
       totalExpense: serializeMoney(entry.totalExpense),

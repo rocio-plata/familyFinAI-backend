@@ -14,7 +14,7 @@ class DrizzleBudgetConfigurationRepository implements BudgetConfigurationReposit
       [...configuration.overrides.entries()].map(([period, amount]) => [
         period,
         {
-          amount: amount.amount,
+          amountMinor: amount.minorUnits,
           currency: amount.currency.toString(),
         },
       ]),
@@ -25,7 +25,7 @@ class DrizzleBudgetConfigurationRepository implements BudgetConfigurationReposit
         id: configuration.id.toString(),
         familyId: configuration.familyId.toString(),
         categoryId: configuration.categoryId.toString(),
-        defaultAmount: configuration.defaultAmount.amount.toString(),
+        defaultAmountMinor: configuration.defaultAmount.minorUnits,
         defaultCurrency: configuration.defaultAmount.currency.toString(),
         overrides,
         isActive: configuration.isActive,
@@ -33,7 +33,7 @@ class DrizzleBudgetConfigurationRepository implements BudgetConfigurationReposit
       .onConflictDoUpdate({
         target: budgetConfigurations.id,
         set: {
-          defaultAmount: configuration.defaultAmount.amount.toString(),
+          defaultAmountMinor: configuration.defaultAmount.minorUnits,
           defaultCurrency: configuration.defaultAmount.currency.toString(),
           overrides,
           isActive: configuration.isActive,
@@ -61,7 +61,7 @@ class DrizzleBudgetConfigurationRepository implements BudgetConfigurationReposit
       id: row.id,
       familyId: row.familyId,
       categoryId: row.categoryId,
-      defaultAmount: Number(row.defaultAmount),
+      defaultAmount: row.defaultAmountMinor,
       defaultCurrency: row.defaultCurrency,
       overrides: parseOverrides(row.overrides),
       isActive: row.isActive,
@@ -74,9 +74,9 @@ function parseOverrides(value: unknown): Record<string, PersistedOverride> {
   const result: Record<string, PersistedOverride> = {};
   for (const [period, raw] of Object.entries(value)) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
-    const candidate = raw as { amount?: unknown; currency?: unknown };
-    if (typeof candidate.amount === "number" && typeof candidate.currency === "string") {
-      result[period] = { amount: candidate.amount, currency: candidate.currency };
+    const candidate = raw as { amountMinor?: unknown; currency?: unknown };
+    if (typeof candidate.amountMinor === "number" && typeof candidate.currency === "string") {
+      result[period] = { amount: candidate.amountMinor, currency: candidate.currency };
     }
   }
   return result;

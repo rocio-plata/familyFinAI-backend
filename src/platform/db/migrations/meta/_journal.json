@@ -64,6 +64,13 @@
       "when": 1791745474741,
       "tag": "0008_cynical_kabuki",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792227322463,
+      "tag": "0009_friendly_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

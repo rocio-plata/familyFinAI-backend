@@ -1,9 +1,9 @@
-# Contrato de API REST — FamilyFin AI (v2, verificado contra el backend)
+# Contrato de API REST — FamilyFin AI (v2, Fase 0 implementada)
 
 > **Estado del documento**
 > - Las secciones 1 a 5 provienen de la lectura del código del backend por otro agente de IA y **sustituyen a mi versión v1**, que se basaba en Postman y en el plan de endpoints y daba por pendientes rutas que ya existen (Budgeting, Reporting y AI Assistance están expuestos).
 > - Las secciones 6 a 9 son nuevas: **brechas entre este contrato y lo que necesita la app móvil**, **discrepancias** (incluida la colección Postman), un **mapa pantalla → endpoints** y los **códigos de error que faltan**.
-> - Lo que figura como **📐 propuesto** no existe en el backend: su implementación está planificada en `plan-implementacion-brechas-api.md` (v3, con las reglas de moneda y el dinero en unidades menores). Las decisiones de diseño asociadas están **confirmadas** (13-oct-2026).
+> - La Fase 0 está implementada: errores 401/403 tipados, DTO `Money`, validación de importes enteros en requests y persistencia en unidades menores (`bigint`). Las fases posteriores continúan marcadas como propuestas hasta su implementación.
 
 Este documento constituye el contrato de interfaz oficial entre el backend de **FamilyFin AI** y el cliente móvil Kotlin (Android). Define las convenciones globales, mecanismos de autenticación y autorización, estructuras de datos, códigos de error y la especificación detallada de cada endpoint disponible.
 
@@ -20,7 +20,7 @@ Este documento constituye el contrato de interfaz oficial entre el backend de **
 | Formato de periodos mensuales | `YYYY-MM` (expresión regular `^[0-9]{4}-(0[1-9]\|1[0-2])$`) |
 | Identificadores (`id`) | UUID v4 en formato string |
 | Monedas soportadas | `"CLP"`, `"USD"`, `"EUR"`. Por defecto familiar: `"CLP"`. |
-| Dinero (📐 propuesto, decisiones D1 y D9) | **Entero en la unidad menor de la moneda** en peticiones y respuestas. Las respuestas lo devuelven como objeto `Money`: `{ "amount": 1599, "currency": "USD" }` = US$ 15,99. Exponentes: `CLP` 0, `USD` 2, `EUR` 2. El cliente convierte con `Currency.getDefaultFractionDigits()` y **nunca usa `Double`** |
+| Dinero (Fase 0, decisiones D1 y D9) | **Entero en la unidad menor de la moneda** en peticiones y respuestas. Las respuestas lo devuelven como objeto `Money`: `{ "amount": 1599, "currency": "USD" }` = US$ 15,99. Exponentes: `CLP` 0, `USD` 2, `EUR` 2. El cliente convierte con `Currency.getDefaultFractionDigits()` y **nunca usa `Double`** |
 | Moneda de la familia (📐 propuesto, decisión D2) | Una familia usa **una sola moneda**: todo item y presupuesto debe estar en ella (`SHARED.CURRENCY_MISMATCH`, 409). Solo se puede cambiar si la familia no tiene items ni presupuestos activos (`FAMILY.CURRENCY_LOCKED`, 409). Por eso los reportes devuelven un único `currency` |
 | Filosofía IA | **"La IA propone, el usuario confirma"**: la IA nunca escribe directo en el core financiero; genera sugerencias que el usuario debe confirmar o descartar. |
 
@@ -31,13 +31,16 @@ Todas las respuestas de error (`4xx` y `5xx`) retornan una carga útil JSON con 
 ```json
 {
   "error": "STRING_IDENTIFICADOR_DEL_ERROR",
-  "message": "Descripción legible en español del problema"
+  "message": "Descripción legible en español del problema",
+  "details": {}
 }
 ```
 
+`details` es opcional y solo aparece cuando el error aporta datos estructurados.
+
 - **Errores de validación de esquema (HTTP 400)**: Código `"HTTP.INVALID_REQUEST_BODY"` cuando el JSON recibido no cumple con las restricciones de tipo, campos obligatorios o formatos declarados en Fastify.
-- **Errores de autenticación (HTTP 401)**: Mensaje `{ "error": "Missing token" }` o `{ "error": "Invalid or expired token" }`.
-- **Errores de autorización (HTTP 403)**: Mensaje `{ "error": "Not a member of this family" }` o `{ "error": "Insufficient role" }`.
+- **Errores de autenticación (HTTP 401)**: `AUTH.MISSING_TOKEN` o `AUTH.INVALID_TOKEN`.
+- **Errores de autorización (HTTP 403)**: `FAMILY.NOT_A_MEMBER` o `FAMILY.INSUFFICIENT_ROLE`.
 - **Errores de dominio (`DomainError`)**: Códigos con prefijo o sufijo semántico (e.g. `CATEGORY_NOT_FOUND`, `DUPLICATE_CATEGORY_NAME`, `IDENTITY.INVALID_CREDENTIALS`).
 - **Errores inesperados (HTTP 500)**: `{ "error": "INTERNAL.UNEXPECTED_ERROR", "message": "Something went wrong" }`.
 

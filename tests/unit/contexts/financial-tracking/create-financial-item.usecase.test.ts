@@ -28,7 +28,7 @@ import { InMemoryPaymentMethodRepository } from "../../../../src/contexts/financ
 import { InMemoryUserPaymentMethodPreferenceRepository } from "../../../../src/contexts/financial-tracking/infrastructure/persistence/in-memory-user-payment-method-preference.repository.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 import { Money } from "../../../../src/shared-kernel/domain/money.js";
-import { InvalidMoneyError } from "../../../../src/shared-kernel/errors/invalid-money.error.js";
+import { InvalidAmountError } from "../../../../src/shared-kernel/errors/invalid-amount.error.js";
 import { FakeEventBus } from "../../shared/doubles/fake-event-bus.js";
 import {
   OrderRecordingEventBus,
@@ -328,10 +328,24 @@ describe("CreateFinancialItemUseCase", () => {
 
   test("rechaza monto negativo", async () => {
     try {
-      Money.of(-1000, Currency.default());
-      assert.fail("Debería haber lanzado InvalidMoneyError");
+      const category = Category.create(
+        familyId,
+        FinancialItemType.Expense,
+        CategoryName.of("Alimentación"),
+      );
+      categoryRepository.add(category);
+      await useCase.execute({
+        familyId,
+        recordedBy,
+        categoryId: category.id,
+        tagId: null,
+        amount: Money.of(0, Currency.default()),
+        title: Title.of("Compra"),
+        occurredOn: TransactionDate.of(new Date("2024-01-15")),
+      });
+      assert.fail("Debería haber lanzado InvalidAmountError");
     } catch (e) {
-      assert.ok(e instanceof InvalidMoneyError);
+      assert.ok(e instanceof InvalidAmountError);
     }
   });
 

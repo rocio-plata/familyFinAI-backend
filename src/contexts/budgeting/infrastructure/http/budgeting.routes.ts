@@ -1,5 +1,6 @@
 // src/contexts/budgeting/infrastructure/http/budgeting.routes.ts
 import type { FastifyInstance, preHandlerHookHandler } from "fastify";
+import { toMoneyDto } from "../../../../platform/http/money.dto.js";
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import { Money } from "../../../../shared-kernel/domain/money.js";
 import { Period } from "../../../../shared-kernel/domain/period.js";
@@ -49,7 +50,7 @@ function registerBudgetingRoutes(app: FastifyInstance, deps: BudgetingRoutesDepe
           required: ["categoryId", "amount"],
           properties: {
             categoryId: idSchema,
-            amount: { type: "number", minimum: 0 },
+            amount: { type: "integer", minimum: 0 },
             currency: { type: "string", minLength: 1 },
           },
         },
@@ -113,7 +114,7 @@ function registerBudgetingRoutes(app: FastifyInstance, deps: BudgetingRoutesDepe
           type: "object",
           required: ["amount"],
           properties: {
-            amount: { type: "number", minimum: 0 },
+            amount: { type: "integer", minimum: 0 },
             currency: { type: "string", minLength: 1 },
           },
         },
@@ -156,7 +157,7 @@ function registerBudgetingRoutes(app: FastifyInstance, deps: BudgetingRoutesDepe
           type: "object",
           required: ["amount"],
           properties: {
-            amount: { type: "number", minimum: 0 },
+            amount: { type: "integer", minimum: 0 },
             currency: { type: "string", minLength: 1 },
           },
         },
@@ -253,7 +254,7 @@ function parseBudgetConfigurationId(value: string) {
 }
 
 function serializeMoney(money: { amount: number; currency: { toString(): string } }) {
-  return { amount: money.amount, currency: money.currency.toString() };
+  return toMoneyDto(money as Parameters<typeof toMoneyDto>[0]);
 }
 
 function serializeBudgetConfiguration(budget: {

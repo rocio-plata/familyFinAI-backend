@@ -1,9 +1,9 @@
 // src/contexts/financial-tracking/infrastructure/persistence/schema.ts
 
 import {
+  bigint,
   index,
   integer,
-  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -92,7 +92,7 @@ export const financialItems = pgTable(
       .notNull()
       .references(() => paymentMethods.id),
     type: financialItemTypeEnum("type").notNull(),
-    amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+    amountMinor: bigint("amount_minor", { mode: "number" }).notNull(),
     currency: varchar("currency", { length: 3 }).notNull(),
     categoryId: uuid("category_id")
       .notNull()
