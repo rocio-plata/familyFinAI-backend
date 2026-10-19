@@ -7,6 +7,8 @@
 
 Este documento constituye el contrato de interfaz oficial entre el backend de **FamilyFin AI** y el cliente móvil Kotlin (Android). Define las convenciones globales, mecanismos de autenticación y autorización, estructuras de datos, códigos de error y la especificación detallada de cada endpoint disponible.
 
+La version machine-readable del contrato esta en [docs/openapi.yaml](openapi.yaml), siguiendo OpenAPI 3.1. Puede abrirse con Swagger UI o Redoc para generar documentacion interactiva.
+
 ---
 
 ## 1. Convenciones Generales

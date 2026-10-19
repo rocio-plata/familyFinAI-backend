@@ -1,0 +1,1479 @@
+openapi: 3.1.0
+info:
+  title: FamilyFin AI API
+  version: 1.0.0
+  description: |
+    Contrato OpenAPI de la API REST de FamilyFin AI.
+    El dinero se expresa como entero en la unidad menor de la moneda.
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+  - url: https://api.example.com
+    description: Produccion
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Identity
+  - name: Families
+  - name: Financial Tracking
+  - name: Budgeting
+  - name: Reporting
+  - name: AI Assistance
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Comprueba la disponibilidad del servicio
+      operationId: getHealth
+      responses:
+        '200':
+          description: Servicio disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registra un usuario y su familia personal
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuario registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Inicia sesion
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sesion iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Rota el par de tokens
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Tokens renovados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoca las sesiones del usuario
+      operationId: logout
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Sesiones revocadas
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /me/profile:
+    get:
+      tags: [Identity]
+      summary: Obtiene el perfil del usuario autenticado
+      operationId: getProfile
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Perfil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /me/display-name:
+    patch:
+      tags: [Identity]
+      summary: Actualiza el nombre visible
+      operationId: updateDisplayName
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName]
+              properties:
+                displayName: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Nombre actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [displayName]
+                properties:
+                  displayName: { type: string }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /me/password:
+    patch:
+      tags: [Identity]
+      summary: Cambia la contrasena
+      operationId: changePassword
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string, minLength: 1 }
+                newPassword: { type: string, minLength: 1 }
+      responses:
+        '204':
+          description: Contrasena actualizada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /families:
+    post:
+      tags: [Families]
+      summary: Crea una familia
+      operationId: createFamily
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+      responses:
+        '201':
+          description: Familia creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Family'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /me/families:
+    get:
+      tags: [Families]
+      summary: Lista las familias del usuario
+      operationId: listMyFamilies
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Familias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/FamilySummary' }
+
+  /me/invitations:
+    get:
+      tags: [Families]
+      summary: Lista las invitaciones pendientes del usuario
+      operationId: listMyInvitations
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Invitaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Invitation' }
+
+  /me/families/order:
+    put:
+      tags: [Families]
+      summary: Reordena las familias del usuario
+      operationId: reorderMyFamilies
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderedFamilyIds]
+              properties:
+                orderedFamilyIds:
+                  type: array
+                  items: { $ref: '#/components/schemas/Id' }
+      responses:
+        '204': { description: Orden actualizado }
+
+  /families/{familyId}/members:
+    get:
+      tags: [Families]
+      summary: Lista los miembros de una familia
+      operationId: listMembers
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses:
+        '200':
+          description: Miembros
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Member' }
+
+  /families/{familyId}/members/me:
+    get:
+      tags: [Families]
+      summary: Obtiene la membresia del usuario actual
+      operationId: getMyMembership
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses:
+        '200':
+          description: Membresia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+
+  /families/{familyId}/invitations:
+    get:
+      tags: [Families]
+      summary: Lista invitaciones de una familia
+      operationId: listFamilyInvitations
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - name: status
+          in: query
+          schema: { type: string, enum: [PENDING, ALL] }
+      responses:
+        '200':
+          description: Invitaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Invitation' }
+    post:
+      tags: [Families]
+      summary: Invita a un miembro
+      operationId: inviteMember
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, role]
+              properties:
+                email: { type: string, format: email }
+                role: { $ref: '#/components/schemas/Role' }
+      responses:
+        '201':
+          description: Invitacion creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invitation' }
+
+  /invitations/{invitationId}/accept:
+    post:
+      tags: [Families]
+      summary: Acepta una invitacion
+      operationId: acceptInvitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '204': { description: Invitacion aceptada }
+
+  /invitations/{invitationId}/decline:
+    post:
+      tags: [Families]
+      summary: Rechaza una invitacion
+      operationId: declineInvitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '204': { description: Invitacion rechazada }
+
+  /invitations/{invitationId}:
+    delete:
+      tags: [Families]
+      summary: Revoca una invitacion
+      operationId: revokeInvitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '204': { description: Invitacion revocada }
+
+  /families/{familyId}/members/{memberId}:
+    delete:
+      tags: [Families]
+      summary: Elimina un miembro
+      operationId: removeMember
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/MemberId' }
+      responses:
+        '204': { description: Miembro eliminado }
+
+  /families/{familyId}/members/{memberId}/role:
+    patch:
+      tags: [Families]
+      summary: Cambia el rol de un miembro
+      operationId: changeMemberRole
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/MemberId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newRole]
+              properties:
+                newRole: { $ref: '#/components/schemas/Role' }
+      responses:
+        '204': { description: Rol actualizado }
+
+  /families/{familyId}/settings/currency:
+    patch:
+      tags: [Families]
+      summary: Cambia la moneda predeterminada
+      operationId: changeDefaultCurrency
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newCurrency]
+              properties:
+                newCurrency: { $ref: '#/components/schemas/Currency' }
+      responses:
+        '204': { description: Moneda actualizada }
+
+  /families/{familyId}/settings:
+    get:
+      tags: [Families]
+      summary: Obtiene la configuracion de la familia
+      operationId: getFamilySettings
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses:
+        '200':
+          description: Configuracion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FamilySettings' }
+
+  /families/{familyId}/payment-methods:
+    get:
+      tags: [Financial Tracking]
+      summary: Lista medios de pago
+      operationId: listPaymentMethods
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - name: includeDeprecated
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Medios de pago
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PaymentMethod' }
+    post:
+      tags: [Financial Tracking]
+      summary: Crea un medio de pago
+      operationId: createPaymentMethod
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+      responses:
+        '201':
+          description: Medio de pago creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentMethod' }
+
+  /families/{familyId}/payment-methods/{paymentMethodId}:
+    patch:
+      tags: [Financial Tracking]
+      summary: Renombra un medio de pago
+      operationId: renamePaymentMethod
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/PaymentMethodId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Medio de pago actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentMethod' }
+    delete:
+      tags: [Financial Tracking]
+      summary: Elimina un medio de pago
+      operationId: deletePaymentMethod
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/PaymentMethodId' }
+      responses:
+        '204': { description: Medio de pago eliminado }
+
+  /families/{familyId}/payment-methods/{paymentMethodId}/deprecate:
+    post:
+      tags: [Financial Tracking]
+      summary: Marca un medio de pago como obsoleto
+      operationId: deprecatePaymentMethod
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/PaymentMethodId' }
+      responses:
+        '204': { description: Medio de pago obsoleto }
+
+  /families/{familyId}/me/default-payment-method:
+    put:
+      tags: [Financial Tracking]
+      summary: Define el medio de pago predeterminado del usuario
+      operationId: setDefaultPaymentMethod
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethodId]
+              properties:
+                paymentMethodId: { $ref: '#/components/schemas/Id' }
+      responses:
+        '204': { description: Medio de pago predeterminado actualizado }
+
+  /families/{familyId}/items:
+    get:
+      tags: [Financial Tracking]
+      summary: Lista movimientos financieros
+      operationId: listFinancialItems
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+        - { $ref: '#/components/parameters/CategoryId' }
+        - { $ref: '#/components/parameters/TagId' }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/ItemType' }
+      responses:
+        '200':
+          description: Movimientos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/FinancialItem' }
+    post:
+      tags: [Financial Tracking]
+      summary: Registra un movimiento financiero
+      operationId: createFinancialItem
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FinancialItemRequest' }
+      responses:
+        '201':
+          description: Movimiento creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialItem' }
+
+  /families/{familyId}/items/{itemId}:
+    patch:
+      tags: [Financial Tracking]
+      summary: Actualiza un movimiento financiero
+      operationId: updateFinancialItem
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/ItemId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FinancialItemUpdate' }
+      responses:
+        '200':
+          description: Movimiento actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialItem' }
+    delete:
+      tags: [Financial Tracking]
+      summary: Elimina un movimiento financiero
+      operationId: deleteFinancialItem
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/ItemId' }
+      responses:
+        '204': { description: Movimiento eliminado }
+
+  /families/{familyId}/items/{itemId}/category:
+    patch:
+      tags: [Financial Tracking]
+      summary: Reclasifica un movimiento
+      operationId: reclassifyFinancialItem
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/ItemId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newCategoryId]
+              properties:
+                newCategoryId: { $ref: '#/components/schemas/Id' }
+                newTagId: { type: [string, 'null'] }
+      responses:
+        '200':
+          description: Movimiento reclasificado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialItem' }
+
+  /families/{familyId}/categories:
+    get:
+      tags: [Financial Tracking]
+      summary: Lista categorias y tags
+      operationId: listCategories
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/ItemType' }
+        - name: includeDeprecated
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Categorias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Financial Tracking]
+      summary: Crea una categoria
+      operationId: createCategory
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, name]
+              properties:
+                type: { $ref: '#/components/schemas/ItemType' }
+                name: { type: string, minLength: 1 }
+                icon: { type: string }
+      responses:
+        '201':
+          description: Categoria creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+  /families/{familyId}/categories/{categoryId}:
+    patch:
+      tags: [Financial Tracking]
+      summary: Actualiza una categoria
+      operationId: updateCategory
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                newName: { type: string, minLength: 1 }
+                newIcon: { type: [string, 'null'] }
+      responses:
+        '200':
+          description: Categoria actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+    delete:
+      tags: [Financial Tracking]
+      summary: Elimina una categoria
+      operationId: deleteCategory
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+      responses:
+        '204': { description: Categoria eliminada }
+
+  /families/{familyId}/categories/{categoryId}/deprecate:
+    post:
+      tags: [Financial Tracking]
+      summary: Marca una categoria como obsoleta
+      operationId: deprecateCategory
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+      responses:
+        '204': { description: Categoria obsoleta }
+
+  /families/{familyId}/categories/{categoryId}/tags:
+    post:
+      tags: [Financial Tracking]
+      summary: Agrega un tag a una categoria
+      operationId: addTag
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+      responses:
+        '201':
+          description: Tag creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tag' }
+
+  /families/{familyId}/categories/{categoryId}/tags/{tagId}:
+    patch:
+      tags: [Financial Tracking]
+      summary: Renombra un tag
+      operationId: renameTag
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+        - { $ref: '#/components/parameters/TagIdPath' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: Tag actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tag' }
+    delete:
+      tags: [Financial Tracking]
+      summary: Elimina un tag
+      operationId: deleteTag
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+        - { $ref: '#/components/parameters/TagIdPath' }
+      responses:
+        '204': { description: Tag eliminado }
+
+  /families/{familyId}/categories/{categoryId}/tags/{tagId}/deprecate:
+    post:
+      tags: [Financial Tracking]
+      summary: Marca un tag como obsoleto
+      operationId: deprecateTag
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+        - { $ref: '#/components/parameters/TagIdPath' }
+      responses:
+        '204': { description: Tag obsoleto }
+
+  /families/{familyId}/categories/{categoryId}/tags/order:
+    put:
+      tags: [Financial Tracking]
+      summary: Reordena los tags de una categoria
+      operationId: reorderTags
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderedTagIds]
+              properties:
+                orderedTagIds:
+                  type: array
+                  items: { $ref: '#/components/schemas/Id' }
+      responses:
+        '204': { description: Orden actualizado }
+
+  /families/{familyId}/budgets:
+    get:
+      tags: [Budgeting]
+      summary: Lista presupuestos de un periodo
+      operationId: listBudgets
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/Period' }
+      responses:
+        '200':
+          description: Presupuestos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Budget' }
+    post:
+      tags: [Budgeting]
+      summary: Crea una configuracion de presupuesto
+      operationId: createBudget
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categoryId, amount]
+              properties:
+                categoryId: { $ref: '#/components/schemas/Id' }
+                amount: { type: integer, minimum: 0 }
+                currency: { $ref: '#/components/schemas/Currency' }
+      responses:
+        '201':
+          description: Presupuesto creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetConfiguration' }
+
+  /families/{familyId}/budgets/{budgetConfigurationId}:
+    patch:
+      tags: [Budgeting]
+      summary: Actualiza el importe predeterminado
+      operationId: updateBudget
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/BudgetConfigurationId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: integer, minimum: 0 }
+                currency: { $ref: '#/components/schemas/Currency' }
+      responses:
+        '200':
+          description: Presupuesto actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetConfiguration' }
+
+  /families/{familyId}/budgets/{budgetConfigurationId}/overrides/{period}:
+    put:
+      tags: [Budgeting]
+      summary: Define un importe excepcional para un periodo
+      operationId: setBudgetOverride
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/BudgetConfigurationId' }
+        - { $ref: '#/components/parameters/PeriodPath' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: integer, minimum: 0 }
+                currency: { $ref: '#/components/schemas/Currency' }
+      responses:
+        '200':
+          description: Excepcion actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetConfiguration' }
+    delete:
+      tags: [Budgeting]
+      summary: Elimina un importe excepcional
+      operationId: removeBudgetOverride
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/BudgetConfigurationId' }
+        - { $ref: '#/components/parameters/PeriodPath' }
+      responses:
+        '204': { description: Excepcion eliminada }
+
+  /families/{familyId}/budgets/{budgetConfigurationId}/deactivate:
+    post:
+      tags: [Budgeting]
+      summary: Desactiva una configuracion de presupuesto
+      operationId: deactivateBudget
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/BudgetConfigurationId' }
+      responses:
+        '200':
+          description: Presupuesto desactivado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetConfiguration' }
+
+  /families/{familyId}/reports/by-payment-method:
+    get:
+      tags: [Reporting]
+      summary: Gastos agrupados por medio de pago
+      operationId: reportByPaymentMethod
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/PeriodRequired' }
+      responses:
+        '200':
+          description: Reporte
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    paymentMethodId: { $ref: '#/components/schemas/Id' }
+                    paymentMethodName: { type: string }
+                    amount: { $ref: '#/components/schemas/Money' }
+
+  /families/{familyId}/dashboard:
+    get:
+      tags: [Reporting]
+      summary: Resumen financiero del periodo
+      operationId: getDashboard
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/Period' }
+      responses:
+        '200':
+          description: Dashboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+
+  /families/{familyId}/reports/breakdown:
+    get:
+      tags: [Reporting]
+      summary: Desglose por categoria
+      operationId: getCategoryBreakdown
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/PeriodRequired' }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/ItemType' }
+      responses:
+        '200':
+          description: Desglose
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    categoryId: { $ref: '#/components/schemas/Id' }
+                    categoryName: { type: string }
+                    amount: { $ref: '#/components/schemas/Money' }
+
+  /families/{familyId}/reports/comparison:
+    get:
+      tags: [Reporting]
+      summary: Compara dos periodos
+      operationId: comparePeriods
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - name: periodA
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Period' }
+        - name: periodB
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Period' }
+        - { $ref: '#/components/parameters/CategoryId' }
+      responses:
+        '200':
+          description: Comparacion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PeriodComparison' }
+
+  /families/{familyId}/reports/trend:
+    get:
+      tags: [Reporting]
+      summary: Obtiene la tendencia entre periodos
+      operationId: getTrend
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - name: fromPeriod
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Period' }
+        - name: toPeriod
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/Period' }
+        - { $ref: '#/components/parameters/CategoryId' }
+      responses:
+        '200':
+          description: Tendencia
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TrendPoint' }
+
+  /families/{familyId}/reports/drilldown:
+    get:
+      tags: [Reporting]
+      summary: Desglosa los movimientos de un periodo
+      operationId: getDrilldown
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/PeriodRequired' }
+        - { $ref: '#/components/parameters/CategoryId' }
+        - { $ref: '#/components/parameters/TagId' }
+      responses:
+        '200':
+          description: Drilldown
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [level, entries]
+                properties:
+                  level: { type: string, enum: [category, tag, item] }
+                  entries: { type: array, items: { type: object } }
+
+  /families/{familyId}/ai-usage:
+    get:
+      tags: [AI Assistance]
+      summary: Consulta el uso diario de IA
+      operationId: getAiUsage
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses:
+        '200':
+          description: Cuota de IA
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AiUsage' }
+
+  /families/{familyId}/suggestions:
+    get:
+      tags: [AI Assistance]
+      summary: Lista sugerencias pendientes
+      operationId: listSuggestions
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses:
+        '200':
+          description: Sugerencias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Suggestion' }
+
+  /families/{familyId}/suggestions/text:
+    post:
+      tags: [AI Assistance]
+      summary: Genera una sugerencia desde texto
+      operationId: createTextSuggestion
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rawText]
+              properties:
+                rawText: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        '201':
+          description: Sugerencia creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suggestion' }
+
+  /families/{familyId}/suggestions/receipt:
+    post:
+      tags: [AI Assistance]
+      summary: Genera una sugerencia desde un recibo
+      operationId: createReceiptSuggestion
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: JPEG, PNG o WebP de hasta 10 MB.
+      responses:
+        '201':
+          description: Sugerencia creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Suggestion' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /families/{familyId}/suggestions/{suggestionId}/confirm:
+    post:
+      tags: [AI Assistance]
+      summary: Confirma una sugerencia y crea el movimiento
+      operationId: confirmSuggestion
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/SuggestionId' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuggestionEdits'
+      responses:
+        '201':
+          description: Movimiento creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FinancialItem' }
+
+  /families/{familyId}/suggestions/{suggestionId}:
+    delete:
+      tags: [AI Assistance]
+      summary: Descarta una sugerencia
+      operationId: discardSuggestion
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/SuggestionId' }
+      responses:
+        '204': { description: Sugerencia descartada }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    FamilyId: { name: familyId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    InvitationId: { name: invitationId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    MemberId: { name: memberId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    ItemId: { name: itemId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    CategoryId: { name: categoryId, in: query, required: false, schema: { $ref: '#/components/schemas/Id' } }
+    TagId: { name: tagId, in: query, required: false, schema: { $ref: '#/components/schemas/Id' } }
+    CategoryIdPath: { name: categoryId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    TagIdPath: { name: tagId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    PaymentMethodId: { name: paymentMethodId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    BudgetConfigurationId: { name: budgetConfigurationId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    SuggestionId: { name: suggestionId, in: path, required: true, schema: { $ref: '#/components/schemas/Id' } }
+    Period: { name: period, in: query, required: false, schema: { $ref: '#/components/schemas/Period' } }
+    PeriodRequired: { name: period, in: query, required: true, schema: { $ref: '#/components/schemas/Period' } }
+    PeriodPath: { name: period, in: path, required: true, schema: { $ref: '#/components/schemas/Period' } }
+    From: { name: from, in: query, required: false, schema: { type: string, format: date-time } }
+    To: { name: to, in: query, required: false, schema: { type: string, format: date-time } }
+  schemas:
+    Id: { type: string, format: uuid }
+    Currency: { type: string, enum: [CLP, USD, EUR] }
+    Role: { type: string, enum: [OWNER, MEMBER] }
+    ItemType: { type: string, enum: [EXPENSE, INCOME] }
+    Period: { type: string, pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' }
+    DateValue: { type: string, format: date-time }
+    Money:
+      type: object
+      required: [amount, currency]
+      properties:
+        amount: { type: integer }
+        currency: { $ref: '#/components/schemas/Currency' }
+    Health:
+      type: object
+      required: [status, timestamp]
+      properties:
+        status: { type: string, example: ok }
+        timestamp: { $ref: '#/components/schemas/DateValue' }
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8, format: password }
+        displayName: { type: string, minLength: 1, maxLength: 60 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+    AuthTokens:
+      allOf:
+        - $ref: '#/components/schemas/TokenPair'
+        - type: object
+          required: [userId, email, displayName]
+          properties:
+            userId: { $ref: '#/components/schemas/Id' }
+            email: { type: string, format: email }
+            displayName: { type: string }
+            defaultFamilyId: { $ref: '#/components/schemas/Id' }
+    Profile:
+      type: object
+      required: [userId, email, displayName, createdAt]
+      properties:
+        userId: { $ref: '#/components/schemas/Id' }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        createdAt: { $ref: '#/components/schemas/DateValue' }
+    Family:
+      type: object
+      required: [id, name, defaultCurrency]
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+        defaultCurrency: { $ref: '#/components/schemas/Currency' }
+    FamilySummary:
+      allOf:
+        - $ref: '#/components/schemas/Family'
+        - type: object
+          properties:
+            familyId: { $ref: '#/components/schemas/Id' }
+            role: { $ref: '#/components/schemas/Role' }
+            memberCount: { type: integer }
+    Member:
+      type: object
+      properties:
+        userId: { $ref: '#/components/schemas/Id' }
+        role: { $ref: '#/components/schemas/Role' }
+        joinedAt: { $ref: '#/components/schemas/DateValue' }
+        displayName: { type: string }
+        email: { type: string, format: email }
+    Membership:
+      type: object
+      properties:
+        familyId: { $ref: '#/components/schemas/Id' }
+        userId: { $ref: '#/components/schemas/Id' }
+        role: { $ref: '#/components/schemas/Role' }
+        joinedAt: { $ref: '#/components/schemas/DateValue' }
+    Invitation:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        familyId: { $ref: '#/components/schemas/Id' }
+        invitedEmail: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+        status: { type: string }
+        expiresAt: { $ref: '#/components/schemas/DateValue' }
+    FamilySettings:
+      type: object
+      additionalProperties: true
+    PaymentMethod:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+        status: { type: string }
+    FinancialItemRequest:
+      type: object
+      required: [amount, categoryId, title, occurredOn]
+      properties:
+        amount: { type: integer, minimum: 1 }
+        currency: { $ref: '#/components/schemas/Currency' }
+        categoryId: { $ref: '#/components/schemas/Id' }
+        paymentMethodId: { $ref: '#/components/schemas/Id' }
+        tagId: { type: [string, 'null'], format: uuid }
+        title: { type: string, minLength: 1 }
+        note: { type: string }
+        occurredOn: { type: string, format: date-time }
+    FinancialItemUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        amount: { type: integer, minimum: 1 }
+        currency: { $ref: '#/components/schemas/Currency' }
+        occurredOn: { type: string, format: date-time }
+        title: { type: string, minLength: 1 }
+        note: { type: [string, 'null'] }
+        paymentMethodId: { $ref: '#/components/schemas/Id' }
+    FinancialItem:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        familyId: { $ref: '#/components/schemas/Id' }
+        recordedBy: { $ref: '#/components/schemas/Id' }
+        type: { $ref: '#/components/schemas/ItemType' }
+        amount: { $ref: '#/components/schemas/Money' }
+        categoryId: { $ref: '#/components/schemas/Id' }
+        tagId: { type: [string, 'null'], format: uuid }
+        paymentMethodId: { type: [string, 'null'], format: uuid }
+        title: { type: string }
+        note: { type: [string, 'null'] }
+        occurredOn: { $ref: '#/components/schemas/DateValue' }
+        createdAt: { $ref: '#/components/schemas/DateValue' }
+    Tag:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+        status: { type: string }
+        displayOrder: { type: integer }
+    Category:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        type: { $ref: '#/components/schemas/ItemType' }
+        name: { type: string }
+        icon: { type: [string, 'null'] }
+        status: { type: string }
+        tags: { type: array, items: { $ref: '#/components/schemas/Tag' } }
+    BudgetConfiguration:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        familyId: { $ref: '#/components/schemas/Id' }
+        categoryId: { $ref: '#/components/schemas/Id' }
+        defaultAmount: { $ref: '#/components/schemas/Money' }
+        isActive: { type: boolean }
+    Budget:
+      type: object
+      properties:
+        budgetConfigurationId: { $ref: '#/components/schemas/Id' }
+        categoryId: { $ref: '#/components/schemas/Id' }
+        categoryName: { type: string }
+        period: { $ref: '#/components/schemas/Period' }
+        limitAmount: { $ref: '#/components/schemas/Money' }
+        spent: { $ref: '#/components/schemas/Money' }
+        remaining: { $ref: '#/components/schemas/Money' }
+        isOverspent: { type: boolean }
+    Dashboard:
+      type: object
+      properties:
+        totalExpenses: { $ref: '#/components/schemas/Money' }
+        totalIncome: { $ref: '#/components/schemas/Money' }
+        balance: { $ref: '#/components/schemas/Money' }
+        categoryBreakdown: { type: array, items: { type: object } }
+    PeriodComparison:
+      type: object
+      properties:
+        periodA: { type: object }
+        periodB: { type: object }
+        expenseVariation: { type: number }
+        incomeVariation: { type: number }
+    TrendPoint:
+      type: object
+      properties:
+        period: { $ref: '#/components/schemas/Period' }
+        totalExpenses: { $ref: '#/components/schemas/Money' }
+        totalIncome: { $ref: '#/components/schemas/Money' }
+        balance: { $ref: '#/components/schemas/Money' }
+    AiUsage:
+      type: object
+      required: [limit, used, remaining, resetsAt]
+      properties:
+        limit: { type: integer }
+        used: { type: integer }
+        remaining: { type: integer }
+        resetsAt: { $ref: '#/components/schemas/DateValue' }
+    Suggestion:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/Id' }
+        familyId: { $ref: '#/components/schemas/Id' }
+        requestedBy: { $ref: '#/components/schemas/Id' }
+        status: { type: string }
+        source: { type: string, enum: [TEXT, RECEIPT] }
+        amount: { $ref: '#/components/schemas/Money' }
+        categoryId: { type: [string, 'null'], format: uuid }
+        tagId: { type: [string, 'null'], format: uuid }
+        occurredOn: { $ref: '#/components/schemas/DateValue' }
+        title: { type: [string, 'null'] }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        expiresAt: { $ref: '#/components/schemas/DateValue' }
+    SuggestionEdits:
+      type: object
+      properties:
+        amount: { type: integer, minimum: 1 }
+        currency: { $ref: '#/components/schemas/Currency' }
+        categoryId: { $ref: '#/components/schemas/Id' }
+        tagId: { type: [string, 'null'], format: uuid }
+        occurredOn: { $ref: '#/components/schemas/DateValue' }
+        title: { type: string, minLength: 1 }
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string, example: HTTP.INVALID_REQUEST_BODY }
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
+  responses:
+    BadRequest:
+      description: Solicitud invalida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Token ausente o invalido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Conflicto de dominio
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
