@@ -9,6 +9,8 @@ Este documento constituye el contrato de interfaz oficial entre el backend de **
 
 La version machine-readable del contrato esta en [docs/openapi.yaml](openapi.yaml), siguiendo OpenAPI 3.1. Puede abrirse con Swagger UI o Redoc para generar documentacion interactiva.
 
+Swagger UI local se habilita de forma opt-in con `ENABLE_LOCAL_SWAGGER=true npm run dev` y queda disponible en `http://localhost:3000/docs`. No se registra cuando `NODE_ENV=production`, incluso si la bandera esta definida.
+
 ---
 
 ## 1. Convenciones Generales
