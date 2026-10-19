@@ -29,6 +29,7 @@ import { buildAuthModule } from "./auth/auth.module.js";
 import { authenticate } from "./auth/authenticate.middleware.js";
 import type { JwtSigner } from "./auth/jwt-signer.js";
 import { registerErrorHandler } from "./http/error-handler.js";
+import { registerLocalSwaggerRoutes } from "./http/local-swagger.js";
 import { RegisterUserWithPersonalFamilyWorkflow } from "./workflows/register-user-with-personal-family.workflow.js";
 
 interface AppDependencies {
@@ -49,6 +50,7 @@ function buildApp(dependencies: AppDependencies): FastifyInstance {
   const app = Fastify({ logger: { level: dependencies.logLevel ?? "info" } });
 
   registerErrorHandler(app);
+  registerLocalSwaggerRoutes(app);
 
   app.get("/health", async () => {
     return { status: "ok", timestamp: new Date().toISOString() };
