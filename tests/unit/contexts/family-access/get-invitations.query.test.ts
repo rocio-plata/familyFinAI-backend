@@ -43,6 +43,7 @@ describe("Queries de invitaciones", () => {
 
     assert.equal(result.length, 1);
     assert.equal(result[0]?.familyName, "Familia");
+    assert.equal(result[0]?.invitedEmail, "user@example.com");
     assert.equal(result[0]?.invitedBy.displayName, "Owner");
   });
 

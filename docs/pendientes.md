@@ -43,6 +43,10 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
 - [ ] Implementar notificaciones reales por email para invitaciones.
+- [ ] Completar la sincronización documental entre `docs/api-contract.md`, `docs/openapi.yaml`,
+  Postman y el mapa de pantallas; retirar estados históricos ya resueltos.
+- [ ] Completar los campos de sugerencias de IA `paymentMethodId`, `note` y
+  `classificationOrigin` en el contrato y la respuesta HTTP.
 - [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
 - [x] Tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
 - [x] Tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).

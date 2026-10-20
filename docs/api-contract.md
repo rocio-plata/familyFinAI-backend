@@ -3,7 +3,7 @@
 > **Estado del documento**
 > - Las secciones 1 a 5 provienen de la lectura del código del backend por otro agente de IA y **sustituyen a mi versión v1**, que se basaba en Postman y en el plan de endpoints y daba por pendientes rutas que ya existen (Budgeting, Reporting y AI Assistance están expuestos).
 > - Las secciones 6 a 9 son nuevas: **brechas entre este contrato y lo que necesita la app móvil**, **discrepancias** (incluida la colección Postman), un **mapa pantalla → endpoints** y los **códigos de error que faltan**.
-> - La serialización `Money`, la validación de importes enteros y los errores 401/403 tipados están implementados. También están implementados el bloqueo de cambio de moneda por actividad financiera, `GET /families/:familyId/settings` y la validación de moneda en items y presupuestos. Las reglas de confirmación de IA y demás brechas siguen siendo propuestas hasta su implementación.
+> - La serialización `Money`, la validación de importes enteros, los errores 401/403 tipados, el bloqueo de cambio de moneda por actividad financiera y la validación de moneda en items y presupuestos están implementados. La validación de moneda al confirmar sugerencias, las migraciones pendientes de Reporting y algunas mejoras de IA siguen abiertas.
 
 Este documento constituye el contrato de interfaz oficial entre el backend de **FamilyFin AI** y el cliente móvil Kotlin (Android). Define las convenciones globales, mecanismos de autenticación y autorización, estructuras de datos, códigos de error y la especificación detallada de cada endpoint disponible.
 
@@ -111,7 +111,7 @@ Verifica el estado del servicio y su disponibilidad.
 ### 3.2 Identidad y Sesión (`Identity` & `Platform Auth`)
 
 #### `POST /auth/register`
-Registra un nuevo usuario en la plataforma. De forma automática y atómica, crea su familia personal ("Familia de <displayName>"), le asigna el rol `OWNER` y le emite su primer par de tokens de autenticación.
+Registra un nuevo usuario en la plataforma. De forma síncrona, crea su familia personal ("Mis finanzas personales"), le asigna el rol `OWNER` y le emite su primer par de tokens de autenticación.
 - **Autenticación**: Pública.
 - **Request Body**:
   | Campo | Tipo | Requerido | Restricciones |
@@ -272,10 +272,39 @@ Retorna el listado de familias a las que pertenece el usuario autenticado, respe
     {
       "familyId": "c2c3c4c5-2222-4333-9444-b2c3d4e5f6a7",
       "name": "Departamento Compartido",
-      "role": "MEMBER"
+      "role": "MEMBER",
+      "defaultCurrency": "CLP",
+      "memberCount": 2
     }
   ]
   ```
+
+---
+
+#### `GET /me/invitations`
+Lista las invitaciones `PENDING` dirigidas al email del usuario autenticado y que todavía no han
+expirado. El email del destinatario se devuelve en `invitedEmail`; `invitedBy` identifica a quien
+creó la invitación.
+- **Autenticación**: Bearer Token.
+- **Respuesta `200 OK`**:
+  ```json
+  [
+    {
+      "id": "e5e6e7e8-9999-4000-8111-abcdefabcdef",
+      "familyId": "b1b2b3b4-1111-4222-8333-a1b2c3d4e5f6",
+      "familyName": "Familia Gómez",
+      "invitedEmail": "persona@example.com",
+      "invitedBy": { "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851", "displayName": "Rocío" },
+      "role": "MEMBER",
+      "status": "PENDING",
+      "expiresAt": "2026-10-19T14:30:00.000Z"
+    }
+  ]
+  ```
+- **Errores posibles**:
+  - `401`: `AUTH.MISSING_TOKEN` si no se envía Bearer.
+  - `401`: `AUTH.INVALID_TOKEN` si el token es inválido o expiró.
+- Devuelve `[]` si el usuario no tiene invitaciones pendientes válidas.
 
 ---
 
@@ -1255,35 +1284,25 @@ Descarta una sugerencia sin persistirla en el registro financiero.
 
 ## 6. Brechas: lo que la app necesita y el contrato aún no ofrece
 
-Cada brecha tiene un ID que se usa en `plan-implementacion-brechas-api.md`. Todo lo de esta sección es **📐 propuesto** salvo que se indique lo contrario.
+Cada brecha abierta tiene un ID que se usa en `plan-implementacion-brechas-api.md`. Las capacidades
+ya implementadas se describen en la sección 3 y no se repiten aquí como pendientes.
 
 ### 6.0 Transversal
 
 | ID | Brecha | Por qué importa a la app |
 | :--: | --- | --- |
-| T1 | Los errores `401` y `403` del middleware llegan como `{ "error": "Missing token" }` / `"Invalid or expired token"` / `"Not a member of this family"` / `"Insufficient role"`: sin `code` en formato `DOMINIO.CODIGO` ni `message` | El `Authenticator` de la app necesita distinguir "sin token" de "token expirado" sin comparar texto en inglés |
-| T2 | Formato de dinero inconsistente (items con `amount` + `currency` planos; reportes y presupuestos con `{ amount, currency }`; `balance` suelto) **y montos como `number` sin soporte para los decimales de USD/EUR** | **Decididos D1 y D9.** Todo importe es un entero en unidades menores; toda respuesta lo entrega como `Money`. Las variaciones y porcentajes siguen siendo números |
-| T3 | Los items admiten `CLP`, `USD` y `EUR` mezclados dentro de una misma familia | **Resuelta por D2 (reglas C1–C4):** una familia, una moneda. Se eliminan los bloques por moneda de los reportes |
-| T4 | El mes de un movimiento depende de la zona horaria: un gasto del 31-oct 23:30 en Chile ya es noviembre en UTC | Períodos calculados en `America/Santiago` (configurable); afecta a reportes y presupuestos |
+| C1-IA | La confirmación de una sugerencia de IA no valida todavía que su moneda coincida con la moneda familiar | Al confirmar, devolver `SHARED.CURRENCY_MISMATCH` si la sugerencia o sus cambios usan otra moneda |
 
 ### 6.0b Moneda de la familia
 
-| ID | Brecha | Propuesta |
-| :--: | --- | --- |
-| C1 | Un item, presupuesto o sugerencia puede declarar otra moneda | `currency` opcional; si difiere de la familia → `SHARED.CURRENCY_MISMATCH` (409). Desaparece la regla "si envías `amount` debes enviar `currency`" |
-| C2 | `PATCH .../settings/currency` cambia la moneda aunque haya datos | Solo si no hay items ni presupuestos activos; si no → `FAMILY.CURRENCY_LOCKED` (409) con `details.reasons`. Si se borran todos los items, vuelve a poder cambiarse. Cambiar a la misma moneda es un no-op (204) |
-| C3 | La app no sabe si puede cambiar la moneda | `GET /families/:familyId/settings` → `{ defaultCurrency, currencyLocked, currencyLockReasons[] }` |
+Las reglas de moneda para items, presupuestos y configuración ya están implementadas y
+documentadas en la sección 3. La única brecha restante es validar la moneda durante la
+confirmación de sugerencias de IA (ver `C1-IA`).
 
 ### 6.1 Invitaciones y miembros (pantallas: Selector de familias, Gestión de familia)
 
 | ID | Brecha | Propuesta |
 | :--: | --- | --- |
-| A1 | No hay forma de que el invitado **vea sus invitaciones pendientes** | `GET /me/invitations` |
-| A2 | No se puede **rechazar** una invitación (`DELETE /invitations/:id` es para quien invita y su autorización está descrita de forma ambigua: "creador o administrador") | `POST /invitations/:invitationId/decline`, nuevo estado `DECLINED` |
-| A3 | El Owner no puede **listar las invitaciones** de su familia | `GET /families/:familyId/invitations?status=PENDING` |
-| A4 | `GET /families/:familyId/members` devuelve solo `userId`, `role`, `joinedAt` | Añadir `displayName` (todos) y `email` (solo si quien consulta es OWNER) |
-| A5 | `GET /me/families` devuelve `familyId`, `name`, `role` | Añadir `defaultCurrency` y `memberCount` |
-| A6 | `GET /me/profile` no devuelve `userId` | Añadir `userId` |
 
 ### 6.2 Dashboard y reportes (pantallas: Inicio, Reportes)
 
@@ -1302,7 +1321,6 @@ Cada brecha tiene un ID que se usa en `plan-implementacion-brechas-api.md`. Todo
 
 | ID | Brecha | Propuesta |
 | :--: | --- | --- |
-| I1 | `GET /items` **no devuelve `paymentMethodId`** (sí lo hace el `POST`) | Añadirlo |
 | I2 | `from` y `to` deben enviarse juntos y no hay paginación ni orden documentado | `limit` + `cursor` opaco; respuesta `{ items, nextCursor }`; `from` y `to` independientes; orden por `occurredOn` descendente |
 | I3 | `recordedBy` es un UUID: la app no puede mostrar quién registró el movimiento | Añadir `recordedByName` (mismo mecanismo que A4) |
 
@@ -1310,24 +1328,18 @@ Cada brecha tiene un ID que se usa en `plan-implementacion-brechas-api.md`. Todo
 
 | ID | Brecha | Propuesta |
 | :--: | --- | --- |
-| S1 | Si la app se cierra durante la revisión, la sugerencia se pierde | `GET /families/:familyId/suggestions?status=PENDING` (solo las del usuario) |
-| S2 | `confirm` responde `204`: la app no sabe qué item se creó | Responder `201` con el `FinancialItem` creado |
 | S3 | La sugerencia y `confirm` no incluyen `paymentMethodId` ni `note` | Añadirlos; si falta `paymentMethodId` se usa el predeterminado del usuario (y falla con `NO_DEFAULT_PAYMENT_METHOD_SET` si no existe) |
 | S4 | No se sabe **de dónde salió la categoría** (historial de comercios o modelo) | Campo `classificationOrigin`: `HISTORY` \| `AI` \| `NONE` |
-| S5 | Si no hay categoría sugerida, `categoryId` es `null` y `confirm` no define qué ocurre | `confirm` exige `categoryId` si la sugerencia no trae; error `AI.CATEGORY_REQUIRED` |
-| S6 | Texto sin monto o ilegible no tiene error propio | `AI.UNPARSEABLE_TEXT`; `rawText` de 1 a 500 caracteres |
-| S7 | Las sugerencias pendientes no caducan | `expiresAt` (24 h) y `AI.SUGGESTION_EXPIRED` |
-| S8 | Límites de uso de IA: solo declarados como intención | `429` `AI.USAGE_LIMIT_EXCEEDED` con `limit`, `used` y `resetsAt`, y `GET /families/:familyId/ai-usage` |
-| S9 | Upload de recibo: sin nombre de campo ni tipos aceptados documentados | Documentar campo `file`, tipos `image/jpeg`, `image/png`, `image/webp`; `AI.UNSUPPORTED_IMAGE_TYPE`; `413` por tamaño |
 | S10 | No existen `POST /assistant/ask` ni `GET /insights` (estaban en el plan original) | Fuera de este alcance; se abordan después (pantalla Asistente) |
 
 ---
 
-## 7. Discrepancias detectadas
+## 7. Discrepancias históricas y puntos abiertos
 
 ### 7.1 Colección Postman vs. contrato verificado
 
-La colección actual **fallaría** en estos puntos; hay que corregirla:
+La colección conserva algunos requests históricos y comprobaciones condicionadas por fase. No son
+brechas funcionales del backend; deben mantenerse alineados cuando se cierre cada fase:
 
 | Petición de Postman | Problema | Corrección |
 | --- | --- | --- |
@@ -1345,13 +1357,12 @@ La colección actual **fallaría** en estos puntos; hay que corregirla:
 - Categorías, tags, presupuestos y cambios de rol/moneda: el rol exigido para gestionar **categorías y tags es OWNER**; los medios de pago, movimientos y presupuestos los gestiona cualquier miembro.
 - Formato de error: `{ error, message }` (v1 mostraba `code`).
 
-### 7.3 Puntos a confirmar en el código
+### 7.3 Estado de verificaciones históricas
 
-- `DELETE /invitations/:invitationId`: ¿quién puede revocar? ¿Owner de la familia, quien creó la invitación o ambos?
-- `POST /invitations/:id/accept`: cuando el email no coincide responde `403` pero sin código documentado.
-- Duplicados de categoría: el contrato dice que cuentan también las deprecadas.
-- `PATCH .../tags/:tagId` (renombrar tag): no documenta errores (`DUPLICATE_TAG_NAME`, `TAG_NOT_FOUND`).
-- Items: ¿acepta `occurredOn` con solo fecha?
+Las verificaciones anotadas en versiones anteriores de este documento ya fueron resueltas en código
+o absorbidas por las pruebas de rutas: autorización de revocación, código del email ajeno al aceptar
+una invitación, errores de tags y formato `date-time` de `occurredOn`. Las nuevas decisiones abiertas
+se mantienen en la tabla de brechas de la sección 6 y en el plan de implementación.
 
 ---
 
@@ -1359,25 +1370,26 @@ La colección actual **fallaría** en estos puntos; hay que corregirla:
 
 | Pantalla de la app | Endpoints que consume | Brechas que la bloquean |
 | --- | --- | --- |
-| Login / registro | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` | T1 |
-| Selector de familias | `GET /me/families`, `PUT /me/families/order`, `POST /families`, `GET /me/invitations`, `POST /invitations/:id/accept`, `POST /invitations/:id/decline` | A1, A2, A5 |
-| Gestión de familia | `GET /families/:id/members`, `GET/POST /families/:id/invitations`, `DELETE /invitations/:id`, `PATCH .../members/:id/role`, `DELETE .../members/:id`, `PATCH .../settings/currency` | A3, A4 |
-| Dashboard | `GET /families/:id/dashboard`, `GET /families/:id/categories` | B1–B3, T2, T4 |
+| Login / registro | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` | — |
+| Selector de familias | `GET /me/families`, `PUT /me/families/order`, `POST /families`, `GET /me/invitations`, `POST /invitations/:id/accept`, `POST /invitations/:id/decline` | — |
+| Gestión de familia | `GET /families/:id/members`, `GET/POST /families/:id/invitations`, `DELETE /invitations/:id`, `PATCH .../members/:id/role`, `DELETE .../members/:id`, `PATCH .../settings/currency` | — |
+| Dashboard | `GET /families/:id/dashboard`, `GET /families/:id/categories` | B1–B3 |
 | Categorías | `GET/POST/PATCH/DELETE /families/:id/categories...`, tags | — |
 | Registro manual | `POST /families/:id/items`, `GET .../categories`, `GET .../payment-methods` | — |
-| Registro con texto | `POST .../suggestions/text`, `POST .../suggestions/:id/confirm`, `DELETE .../suggestions/:id` | S2–S6, S8 |
-| Registro con recibo | `POST .../suggestions/receipt` (+ las de arriba) | S2–S5, S8, S9 |
-| Listado y detalle | `GET /families/:id/items`, `PATCH`, `DELETE`, `PATCH .../category` | I1–I3 |
+| Registro con texto | `POST .../suggestions/text`, `POST .../suggestions/:id/confirm`, `DELETE .../suggestions/:id` | S3–S4 |
+| Registro con recibo | `POST .../suggestions/receipt` (+ las de arriba) | S3–S4 |
+| Listado y detalle | `GET /families/:id/items`, `PATCH`, `DELETE`, `PATCH .../category` | I2–I3 |
 | Reportes | `breakdown`, `comparison`, `trend`, `drilldown`, `by-payment-method` | B4–B8 |
 | Presupuestos | `GET/POST/PATCH /families/:id/budgets...`, overrides, deactivate | — |
 | Asistente / Insights | — (no existe todavía) | S10 |
-| Perfil y ajustes | `GET /me/profile`, `PATCH /me/display-name`, `PATCH /me/password`, `PUT .../me/default-payment-method`, `GET /families/:id/settings`, `PATCH .../settings/currency` | A6, C2, C3 |
+| Perfil y ajustes | `GET /me/profile`, `PATCH /me/display-name`, `PATCH /me/password`, `PUT .../me/default-payment-method`, `GET /families/:id/settings`, `PATCH .../settings/currency` | — |
 
 ---
 
 ## 9. Códigos de error que el diccionario de la sección 4 no recoge
 
-Los siguientes aparecen en las descripciones de endpoints, pero faltan en la tabla. Se añaden aquí para que la app los traduzca.
+Los siguientes aparecen en las descripciones de endpoints y deben permanecer sincronizados con
+`resolveHttpStatus` para que la app los traduzca.
 
 | Código | HTTP | Cuándo | Mensaje sugerido |
 | --- | :--: | --- | --- |
@@ -1393,20 +1405,21 @@ Los siguientes aparecen en las descripciones de endpoints, pero faltan en la tab
 | `SHARED.UNSUPPORTED_CURRENCY` | 400 | Moneda no soportada | "Moneda no disponible." |
 | `BUDGETING.NO_OVERRIDE_FOR_PERIOD` | 400 | Quitar un override inexistente | "Ese mes no tiene un presupuesto especial." |
 | `INTERNAL.UNEXPECTED_ERROR` | 500 | Error no controlado | "Algo salió mal. Inténtalo de nuevo." |
-| 📐 `SHARED.CURRENCY_MISMATCH` | 409 | Item, presupuesto o sugerencia en una moneda distinta a la de la familia | "La moneda no coincide con la de la familia." |
-| 📐 `FAMILY.CURRENCY_LOCKED` | 409 | Cambiar la moneda con items o presupuestos activos (`details.reasons`) | "No puedes cambiar la moneda mientras haya movimientos o presupuestos activos." |
-| 📐 `SHARED.INVALID_AMOUNT` | 400 | Monto no entero o fuera de rango seguro | "Revisa el monto." |
-| 📐 `REPORTING.INVALID_PERIOD` | 400 | Período mal formado | "Período no válido." |
-| 📐 `REPORTING.INVALID_PERIOD_RANGE` | 400 | Rango de meses inválido o mayor a 24 | "Elige un rango de hasta 24 meses." |
-| 📐 `FAMILY.INVITATION_NOT_FOR_USER` | 403 | Aceptar o rechazar una invitación de otro email | "Esta invitación no es para tu cuenta." |
-| 📐 `AI.UNPARSEABLE_TEXT` | 400 | Texto sin monto interpretable | "No pude entender el texto. Incluye un monto." |
-| 📐 `AI.CATEGORY_REQUIRED` | 400 | Confirmar sin categoría | "Elige una categoría." |
-| 📐 `AI.SUGGESTION_EXPIRED` | 400 | Sugerencia vencida (24 h) | "La sugerencia expiró. Genera otra." |
-| 📐 `AI.UNSUPPORTED_IMAGE_TYPE` | 400 | Imagen en formato no admitido | "Usa una imagen JPEG, PNG o WebP." |
-| 📐 `AI.USAGE_LIMIT_EXCEEDED` | 429 | Cupo diario de IA agotado (`details.limit/used/resetsAt`) | "Llegaste al límite diario de IA." |
-| 📐 Errores 401/403 de middleware | 401/403 | Hoy sin código; pasan a `AUTH.MISSING_TOKEN`, `AUTH.INVALID_TOKEN`, `FAMILY.NOT_A_MEMBER`, `FAMILY.INSUFFICIENT_ROLE` | Según el código |
+| `SHARED.CURRENCY_MISMATCH` | 409 | Item, presupuesto o sugerencia en una moneda distinta a la de la familia | "La moneda no coincide con la de la familia." |
+| `FAMILY.CURRENCY_LOCKED` | 409 | Cambiar la moneda con items o presupuestos activos (`details.reasons`) | "No puedes cambiar la moneda mientras haya movimientos o presupuestos activos." |
+| `SHARED.INVALID_AMOUNT` | 400 | Monto no entero o fuera de rango seguro | "Revisa el monto." |
+| `REPORTING.INVALID_PERIOD` | 400 | Período mal formado | "Período no válido." |
+| `REPORTING.INVALID_PERIOD_RANGE` | 400 | Rango de meses inválido o mayor a 24 | "Elige un rango de hasta 24 meses." |
+| `FAMILY.INVITATION_NOT_FOR_USER` | 403 | Aceptar o rechazar una invitación de otro email | "Esta invitación no es para tu cuenta." |
+| `AI.UNPARSEABLE_TEXT` | 400 | Texto sin monto interpretable | "No pude entender el texto. Incluye un monto." |
+| `AI.CATEGORY_REQUIRED` | 400 | Confirmar sin categoría | "Elige una categoría." |
+| `AI.SUGGESTION_EXPIRED` | 400 | Sugerencia vencida (24 h) | "La sugerencia expiró. Genera otra." |
+| `AI.UNSUPPORTED_IMAGE_TYPE` | 400 | Imagen en formato no admitido | "Usa una imagen JPEG, PNG o WebP." |
+| `AI.USAGE_LIMIT_EXCEEDED` | 429 | Cupo diario de IA agotado (`details.limit/used/resetsAt`) | "Llegaste al límite diario de IA." |
+| Errores 401/403 de middleware | 401/403 | `AUTH.MISSING_TOKEN`, `AUTH.INVALID_TOKEN`, `FAMILY.NOT_A_MEMBER`, `FAMILY.INSUFFICIENT_ROLE` | Según el código |
 
-Los códigos que introduce el plan de brechas (marcados 📐) se listan al final de `plan-implementacion-brechas-api.md`.
+Los códigos de error deben mantenerse alineados con `resolveHttpStatus` y los esquemas de
+`openapi.yaml`.
 
 ---
 
