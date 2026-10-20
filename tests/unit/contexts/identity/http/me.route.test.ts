@@ -25,7 +25,7 @@ describe("rutas de perfil propio", () => {
       url: "/auth/register",
       payload: { email: "rocio@test.com", password: "supersecreta", displayName: "Rocío" },
     });
-    const { accessToken } = JSON.parse(registerResponse.body);
+    const { accessToken, userId } = JSON.parse(registerResponse.body);
     authorization = `Bearer ${accessToken}`;
   });
 
@@ -38,6 +38,7 @@ describe("rutas de perfil propio", () => {
 
     assert.equal(response.statusCode, 200);
     const body = JSON.parse(response.body);
+    assert.equal(body.userId, userId);
     assert.equal(body.email, "rocio@test.com");
     assert.equal(body.displayName, "Rocío");
     assert.ok(body.createdAt);

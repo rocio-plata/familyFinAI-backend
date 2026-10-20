@@ -15,6 +15,7 @@ interface PendingInvitationDTO {
   id: string;
   familyId: string;
   familyName: string;
+  invitedEmail: string;
   invitedBy: { userId: string; displayName: string | null };
   role: "OWNER" | "MEMBER";
   status: string;
@@ -54,6 +55,7 @@ class GetMyPendingInvitationsQuery {
           id: invitation.id.toString(),
           familyId: invitation.familyId.toString(),
           familyName: family.name.toString(),
+          invitedEmail: invitation.invitedEmail.toString(),
           invitedBy: {
             userId: invitation.invitedBy.toString(),
             displayName: inviter?.displayName ?? null,

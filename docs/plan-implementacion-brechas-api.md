@@ -94,9 +94,16 @@ Las Fases 0 y 1 van primero porque todo lo demás depende de la forma del dinero
 
 ## Fase 0 — Transversal
 
-### 0.1 Errores 401/403 con código (T1)
+### 0.1 Errores 401/403 con código (T1) — Resuelto
 
 **Objetivo:** que `authenticate` y `requireFamilyMembership` respondan como los errores de dominio: `{ "error": "AUTH.MISSING_TOKEN", "message": "..." }`.
+
+> **Estado actual:** los middlewares lanzan errores de dominio, `resolveHttpStatus` los mapea a
+> 401/403 y `registerErrorHandler` serializa `{ error, message }`. La renovación de sesión se
+> documenta por separado.
+
+Los pasos históricos de esta subsección describen cómo se llegó al estado actual; no representan
+tareas pendientes nuevas.
 
 | Situación | Código | HTTP |
 | --- | --- | :--: |
@@ -112,9 +119,16 @@ Las Fases 0 y 1 van primero porque todo lo demás depende de la forma del dinero
 5. Ampliar el formato de error para admitir un campo opcional `details` (lo usan `FAMILY.CURRENCY_LOCKED` y `AI.USAGE_LIMIT_EXCEEDED`).
 6. Ejecutar todos los tests de rutas existentes: algunos comparan los textos antiguos.
 
-### 0.2 Dinero exacto en unidades menores (T2, D1, D9)
+### 0.2 Dinero exacto en unidades menores (T2, D1, D9) — Resuelto en código
 
 **Principio:** el dinero es un **entero** en la unidad menor de su moneda. Nunca hay decimales en dominio, base de datos, reportes ni transporte.
+
+> **Estado actual:** `Money`, `Currency`, la serialización `{ amount, currency }`, la validación de
+> importes enteros y la persistencia en unidades menores ya están implementados. Las migraciones
+> y el contrato deben seguir reflejando esta forma sin reabrir T2 como brecha funcional.
+
+Los pasos de implementación que siguen son el registro técnico de T2 y no deben interpretarse como
+trabajo pendiente, salvo las verificaciones documentales que se indiquen explícitamente.
 
 | Moneda | Exponente | Ejemplo |
 | --- | :--: | --- |
@@ -284,12 +298,165 @@ Entre comprobar "no hay items" y guardar el cambio, otra petición podría crear
 > **Estado actual:** implementados A1-A6: invitaciones propias, decline, listado administrativo,
 > perfiles con `userId`, familias con `defaultCurrency`/`memberCount` y miembros con `displayName`
 > y email visible únicamente para `OWNER`. La migración `0010_tiny_may_parker.sql` agrega
-> `DECLINED` e `invited_by`.
+> `DECLINED` e `invited_by`. Los DTOs, tests y contratos de esta fase están alineados; BG-03, BG-04
+> y BG-05 solo conservan tareas documentales de sincronización.
 
 ### 2.1 A6 y A5: perfil y familias
 
-1. **A6** — `GET /me/profile` incluye `userId`.
-2. **A5** — `GET /me/families` incluye `defaultCurrency` y `memberCount`.
+> **BG-02 / A6 — resuelta y retirada del catálogo de brechas:** `GET /me/profile` está protegido
+> por `authenticate` y devuelve `userId`, `email`, `displayName` y `createdAt`. La respuesta está
+> alineada con `api-contract.md` y `openapi.yaml`; el test HTTP verifica explícitamente que el
+> `userId` del perfil coincide con el usuario autenticado.
+
+1. **A5** — `GET /me/families` incluye `defaultCurrency` y `memberCount`.
+
+#### BG-03 / RF-01, RF-02 — `GET /me/families`
+
+> **Estado:** la implementación real ya devuelve los cinco campos y respeta el orden de preferencia
+> del usuario. La brecha está en la consistencia documental y en hacer explícito el contrato como
+> obligatorio.
+
+**Implementación verificada actualmente:**
+
+- `GetFamiliesForUserQuery` ordena primero por `displayOrder` ascendente; las familias sin orden
+  quedan después, ordenadas por `joinedAt`.
+- La ruta devuelve `familyId`, `name`, `role`, `defaultCurrency` y `memberCount` para cada familia.
+- El test HTTP ya verifica el orden y `familyId`, y el test de aplicación cubre el orden por
+  preferencia.
+- `api-contract.md` tiene los campos correctos en la primera familia, pero el ejemplo omite
+  `defaultCurrency` y `memberCount` en la segunda.
+- `openapi.yaml` compone `FamilySummary` desde `Family`, por lo que conserva el identificador
+  `id` de `Family` y deja `familyId`, `role` y `memberCount` sin declararlos como obligatorios.
+
+**Cierre de BG-03:**
+
+1. Fijar la respuesta como un array cuyos elementos requieren exactamente estos campos de negocio:
+   `familyId`, `name`, `role`, `defaultCurrency` y `memberCount`.
+2. Corregir el ejemplo de `api-contract.md` para que todas las familias incluyan los cinco campos.
+3. Ajustar `openapi.yaml` para que `FamilySummary` use `familyId` como único identificador y
+   marque `familyId`, `name`, `role`, `defaultCurrency` y `memberCount` como `required`; no exponer
+   `id` en esta respuesta.
+4. Ampliar el test HTTP para afirmar los cinco campos y sus valores en la primera y segunda familia,
+   además del orden por preferencia y el array vacío sin familias.
+5. Retirar A5 de la tabla de brechas de `api-contract.md` una vez actualizados el contrato y
+   OpenAPI.
+
+#### BG-04 — Familia personal garantizada al registrarse
+
+> **Estado:** confirmado para registros exitosos mediante `POST /auth/register`. El workflow de
+> composición crea siempre una familia personal llamada `Mis finanzas personales`, asigna al
+> usuario como `OWNER` y devuelve su `defaultFamilyId`; por ello, el usuario recién registrado
+> tiene al menos una familia para `GET /me/families`.
+
+**Implementación verificada actualmente:**
+
+- `RegisterUserWithPersonalFamilyWorkflow` ejecuta `RegisterUser` y después `CreateFamily` con el
+  nombre fijo `Mis finanzas personales`.
+- `POST /auth/register` devuelve `defaultFamilyId` junto con `userId`, `email`, `displayName` y
+  los tokens.
+- La familia personal queda asociada al usuario como `OWNER`.
+- Existen tests de workflow y de ruta que verifican la creación, el nombre y la asociación de la
+  familia personal.
+- El contrato actual todavía dice `Familia de <displayName>`; debe corregirse al nombre real.
+- `openapi.yaml` incluye `defaultFamilyId` dentro de `AuthTokens`, pero no lo marca como requerido.
+
+**Alcance de la garantía:** la afirmación "`GET /me/families` nunca devuelve vacío" aplica a un
+registro completado correctamente por `POST /auth/register`. El flujo actual es síncrono, pero la
+atomicidad transaccional o la compensación si falla la creación de la familia no está demostrada
+por este contrato y debe quedar como pendiente separado si el producto exige rollback completo.
+
+**Cierre de BG-04:**
+
+1. Actualizar la ficha de `POST /auth/register` en `api-contract.md` para indicar que crea
+  `Mis finanzas personales`, asigna `OWNER` y devuelve `defaultFamilyId`.
+2. Marcar `defaultFamilyId` como obligatorio en el esquema `AuthTokens` de `openapi.yaml`.
+3. Añadir al contrato la relación: después de un registro exitoso, `GET /me/families` devuelve al
+  menos la familia personal, con los cinco campos de BG-03.
+4. Mantener los tests existentes y añadir una aserción HTTP que consulte `GET /me/families` usando
+  el token devuelto por el registro y compruebe que contiene `defaultFamilyId` como `OWNER`.
+5. Retirar BG-04 del listado de brechas una vez alineados `api-contract.md` y `openapi.yaml`.
+
+#### BG-05 / T1 — Errores 401/403 tipados
+
+> **Estado:** la implementación central está confirmada. `authenticate` y
+> `requireFamilyMembership` lanzan errores de dominio, y el manejador HTTP global responde con
+> `{ error, message }`. La renovación de sesión y sus errores de refresh quedan fuera de BG-05.
+
+**Implementación verificada actualmente:**
+
+- Sin header Bearer, `authenticate` lanza `AUTH.MISSING_TOKEN` y el status se resuelve a `401`.
+- Con token inválido o expirado, `authenticate` lanza `AUTH.INVALID_TOKEN` y el status se resuelve
+  a `401`.
+- Un usuario que no pertenece a la familia recibe `FAMILY.NOT_A_MEMBER` con `403`.
+- Un usuario con rol insuficiente recibe `FAMILY.INSUFFICIENT_ROLE` con `403`.
+- `registerErrorHandler` serializa siempre el código y el mensaje del `DomainError`.
+- Los endpoints protegidos de Family Access, Financial Tracking, Budgeting, Reporting y AI
+  encadenan `authenticate` y, cuando corresponde, `requireFamilyMembership`.
+- `api-contract.md` declara T1 implementada en su introducción, pero todavía conserva la brecha
+  histórica en la tabla de pendientes y en el cierre del documento.
+
+**Cierre de BG-05:**
+
+1. Añadir o consolidar tests HTTP representativos que afirmen el cuerpo completo, no solo el
+  status:
+  - sin token → `401`, `AUTH.MISSING_TOKEN` y `message`.
+  - token inválido/expirado → `401`, `AUTH.INVALID_TOKEN` y `message`.
+  - usuario ajeno a la familia → `403`, `FAMILY.NOT_A_MEMBER` y `message`.
+  - rol insuficiente → `403`, `FAMILY.INSUFFICIENT_ROLE` y `message`.
+2. Revisar que no queden handlers protegidos que respondan manualmente textos sin código; la
+  autenticación y autorización deben pasar por los middlewares comunes.
+3. Retirar T1 de la tabla de brechas de `api-contract.md` y conservar allí la tabla final de
+  códigos 401/403.
+4. Mantener la especificación de `POST /auth/refresh` separada: `AUTH.INVALID_REFRESH_TOKEN` y
+  `AUTH.POSSIBLE_TOKEN_THEFT` pertenecen a la renovación de sesión, no a BG-05.
+
+#### BG-06 — Sincronización de `api-contract.md` y `openapi.yaml`
+
+> **Estado:** pendiente de consolidación documental. Los dos archivos describen el mismo contrato,
+> pero todavía contienen estados y formas diferentes. Las brechas BG-01 a BG-05 han demostrado que
+> una implementación puede quedar reflejada en una sección y continuar apareciendo como pendiente
+> o con una respuesta antigua en otra.
+
+**Inconsistencias verificadas actualmente:**
+
+- El catálogo de `api-contract.md` ya describe rutas implementadas y su sección 6 fue limpiada de
+  T1, T2, T3, T4 y A1–A5; debe mantenerse así cuando se cierren nuevas fases.
+- La sección 8 ya no marca T1, A1, A2, A5 ni A6 como bloqueadores; sus filas deben seguir
+  reflejando únicamente brechas abiertas.
+- `api-contract.md` y `openapi.yaml` no siempre coinciden en nombres, campos obligatorios y formas
+  de respuesta; BG-03 detectó `familyId` frente a `id` y campos opcionales en `FamilySummary`.
+- BG-04 detectó que el contrato textual usa un nombre antiguo para la familia personal y que
+  OpenAPI no marca `defaultFamilyId` como obligatorio, aunque el registro lo devuelve.
+- El catálogo de endpoints de `api-contract.md` y los `paths` de OpenAPI deben incluir la misma
+  superficie: método, ruta, autenticación, parámetros, request body, respuesta y errores.
+
+**Regla de sincronización:**
+
+1. El comportamiento real del backend y sus tests determinan el contrato efectivo; no se deben
+  conservar ejemplos o brechas que contradigan ese comportamiento.
+2. `api-contract.md` es la especificación legible para producto y la app; `openapi.yaml` es su
+  representación machine-readable. Ninguno debe introducir campos, rutas o errores que el otro no
+  pueda respaldar.
+3. Una brecha se retira de §6 solo cuando el endpoint, sus tests y ambas representaciones del
+  contrato están alineados.
+
+**Cierre de BG-06:**
+
+1. Auditar el catálogo de la sección 3 contra los `paths` y `operationId` de `openapi.yaml`,
+  incluyendo endpoints nuevos, métodos, autenticación y respuestas de error.
+2. Actualizar las respuestas y esquemas afectados por BG-01 a BG-05: `invitedEmail`, los cinco
+  campos obligatorios de `FamilySummary`, `defaultFamilyId`, el nombre de la familia personal y
+  los códigos tipados de 401/403.
+3. Limpiar la tabla de brechas de §6.1 y las tablas transversales relacionadas: retirar A5, A6 y
+  T1 cuando su implementación, tests y documentación estén cerrados; mantener solo las brechas
+  realmente abiertas.
+4. Actualizar el mapa pantalla → endpoints de §8 para que sus bloqueadores correspondan con la
+  tabla de brechas vigente y no vuelvan a listar funcionalidades resueltas.
+5. Añadir una comprobación reproducible que compare, como mínimo, cada endpoint documentado en
+  `api-contract.md` con un `path` de OpenAPI y revise los campos `required` de las respuestas
+  críticas. Ejecutarla junto con la validación documental del plan.
+6. Revisar Postman después de cada cambio de contrato; la colección no puede conservar payloads o
+  expectativas de respuesta anteriores.
 
 ### 2.2 A4: miembros con nombre (y email para OWNER)
 
@@ -306,12 +473,37 @@ Family & Access **no importa Identity**. Se amplía el puerto `UserDirectoryPort
 
 ### 2.3 A1: `GET /me/invitations`
 
+> **BG-01 / RF-04 — resuelta:** la ruta y el caso de uso derivan el email desde el usuario
+> autenticado. La query filtra `PENDING`, compara el email sin distinguir mayúsculas y excluye
+> invitaciones vencidas. La respuesta conserva `invitedEmail` como destinatario y `invitedBy` como
+> creador; la ruta cuenta con test HTTP para éxito y ambos errores 401.
+
+**Implementación verificada actualmente:**
+
+- `GET /me/invitations` usa `authenticate`; no acepta el email por querystring ni por body.
+- `GetMyPendingInvitationsQuery` usa `findEmailByUserId`, `findByInvitedEmail` y filtra por estado,
+  vencimiento y coincidencia case-insensitive.
+- La respuesta incluye `id`, `familyId`, `familyName`, `invitedEmail`, `invitedBy`, `role`,
+  `status` y `expiresAt`.
+- `api-contract.md` y `openapi.yaml` documentan la respuesta con un esquema específico para las
+  invitaciones propias.
+
+**Cierre verificado de BG-01:**
+
+1. `PendingInvitationDTO` incluye `invitedEmail` y mantiene `invitedBy` separado.
+2. El test de aplicación cubre el filtro y la comparación case-insensitive; el test HTTP cubre:
+  - 200 con invitación `PENDING` válida.
+  - 401 con `AUTH.MISSING_TOKEN` sin Bearer.
+  - 401 con `AUTH.INVALID_TOKEN` con token inválido.
+3. `api-contract.md` y `openapi.yaml` describen la misma respuesta:
+
 ```json
 [
   {
     "id": "uuid",
     "familyId": "uuid",
     "familyName": "Familia Gómez",
+    "invitedEmail": "persona@example.com",
     "invitedBy": { "userId": "uuid", "displayName": "Rocío" },
     "role": "MEMBER",
     "status": "PENDING",
@@ -320,12 +512,9 @@ Family & Access **no importa Identity**. Se amplía el puerto `UserDirectoryPort
 ]
 ```
 
-1. **Puerto:** `UserDirectoryPort.findEmailByUserId(userId)` (el JWT solo lleva `sub`).
-2. **Repositorio:** `InvitationRepository.findPendingByEmail(email, now)`.
-3. **Query** `GetMyPendingInvitationsQuery`: obtiene el email → busca invitaciones → completa `familyName` y `invitedBy.displayName`.
-4. **Tests (rojo):** solo las dirigidas al email del usuario; excluye vencidas, revocadas, aceptadas y rechazadas; comparación de email **sin distinguir mayúsculas**; lista vacía si no hay.
-5. Ruta con `authenticate` solamente.
-6. **Seguridad:** el email nunca llega por querystring; siempre sale del usuario autenticado.
+`invitedEmail` identifica al destinatario de la invitación y `invitedBy` identifica a quien la
+creó. Si la app necesita el correo del invitador, puede ampliarse de forma aditiva sin alterar
+`invitedEmail`.
 
 ### 2.4 A2: `POST /invitations/:invitationId/decline`
 
@@ -524,7 +713,7 @@ Con una sola moneda por familia (C1–C4) los reportes son más simples. Los **n
 > filtros `from`/`to` pueden enviarse de forma independiente. La paginación por cursor y
 > `recordedByName` continúan pendientes en esta fase.
 
-### 4.1 I1: `paymentMethodId` en el listado
+### 4.1 I1: `paymentMethodId` en el listado — Resuelto
 
 1. Test: `GET /items` incluye `paymentMethodId` en cada elemento (el `POST` ya lo trae).
 2. El listado usa `amount: Money` (Fase 0.2).
@@ -547,13 +736,14 @@ Con una sola moneda por familia (C1–C4) los reportes son más simples. Los **n
 
 ## Fase 5 — Sugerencias de IA
 
-> **Estado actual:** implementados S1, S2/S6, S7, S8 y S9: `GET /families/:familyId/suggestions`
+> **Estado actual:** implementados S1, S2, S5, S6, S7, S8 y S9: `GET /families/:familyId/suggestions`
 > lista las sugerencias pendientes aisladas por familia/usuario; las sugerencias tienen `expiresAt`
 > a 24 horas y confirmar/descartar una vencida devuelve `AI.SUGGESTION_EXPIRED`; `GET /ai-usage`
 > expone el cupo diario y los uploads validan campo, MIME y firma; `rawText` admite entre 1 y 500 caracteres,
 > los cuerpos de confirmación validan importes enteros, una categoría ausente devuelve
-> `AI.CATEGORY_REQUIRED` y la confirmación responde `201` con el `FinancialItem` creado. El listado,
-> caducidad, límites de uso y validación completa de recibos continúan pendientes.
+> `AI.CATEGORY_REQUIRED` y la confirmación responde `201` con el `FinancialItem` creado. Continúan
+> pendientes los campos `paymentMethodId`, `note` y `classificationOrigin` de S3/S4, además de
+> `AskFinancialQuestion`, `GenerateInsights` y el rate limiting general.
 
 Todo se desarrolla contra el **adaptador fake determinístico**.
 
