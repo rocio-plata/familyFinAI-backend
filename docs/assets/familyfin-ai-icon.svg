@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8F7F4"/>
+      <stop offset="100%" stop-color="#D4ECE6"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2D7A6E"/>
+      <stop offset="100%" stop-color="#1B5E53"/>
+    </linearGradient>
+    <linearGradient id="petrolGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#214E53"/>
+      <stop offset="100%" stop-color="#16393E"/>
+    </linearGradient>
+    <linearGradient id="coralSparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD385"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#133E37" flood-opacity="0.14"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#133E37" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect x="2" y="2" width="508" height="508" rx="110" fill="none" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="4"/>
+
+  <g transform="translate(0 4)" filter="url(#softShadow)">
+    <path d="M256 122 C264 122 271 126 277 131 L394 228 C403 235 404 249 396 258 C388 267 374 268 365 261 L256 172 L147 261 C138 268 124 267 116 258 C108 249 109 235 118 228 L235 131 C241 126 248 122 256 122Z" fill="url(#emeraldGrad)"/>
+
+    <rect x="156" y="272" width="46" height="116" rx="23" fill="url(#emeraldGrad)" opacity="0.82"/>
+    <rect x="233" y="224" width="46" height="164" rx="23" fill="url(#emeraldGrad)"/>
+    <rect x="310" y="182" width="46" height="206" rx="23" fill="url(#petrolGrad)"/>
+    <rect x="144" y="372" width="224" height="24" rx="12" fill="url(#petrolGrad)"/>
+
+    <g transform="translate(348 130)">
+      <path d="M0 -34 C2 -10 10 -2 34 0 C10 2 2 10 0 34 C-2 10 -10 2 -34 0 C-10 -2 -2 -10 0 -34Z" fill="url(#coralSparkGrad)"/>
+      <circle cx="0" cy="0" r="5" fill="#FFFFFF" opacity="0.9"/>
+    </g>
+
+    <g transform="translate(388 168)">
+      <path d="M0 -14 C1 -4 4 -1 14 0 C4 1 1 4 0 14 C-1 4 -4 1 -14 0 C-4 -1 -1 -4 0 -14Z" fill="#FCD385" opacity="0.85"/>
+    </g>
+  </g>
+</svg>
