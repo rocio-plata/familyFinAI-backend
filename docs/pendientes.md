@@ -37,16 +37,18 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
 
 - [ ] `AskFinancialQuestion`: definir la traducción de pregunta libre a consultas estructuradas de Reporting.
 - [ ] `GenerateInsights`: decidir entre plantillas determinísticas e IA real para el MVP.
-- [ ] Rate limiting y control de costos de uso de IA.
+- [x] Rate limiting de uso de IA: `AiUsagePolicy` (30 sugerencias diarias por usuario, `AI_DAILY_LIMIT`/`AI_USAGE_TIMEZONE`), `GET /families/:familyId/ai-usage` y `AI.USAGE_LIMIT_EXCEEDED` (429).
 
 ### Pendiente
 
 - [ ] Definir y publicar el evento `BudgetOverspent` cuando un status mensual cruce el límite.
 - [ ] Implementar notificaciones reales por email para invitaciones.
-- [ ] Completar la sincronización documental entre `docs/api-contract.md`, `docs/openapi.yaml`,
-  Postman y el mapa de pantallas; retirar estados históricos ya resueltos.
+- [ ] Revisar `plan-*.md`, `hallazgos-codex.md` y `revision-ai-assistance-main.md`: son históricos y pueden contener estados o códigos de error obsoletos. (`api-contract.md`, `openapi.yaml`, Postman y los casos de uso ya se sincronizaron con el código.)
 - [ ] Completar los campos de sugerencias de IA `paymentMethodId`, `note` y
-  `classificationOrigin` en el contrato y la respuesta HTTP.
+  `classificationOrigin`: hoy `serializeSuggestion` no los devuelve ni `ConfirmSuggestion` los envía a `CreateFinancialItemUseCase`.
+- [ ] Exponer `POST /auth/refresh` y `POST /auth/logout` (documentados, sin ruta HTTP; `TokenService.refresh` ya existe).
+- [ ] Test dedicado de rechazo por moneda distinta a la familiar al confirmar una sugerencia (`C1-IA`; la validación ocurre en `CreateFinancialItemUseCase`).
+- [ ] Exponer `ReactivateCategory` por HTTP (el caso de uso existe sin ruta).
 - [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
 - [x] Tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
 - [x] Tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).

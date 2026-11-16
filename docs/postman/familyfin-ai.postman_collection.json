@@ -1081,7 +1081,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FAMILY.INVALID_FAMILY_ORDER', () => pm.expect(pm.response.json().error).to.equal('FAMILY.INVALID_FAMILY_ORDER'));"
+                  "pm.test('error FAMILY_ACCESS.INVALID_FAMILY_ORDER', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.INVALID_FAMILY_ORDER'));"
                 ]
               }
             }
@@ -1504,7 +1504,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FAMILY.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY.INVITATION_NOT_PENDING'));"
+                  "pm.test('error FAMILY_ACCESS.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.INVITATION_NOT_PENDING'));"
                 ]
               }
             }
@@ -1549,7 +1549,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FAMILY.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY.INVITATION_NOT_PENDING'));"
+                  "pm.test('error FAMILY_ACCESS.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.INVITATION_NOT_PENDING'));"
                 ]
               }
             }
@@ -1797,7 +1797,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FAMILY.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY.INVITATION_NOT_PENDING'));"
+                  "pm.test('error FAMILY_ACCESS.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.INVITATION_NOT_PENDING'));"
                 ]
               }
             }
@@ -2388,7 +2388,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FAMILY.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY.INVITATION_NOT_PENDING'));"
+                  "pm.test('error FAMILY_ACCESS.INVITATION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.INVITATION_NOT_PENDING'));"
                 ]
               }
             }
@@ -2422,7 +2422,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FAMILY.CANNOT_REMOVE_LAST_OWNER', () => pm.expect(pm.response.json().error).to.equal('FAMILY.CANNOT_REMOVE_LAST_OWNER'));"
+                  "pm.test('error FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER'));"
                 ]
               }
             }
@@ -2493,7 +2493,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('error FAMILY.MEMBER_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('FAMILY.MEMBER_NOT_FOUND'));"
+                  "pm.test('error FAMILY_ACCESS.MEMBER_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('FAMILY_ACCESS.MEMBER_NOT_FOUND'));"
                 ]
               }
             }
@@ -2612,7 +2612,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.DUPLICATE_CATEGORY_NAME', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.DUPLICATE_CATEGORY_NAME'));"
+                  "pm.test('error FINANCIAL_TRACKING.DUPLICATE_CATEGORY_NAME', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.DUPLICATE_CATEGORY_NAME'));"
                 ]
               }
             }
@@ -2866,7 +2866,7 @@
               "raw": "{\n  \"name\": \"NoPermitida\",\n  \"type\": \"EXPENSE\"\n}"
             }
           },
-          "description": "User B ya no pertenece a la familia; si lo agregas de nuevo como MEMBER, el código esperado es FAMILY.INSUFFICIENT_ROLE / FINANCIAL.INSUFFICIENT_ROLE."
+          "description": "User B ya no pertenece a la familia; si lo agregas de nuevo como MEMBER, el código esperado es FAMILY.INSUFFICIENT_ROLE / FAMILY.INSUFFICIENT_ROLE."
         },
         {
           "name": "Add Tag to Category (Veterinario)",
@@ -2970,7 +2970,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.DUPLICATE_TAG_NAME', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.DUPLICATE_TAG_NAME'));"
+                  "pm.test('error FINANCIAL_TRACKING.DUPLICATE_TAG_NAME', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.DUPLICATE_TAG_NAME'));"
                 ]
               }
             }
@@ -3455,7 +3455,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.DUPLICATE_PAYMENT_METHOD_NAME', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.DUPLICATE_PAYMENT_METHOD_NAME'));"
+                  "pm.test('error FINANCIAL_TRACKING.DUPLICATE_PAYMENT_METHOD_NAME', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.DUPLICATE_PAYMENT_METHOD_NAME'));"
                 ]
               }
             }
@@ -3587,7 +3587,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('error FINANCIAL.PAYMENT_METHOD_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.PAYMENT_METHOD_NOT_FOUND'));"
+                  "pm.test('error FINANCIAL_TRACKING.PAYMENT_METHOD_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.PAYMENT_METHOD_NOT_FOUND'));"
                 ]
               }
             }
@@ -3631,7 +3631,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.PAYMENT_METHOD_IS_SOMEONES_DEFAULT', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.PAYMENT_METHOD_IS_SOMEONES_DEFAULT'));"
+                  "pm.test('error FINANCIAL_TRACKING.PAYMENT_METHOD_IS_SOMEONES_DEFAULT', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.PAYMENT_METHOD_IS_SOMEONES_DEFAULT'));"
                 ]
               }
             }
@@ -3900,7 +3900,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FINANCIAL.FUTURE_TRANSACTION_DATE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.FUTURE_TRANSACTION_DATE'));"
+                  "pm.test('error FINANCIAL_TRACKING.FUTURE_TRANSACTION_DATE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.FUTURE_TRANSACTION_DATE'));"
                 ]
               }
             }
@@ -3943,7 +3943,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FINANCIAL.TAG_DOES_NOT_BELONG_TO_CATEGORY', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.TAG_DOES_NOT_BELONG_TO_CATEGORY'));"
+                  "pm.test('error FINANCIAL_TRACKING.TAG_DOES_NOT_BELONG_TO_CATEGORY', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.TAG_DOES_NOT_BELONG_TO_CATEGORY'));"
                 ]
               }
             }
@@ -4795,7 +4795,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FINANCIAL.CANNOT_RECLASSIFY_ACROSS_TYPES', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.CANNOT_RECLASSIFY_ACROSS_TYPES'));"
+                  "pm.test('error FINANCIAL_TRACKING.CANNOT_RECLASSIFY_ACROSS_TYPES', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.CANNOT_RECLASSIFY_ACROSS_TYPES'));"
                 ]
               }
             }
@@ -4884,7 +4884,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.CATEGORY_HAS_ASSOCIATED_ITEMS', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.CATEGORY_HAS_ASSOCIATED_ITEMS'));"
+                  "pm.test('error FINANCIAL_TRACKING.CATEGORY_HAS_ASSOCIATED_ITEMS', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.CATEGORY_HAS_ASSOCIATED_ITEMS'));"
                 ]
               }
             }
@@ -4920,7 +4920,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.TAG_HAS_ASSOCIATED_ITEMS', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.TAG_HAS_ASSOCIATED_ITEMS'));"
+                  "pm.test('error FINANCIAL_TRACKING.TAG_HAS_ASSOCIATED_ITEMS', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.TAG_HAS_ASSOCIATED_ITEMS'));"
                 ]
               }
             }
@@ -4958,7 +4958,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 409', () => pm.response.to.have.status(409));",
-                  "pm.test('error FINANCIAL.PAYMENT_METHOD_HAS_ASSOCIATED_ITEMS', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.PAYMENT_METHOD_HAS_ASSOCIATED_ITEMS'));"
+                  "pm.test('error FINANCIAL_TRACKING.PAYMENT_METHOD_HAS_ASSOCIATED_ITEMS', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.PAYMENT_METHOD_HAS_ASSOCIATED_ITEMS'));"
                 ]
               }
             }
@@ -5031,7 +5031,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FINANCIAL.CATEGORY_NOT_ACTIVE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.CATEGORY_NOT_ACTIVE'));"
+                  "pm.test('error FINANCIAL_TRACKING.CATEGORY_NOT_ACTIVE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.CATEGORY_NOT_ACTIVE'));"
                 ]
               }
             }
@@ -5076,7 +5076,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FINANCIAL.CATEGORY_NOT_ACTIVE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.CATEGORY_NOT_ACTIVE'));"
+                  "pm.test('error FINANCIAL_TRACKING.CATEGORY_NOT_ACTIVE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.CATEGORY_NOT_ACTIVE'));"
                 ]
               }
             }
@@ -5269,7 +5269,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error FINANCIAL.PAYMENT_METHOD_NOT_ACTIVE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.PAYMENT_METHOD_NOT_ACTIVE'));"
+                  "pm.test('error FINANCIAL_TRACKING.PAYMENT_METHOD_NOT_ACTIVE', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.PAYMENT_METHOD_NOT_ACTIVE'));"
                 ]
               }
             }
@@ -5985,7 +5985,7 @@
                 "exec": [
                   "const P = parseInt(pm.environment.get('lastPhaseDone') ?? '-1', 10);",
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error REPORTING.INVALID_PERIOD' + (P >= 3 ? '' : ' (se exige desde la Fase 3)'), () => { if (P >= 3) pm.expect(pm.response.json().error).to.equal('REPORTING.INVALID_PERIOD'); });"
+                  "pm.test('error SHARED.INVALID_PERIOD' + (P >= 3 ? '' : ' (se exige desde la Fase 3)'), () => { if (P >= 3) pm.expect(pm.response.json().error).to.equal('SHARED.INVALID_PERIOD'); });"
                 ]
               }
             }
@@ -7031,7 +7031,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error AI.UNPARSEABLE_TEXT', () => pm.expect(pm.response.json().error).to.equal('AI.UNPARSEABLE_TEXT'));"
+                  "pm.test('error AI_ASSISTANCE.UNPARSEABLE_TEXT', () => pm.expect(pm.response.json().error).to.equal('AI_ASSISTANCE.UNPARSEABLE_TEXT'));"
                 ]
               }
             }
@@ -7280,7 +7280,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error AI.SUGGESTION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('AI.SUGGESTION_NOT_PENDING'));"
+                  "pm.test('error AI_ASSISTANCE.SUGGESTION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('AI_ASSISTANCE.SUGGESTION_NOT_PENDING'));"
                 ]
               }
             }
@@ -7325,7 +7325,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('error AI.SUGGESTION_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('AI.SUGGESTION_NOT_FOUND'));"
+                  "pm.test('error AI_ASSISTANCE.SUGGESTION_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('AI_ASSISTANCE.SUGGESTION_NOT_FOUND'));"
                 ]
               }
             }
@@ -7424,7 +7424,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('error AI.SUGGESTION_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('AI.SUGGESTION_NOT_FOUND'));"
+                  "pm.test('error AI_ASSISTANCE.SUGGESTION_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('AI_ASSISTANCE.SUGGESTION_NOT_FOUND'));"
                 ]
               }
             }
@@ -7505,7 +7505,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 400', () => pm.response.to.have.status(400));",
-                  "pm.test('error AI.SUGGESTION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('AI.SUGGESTION_NOT_PENDING'));"
+                  "pm.test('error AI_ASSISTANCE.SUGGESTION_NOT_PENDING', () => pm.expect(pm.response.json().error).to.equal('AI_ASSISTANCE.SUGGESTION_NOT_PENDING'));"
                 ]
               }
             }
@@ -8871,7 +8871,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status 404', () => pm.response.to.have.status(404));",
-                  "pm.test('error FINANCIAL.FINANCIAL_ITEM_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL.FINANCIAL_ITEM_NOT_FOUND'));"
+                  "pm.test('error FINANCIAL_TRACKING.FINANCIAL_ITEM_NOT_FOUND', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.FINANCIAL_ITEM_NOT_FOUND'));"
                 ]
               }
             }

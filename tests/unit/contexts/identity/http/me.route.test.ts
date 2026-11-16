@@ -11,6 +11,7 @@ describe("rutas de perfil propio", () => {
   let app: FastifyInstance;
   let jwtService: FakeJwtService;
   let authorization: string;
+  let userId: string;
 
   beforeEach(async () => {
     jwtService = new FakeJwtService();
@@ -25,8 +26,9 @@ describe("rutas de perfil propio", () => {
       url: "/auth/register",
       payload: { email: "rocio@test.com", password: "supersecreta", displayName: "Rocío" },
     });
-    const { accessToken, userId } = JSON.parse(registerResponse.body);
-    authorization = `Bearer ${accessToken}`;
+    const body = JSON.parse(registerResponse.body);
+    userId = body.userId;
+    authorization = `Bearer ${body.accessToken}`;
   });
 
   test("devuelve el perfil del usuario autenticado", async () => {

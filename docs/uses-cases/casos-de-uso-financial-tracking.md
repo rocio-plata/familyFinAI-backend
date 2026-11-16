@@ -10,7 +10,9 @@ disparados**.
 
 Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `CategoryIcon`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
-> **Estado de implementación**: los 29 casos de uso documentados tienen implementación y tests.
+> **Estado de implementación**: los casos de uso documentados tienen implementación y tests. La
+> numeración incluye handlers de eventos (18–20), variantes de casos ya listados (27–28) y la
+> query de Reporting `GetExpensesByPaymentMethod` (29), que no pertenece a este contexto.
 > `ReactivateCategory` existe como caso de uso, pero todavía no tiene ruta HTTP. Los demás casos
 > expuestos están compuestos en `financial-tracking.module.ts` y cubiertos por tests de aplicación,
 > rutas HTTP, integración PostgreSQL y e2e según corresponda.

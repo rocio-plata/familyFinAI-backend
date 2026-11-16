@@ -56,6 +56,7 @@ Criterio guía: **minimizar dependencias externas** para mantener control sobre 
    JWT_SECRET=dev-secret-change-me
    JWT_ACCESS_TOKEN_EXPIRY=15m
    LOG_LEVEL=debug
+   # Opcionales: REPORTING_TIMEZONE, AI_DAILY_LIMIT, AI_USAGE_TIMEZONE (ver .env.example)
    ```
 
    `.env` no se versiona. También puedes omitir `PERSISTENCE_MODE` para usar `memory`; en ese modo los datos se pierden al reiniciar el proceso.

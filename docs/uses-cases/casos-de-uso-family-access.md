@@ -173,6 +173,34 @@ Lista todos los miembros de una familia, para pantallas de administración dentr
 
 ---
 
+## 10. DeclineInvitation
+
+> Estado de implementación: implementado en `DeclineInvitationUseCase`; ruta `POST /invitations/:invitationId/decline`.
+
+- **Actor**: usuario autenticado invitado.
+- **Flujo principal**: se busca la invitación, se resuelve el email del usuario autenticado vía `UserDirectoryPort` y la invitación pasa a `DECLINED`.
+- **Errores**: `InvitationNotFoundError`, `InvitationNotForUserError` (el email no coincide, 403), `InvitationNotPendingError`.
+
+## 11. ReorderMyFamilies
+
+> Estado de implementación: implementado en `ReorderMyFamiliesUseCase`; ruta `PUT /me/families/order`.
+
+- **Actor**: usuario autenticado.
+- **Flujo principal**: la lista enviada debe contener exactamente las familias del usuario, sin duplicados; se guarda el `displayOrder` de su membresía en cada familia.
+- **Errores**: `InvalidFamilyOrderError` (`FAMILY_ACCESS.INVALID_FAMILY_ORDER`).
+
+## 12. Queries adicionales
+
+| Query | Ruta | Resultado |
+|---|---|---|
+| `GetFamiliesForUserQuery` | `GET /me/families` | `familyId`, `name`, `role`, `defaultCurrency`, `memberCount`, ordenadas por `displayOrder` y luego por fecha de ingreso |
+| `GetMyPendingInvitationsQuery` | `GET /me/invitations` | Invitaciones `PENDING` no vencidas del email del usuario autenticado, con `familyName` e `invitedBy { userId, displayName }` |
+| `GetFamilyInvitationsQuery` | `GET /families/:familyId/invitations` | Invitaciones de la familia; `status=PENDING` (por defecto) o `ALL`; requiere `OWNER` |
+| `GetFamilySettingsQuery` | `GET /families/:familyId/settings` | `defaultCurrency`, `currencyLocked`, `currencyLockReasons` |
+| `GetFamilyDefaultCurrencyQuery` | uso interno | Moneda familiar, usada por Financial Tracking y Budgeting para validar monedas |
+
+---
+
 ## Resumen de errores del contexto usados en estos casos de uso
 
 | Error | Casos de uso donde aparece |
@@ -187,6 +215,9 @@ Lista todos los miembros de una familia, para pantallas de administración dentr
 | `InvitationExpiredError` | AcceptInvitation |
 | `FamilyNotFoundError` | InviteMember, GetFamilyMembers |
 | `UnsupportedCurrencyError` | ChangeDefaultCurrency |
+| `InvitationNotForUserError` | AcceptInvitation, DeclineInvitation |
+| `InvalidFamilyOrderError` | ReorderMyFamilies |
+| `CurrencyLockedError` | ChangeDefaultCurrency (`FAMILY.CURRENCY_LOCKED`, 409) |
 
 ## Pendientes antes de implementar
 

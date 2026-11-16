@@ -141,16 +141,19 @@ Ninguno en este contexto — la actualización de `MerchantCategoryHistory` se r
 
 ---
 
-## Resumen de errores nuevos a definir
+## Resumen de errores
 
-| Error | Casos de uso donde aparece | ¿Ya existe? |
-|---|---|---|
-| `AIProviderUnavailableError` | ParseNaturalLanguageExpense, ScanReceipt, AskFinancialQuestion, GenerateInsights | ❌ nuevo |
-| `UnparseableTextError` | ParseNaturalLanguageExpense | ❌ nuevo |
-| `UnreadableReceiptError` | ScanReceipt | ❌ nuevo |
-| `SuggestionNotFoundError` | ConfirmSuggestion, DiscardSuggestion | ❌ nuevo |
-| `SuggestionNotPendingError` | ConfirmSuggestion, DiscardSuggestion | ❌ nuevo |
-| `UnparseableQuestionError` | AskFinancialQuestion | ❌ nuevo |
+| Error | Código | Casos de uso donde aparece | Estado |
+|---|---|---|---|
+| `AIProviderUnavailableError` | `AI_ASSISTANCE.PROVIDER_UNAVAILABLE` | ParseNaturalLanguageExpense, ScanReceipt | ✅ implementado |
+| `UnparseableTextError` | `AI_ASSISTANCE.UNPARSEABLE_TEXT` | ParseNaturalLanguageExpense | ✅ implementado |
+| `UnreadableReceiptError` | `AI_ASSISTANCE.UNREADABLE_RECEIPT` | ScanReceipt | ✅ implementado |
+| `SuggestionNotFoundError` | `AI_ASSISTANCE.SUGGESTION_NOT_FOUND` | ConfirmSuggestion, DiscardSuggestion | ✅ implementado |
+| `SuggestionNotPendingError` | `AI_ASSISTANCE.SUGGESTION_NOT_PENDING` | ConfirmSuggestion, DiscardSuggestion | ✅ implementado |
+| `SuggestionExpiredError` | `AI.SUGGESTION_EXPIRED` | ConfirmSuggestion, DiscardSuggestion | ✅ implementado |
+| `CategoryRequiredError` | `AI.CATEGORY_REQUIRED` | ConfirmSuggestion | ✅ implementado |
+| `AiUsageLimitExceededError` | `AI.USAGE_LIMIT_EXCEEDED` | ParseNaturalLanguageExpense, ScanReceipt | ✅ implementado |
+| `UnparseableQuestionError` | — | AskFinancialQuestion | ⏳ pendiente (caso de uso no implementado) |
 
 ## Pendientes antes de implementar
 
@@ -158,4 +161,4 @@ Ninguno en este contexto — la actualización de `MerchantCategoryHistory` se r
 2. **`NaturalLanguageQueryPort` sin definir**: `AskFinancialQuestion` es el caso de uso menos resuelto del catálogo completo del proyecto — falta decidir el mecanismo de traducción "pregunta libre → consulta estructurada a `Reporting`" (¿function calling del proveedor de IA? ¿un set fijo de intents reconocidos?).
 3. **`GenerateInsights` — ¿necesita IA real?**: a evaluar si se puede resolver con plantillas de texto (sin costo de IA) para el MVP, dejando la redacción más natural como mejora futura — coherente con la estrategia de costos de IA de la especificación original ("no usar IA para operaciones que no la necesiten").
 4. ~~Trazabilidad `ReceiptSuggestion → FinancialItem → OnItemRecordedHandler`~~ — **resuelto**: `ConfirmSuggestion` actualiza `MerchantCategoryHistory` directamente, de forma síncrona (ver caso de uso 3). No hace falta que `ItemRecorded` lleve ninguna referencia hacia la sugerencia de origen, y el `OnItemRecordedHandler` que se mencionaba antes queda descartado.
-5. **Rate limiting / control de costos de IA**: mencionado como requisito de seguridad en la especificación original ("límites de uso de IA"), pero no está modelado en ningún caso de uso todavía — probablemente vive en `platform/` como middleware transversal, no dentro del dominio de `AI Assistance`.
+5. ~~**Rate limiting / control de costos de IA**~~ — **resuelto**: `AiUsagePolicy` limita a 30 sugerencias diarias por usuario (`AI_DAILY_LIMIT`, reinicio según `AI_USAGE_TIMEZONE`), lo aplican `ParseNaturalLanguageExpense` y `ScanReceipt`, y se consulta con `GET /families/:familyId/ai-usage`. Error: `AI.USAGE_LIMIT_EXCEEDED` (429).

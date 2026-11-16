@@ -84,7 +84,7 @@ paths:
   /auth/refresh:
     post:
       tags: [Auth]
-      summary: Rota el par de tokens
+      summary: "[PENDIENTE: no implementado en HTTP] Rota el par de tokens"
       operationId: refresh
       requestBody:
         required: true
@@ -111,7 +111,7 @@ paths:
   /auth/logout:
     post:
       tags: [Auth]
-      summary: Revoca las sesiones del usuario
+      summary: "[PENDIENTE: no implementado en HTTP] Revoca las sesiones del usuario"
       operationId: logout
       security: [{ bearerAuth: [] }]
       responses:
