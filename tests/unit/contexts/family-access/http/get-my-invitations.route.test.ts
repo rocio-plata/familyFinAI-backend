@@ -7,8 +7,8 @@ import { Invitation } from "../../../../../src/contexts/family-access/domain/ent
 import { FamilyName } from "../../../../../src/contexts/family-access/domain/value-objects/family-name.js";
 import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
-import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
 import { buildApp } from "../../../../../src/platform/app.js";
+import { EmailAddress } from "../../../../../src/shared-kernel/domain/email-address.js";
 import { FakeJwtService } from "../../../platform/auth/doubles/fake-jwt-service.js";
 import { buildTestIdentityDependencies } from "../../identity/build-test-identity-dependencies.js";
 import { buildTestFamilyAccessDependencies } from "../build-test-family-access-dependencies.js";
