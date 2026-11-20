@@ -547,6 +547,7 @@ Crea una nueva categoría de gastos o ingresos.
   | `type` | string | Sí | `"EXPENSE"` \| `"INCOME"` |
   | `name` | string | Sí | 1 a 50 caracteres |
   | `icon` | string | No | 1 a 40 caracteres (clave del catálogo de íconos en la app) |
+  | `color` | string | No | 1 a 40 caracteres (clave de la paleta de colores de la app; el backend solo la guarda) |
 - **Respuesta `201 Created`**:
   ```json
   {
@@ -554,6 +555,7 @@ Crea una nueva categoría de gastos o ingresos.
     "type": "EXPENSE",
     "name": "Alimentación",
     "icon": "shopping_cart",
+    "color": "teal_500",
     "status": "ACTIVE"
   }
   ```
@@ -577,6 +579,7 @@ Obtiene las categorías de la familia junto con sus tags anidados.
       "type": "EXPENSE",
       "name": "Alimentación",
       "icon": "shopping_cart",
+      "color": "teal_500",
       "status": "ACTIVE",
       "tags": [
         {
@@ -599,13 +602,14 @@ Obtiene las categorías de la familia junto con sus tags anidados.
 ---
 
 #### `PATCH /families/:familyId/categories/:categoryId`
-Actualiza el nombre y/o ícono de una categoría.
+Actualiza el nombre, ícono y/o color de una categoría.
 - **Autenticación**: Bearer Token + Rol `OWNER`.
 - **Request Body** (al menos uno requerido):
   ```json
   {
     "newName": "Alimentación & Bebidas",
-    "newIcon": "restaurant" // o null para remover el ícono
+    "newIcon": "restaurant", // o null para remover el ícono
+    "newColor": "coral_400" // o null para remover el color
   }
   ```
 - **Respuesta `200 OK`**:
@@ -614,6 +618,7 @@ Actualiza el nombre y/o ícono de una categoría.
     "id": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
     "name": "Alimentación & Bebidas",
     "icon": "restaurant",
+    "color": "coral_400",
     "status": "ACTIVE"
   }
   ```
@@ -932,7 +937,7 @@ Desactiva la configuración del presupuesto sin borrar su historial.
 Todos los reportes ofrecen vistas consolidadas de lectura optimizadas para visualizaciones en dashboards y gráficos de la app móvil.
 
 #### `GET /families/:familyId/dashboard`
-Obtiene el resumen consolidado del mes (ingresos totales, gastos totales, saldo neto y desglose porcentual por categorías de gasto).
+Obtiene el resumen consolidado del mes (ingresos totales, gastos totales, saldo neto y desglose porcentual por categorías de gasto). Cada entrada de `categoryBreakdown` incluye el `color` de la categoría (clave de la paleta de la app, o `null` si no tiene).
 - **Autenticación**: Bearer Token + Miembro.
 - **Query Params**:
   - `period` (string `YYYY-MM`, opcional, default: mes en curso).
@@ -951,6 +956,7 @@ Obtiene el resumen consolidado del mes (ingresos totales, gastos totales, saldo 
     "categoryBreakdown": [
       {
         "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
+        "color": "teal_500",
         "totalExpense": {
           "amount": 270000,
           "currency": "CLP"
@@ -959,6 +965,7 @@ Obtiene el resumen consolidado del mes (ingresos totales, gastos totales, saldo 
       },
       {
         "categoryId": "c2c3c4c5-0000-4111-8222-abcdefabcdef",
+        "color": null,
         "totalExpense": {
           "amount": 180000,
           "currency": "CLP"
@@ -995,7 +1002,7 @@ Reporte de gastos agrupados por cada medio de pago para un periodo.
 ---
 
 #### `GET /families/:familyId/reports/breakdown`
-Desglose detallado por categoría con nombre y monto para un periodo.
+Desglose detallado por categoría con nombre, `color` (clave de paleta o `null`) y monto para un periodo.
 - **Autenticación**: Bearer Token + Miembro.
 - **Query Params**:
   - `period` (string `YYYY-MM`, **requerido**).
@@ -1006,6 +1013,7 @@ Desglose detallado por categoría con nombre y monto para un periodo.
     {
       "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
       "categoryName": "Alimentación",
+      "color": "teal_500",
       "amount": 270000,
       "currency": "CLP"
     }
@@ -1093,6 +1101,7 @@ Navegación jerárquica multinivel de gastos. El nivel de respuesta se adapta a 
         {
           "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
           "categoryName": "Alimentación",
+          "color": "teal_500",
           "amount": { "amount": 270000, "currency": "CLP" }
         }
       ]
@@ -1429,7 +1438,7 @@ Los siguientes aparecen en las descripciones de endpoints y deben permanecer sin
 | `FINANCIAL_TRACKING.TAG_NOT_FOUND` | 404 | Tag inexistente | "El tag ya no existe." |
 | `FINANCIAL_TRACKING.TAG_NOT_ACTIVE` | 400 | Tag deprecado usado en un registro nuevo | "Este tag está archivado." |
 | `FINANCIAL_TRACKING.UNSUPPORTED_CURRENCY` | 400 | Moneda no soportada en Financial Tracking | "Moneda no disponible." |
-| `FINANCIAL_TRACKING.INVALID_TITLE` / `INVALID_NOTE` / `INVALID_CATEGORY_NAME` / `INVALID_CATEGORY_ICON` / `INVALID_TAG_NAME` / `INVALID_TAG_ORDER` / `INVALID_PAYMENT_METHOD_NAME` | 400 | Valor de entrada inválido según reglas de dominio | Mostrar el mensaje devuelto en `message` |
+| `FINANCIAL_TRACKING.INVALID_TITLE` / `INVALID_NOTE` / `INVALID_CATEGORY_NAME` / `INVALID_CATEGORY_ICON` / `INVALID_CATEGORY_COLOR` / `INVALID_TAG_NAME` / `INVALID_TAG_ORDER` / `INVALID_PAYMENT_METHOD_NAME` | 400 | Valor de entrada inválido según reglas de dominio | Mostrar el mensaje devuelto en `message` |
 | `BUDGETING.BUDGET_CONFIGURATION_NOT_FOUND` | 404 | La configuración de presupuesto no existe | "Ese presupuesto ya no existe." |
 | `BUDGETING.INVALID_BUDGET_BALANCE` | 400 | Saldo de presupuesto inválido | Mostrar el mensaje devuelto en `message` |
 | `REPORTING.INVALID_ITEM_COUNT` | 400 | Conteo de movimientos inválido en el read model | Reintentar; reportar si persiste |

@@ -6,6 +6,7 @@ import { FamilyId } from "../../../../../../src/contexts/family-access/domain/va
 import { GetCategoriesQuery } from "../../../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
 import { GetFinancialItemsQuery } from "../../../../../../src/contexts/financial-tracking/application/queries/get-financial-items.query.js";
 import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryColor } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { GetCategoryBreakdownQuery } from "../../../../../../src/contexts/reporting/application/queries/get-category-breakdown.query.js";
@@ -36,6 +37,8 @@ describe("Reporting HTTP routes", () => {
       familyId,
       FinancialItemType.Expense,
       CategoryName.of("Supermercado"),
+      undefined,
+      CategoryColor.of("teal_500"),
     );
     categoryRepository.add(category);
     const aggregate = CategoryPeriodAggregate.create(
@@ -52,7 +55,10 @@ describe("Reporting HTTP routes", () => {
     registerReportingRoutes(app, {
       authenticate: (async () => {}) as preHandlerHookHandler,
       requireFamilyMembership: () => (async () => {}) as preHandlerHookHandler,
-      getDashboardSummaryQuery: new GetDashboardSummaryQuery(aggregateRepository),
+      getDashboardSummaryQuery: new GetDashboardSummaryQuery(
+        aggregateRepository,
+        getCategoriesQuery,
+      ),
       getCategoryBreakdownQuery: new GetCategoryBreakdownQuery(
         aggregateRepository,
         getCategoriesQuery,
@@ -87,6 +93,26 @@ describe("Reporting HTTP routes", () => {
       url: `/families/${familyId}/dashboard?period=2026-08`,
     });
     assert.equal(JSON.parse(dashboard.body).totalExpenses.amount, 25_000);
+  });
+
+  test("incluye el color de la categoría en dashboard, breakdown y drilldown", async () => {
+    const dashboard = await app.inject({
+      method: "GET",
+      url: `/families/${familyId}/dashboard?period=2026-08`,
+    });
+    assert.equal(JSON.parse(dashboard.body).categoryBreakdown[0].color, "teal_500");
+
+    const breakdown = await app.inject({
+      method: "GET",
+      url: `/families/${familyId}/reports/breakdown?period=2026-08`,
+    });
+    assert.equal(JSON.parse(breakdown.body)[0].color, "teal_500");
+
+    const drilldown = await app.inject({
+      method: "GET",
+      url: `/families/${familyId}/reports/drilldown?period=2026-08`,
+    });
+    assert.equal(JSON.parse(drilldown.body).entries[0].color, "teal_500");
   });
 
   test("rechaza un período con formato inválido", async () => {

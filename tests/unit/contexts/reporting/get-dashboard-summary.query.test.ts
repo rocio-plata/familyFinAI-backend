@@ -2,24 +2,31 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
+import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
+import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryColor } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
+import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { GetDashboardSummaryQuery } from "../../../../src/contexts/reporting/application/queries/get-dashboard-summary.query.js";
 import { CategoryPeriodAggregate } from "../../../../src/contexts/reporting/domain/entities/category-period-aggregate.js";
 import { Currency } from "../../../../src/shared-kernel/domain/currency.js";
 import { Money } from "../../../../src/shared-kernel/domain/money.js";
 import { Period } from "../../../../src/shared-kernel/domain/period.js";
+import { InMemoryCategoryRepository } from "../financial-tracking/doubles/in-memory-category.repository.js";
 import { InMemoryCategoryPeriodAggregateRepository } from "./doubles/in-memory-category-period-aggregate.repository.js";
 
 describe("GetDashboardSummaryQuery", () => {
   let query: GetDashboardSummaryQuery;
   let repository: InMemoryCategoryPeriodAggregateRepository;
+  let categoryRepository: InMemoryCategoryRepository;
   let familyId: FamilyId;
   let period: Period;
 
   beforeEach(() => {
     repository = new InMemoryCategoryPeriodAggregateRepository();
-    query = new GetDashboardSummaryQuery(repository);
+    categoryRepository = new InMemoryCategoryRepository();
+    query = new GetDashboardSummaryQuery(repository, new GetCategoriesQuery(categoryRepository));
     familyId = FamilyId.generate();
     period = Period.of(2026, 8);
   });
@@ -59,6 +66,45 @@ describe("GetDashboardSummaryQuery", () => {
     assert.equal(summary.totalExpenses.amount, 30_000);
     assert.equal(summary.totalIncome.amount, 700_000);
     assert.equal(summary.balance, 670_000);
+  });
+
+  test("incluye el color de cada categoría, o null si no tiene o ya no existe", async () => {
+    const colored = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Supermercado"),
+      undefined,
+      CategoryColor.of("teal_500"),
+    );
+    const plain = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
+    categoryRepository.add(colored);
+    categoryRepository.add(plain);
+    const orphanId = CategoryId.generate();
+    for (const [categoryId, amount] of [
+      [colored.id, 60_000],
+      [plain.id, 30_000],
+      [orphanId, 10_000],
+    ] as const) {
+      const aggregate = CategoryPeriodAggregate.create(
+        familyId,
+        categoryId,
+        period,
+        Currency.default(),
+      );
+      aggregate.registerItem(FinancialItemType.Expense, Money.of(amount, Currency.default()));
+      await repository.save(aggregate);
+    }
+
+    const summary = await query.execute({ familyId, period });
+
+    assert.deepEqual(
+      summary.categoryBreakdown.map((entry) => entry.color?.toString() ?? null),
+      ["teal_500", null, null],
+    );
   });
 
   test("incluye el gasto y su proporción por categoría", async () => {

@@ -4,6 +4,7 @@ import { beforeEach, describe, test } from "node:test";
 import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryColor } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import { GetCategoryBreakdownQuery } from "../../../../src/contexts/reporting/application/queries/get-category-breakdown.query.js";
@@ -91,6 +92,43 @@ describe("GetCategoryBreakdownQuery", () => {
         { categoryId: groceries.id.toString(), categoryName: "Supermercado", amount: 75_000 },
         { categoryId: transport.id.toString(), categoryName: "Transporte", amount: 25_000 },
       ],
+    );
+  });
+
+  test("incluye el color de cada categoría, o null si no tiene", async () => {
+    const groceries = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Supermercado"),
+      undefined,
+      CategoryColor.of("teal_500"),
+    );
+    const transport = Category.create(
+      familyId,
+      FinancialItemType.Expense,
+      CategoryName.of("Transporte"),
+    );
+    categoryRepository.add(groceries);
+    categoryRepository.add(transport);
+    for (const [category, amount] of [
+      [groceries, 75_000],
+      [transport, 25_000],
+    ] as const) {
+      const aggregate = CategoryPeriodAggregate.create(
+        familyId,
+        category.id,
+        period,
+        Currency.default(),
+      );
+      aggregate.registerItem(FinancialItemType.Expense, Money.of(amount, Currency.default()));
+      await aggregateRepository.save(aggregate);
+    }
+
+    const breakdown = await query.execute({ familyId, period });
+
+    assert.deepEqual(
+      breakdown.map((entry) => entry.color?.toString() ?? null),
+      ["teal_500", null],
     );
   });
 

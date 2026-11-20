@@ -27,6 +27,7 @@ import type { UpdateFinancialItemUseCase } from "../../application/commands/upda
 import type { GetCategoriesQuery } from "../../application/queries/get-categories.query.js";
 import type { GetFinancialItemsQuery } from "../../application/queries/get-financial-items.query.js";
 import type { GetPaymentMethodsQuery } from "../../application/queries/get-payment-methods.query.js";
+import { CategoryColor } from "../../domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../domain/value-objects/category-icon.js";
 import { CategoryId } from "../../domain/value-objects/category-id.js";
 import { CategoryName } from "../../domain/value-objects/category-name.js";
@@ -268,16 +269,18 @@ function registerFinancialTrackingRoutes(
             type: { type: "string", enum: ["EXPENSE", "INCOME"] },
             name: { type: "string", minLength: 1 },
             icon: { type: "string", minLength: 1 },
+            color: { type: "string", minLength: 1 },
           },
         },
       },
     },
     async (request, reply) => {
       const { familyId } = request.params as { familyId: string };
-      const { type, name, icon } = request.body as {
+      const { type, name, icon, color } = request.body as {
         type: "EXPENSE" | "INCOME";
         name: string;
         icon?: string;
+        color?: string;
       };
       const category = await deps.createCategoryUseCase.execute({
         familyId: FamilyId.of(familyId),
@@ -285,6 +288,7 @@ function registerFinancialTrackingRoutes(
         type: type === "INCOME" ? FinancialItemType.Income : FinancialItemType.Expense,
         name: CategoryName.of(name),
         ...(icon === undefined ? {} : { icon: CategoryIcon.of(icon) }),
+        ...(color === undefined ? {} : { color: CategoryColor.of(color) }),
       });
 
       return reply.code(201).send({
@@ -292,6 +296,7 @@ function registerFinancialTrackingRoutes(
         type: category.type,
         name: category.name.toString(),
         icon: category.icon?.toString() ?? null,
+        color: category.color?.toString() ?? null,
         status: CategoryStatus.Active,
       });
     },
@@ -606,10 +611,14 @@ function registerFinancialTrackingRoutes(
         },
         body: {
           type: "object",
-          anyOf: [{ required: ["newName"] }, { required: ["newIcon"] }],
+          anyOf: [{ required: ["newName"] }, { required: ["newIcon"] }, { required: ["newColor"] }],
           properties: {
             newName: { type: "string", minLength: 1 },
             newIcon: {
+              type: ["string", "null"],
+              minLength: 1,
+            },
+            newColor: {
               type: ["string", "null"],
               minLength: 1,
             },
@@ -619,7 +628,11 @@ function registerFinancialTrackingRoutes(
     },
     async (request, reply) => {
       const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
-      const { newName, newIcon } = request.body as { newName?: string; newIcon?: string | null };
+      const { newName, newIcon, newColor } = request.body as {
+        newName?: string;
+        newIcon?: string | null;
+        newColor?: string | null;
+      };
       const category = await deps.updateCategoryUseCase.execute({
         familyId: FamilyId.of(familyId),
         requestedBy: request.userId,
@@ -628,12 +641,16 @@ function registerFinancialTrackingRoutes(
         ...(newIcon === undefined
           ? {}
           : { newIcon: newIcon === null ? null : CategoryIcon.of(newIcon) }),
+        ...(newColor === undefined
+          ? {}
+          : { newColor: newColor === null ? null : CategoryColor.of(newColor) }),
       });
 
       return reply.code(200).send({
         id: category.id.toString(),
         name: category.name.toString(),
         icon: category.icon?.toString() ?? null,
+        color: category.color?.toString() ?? null,
         status: category.status,
       });
     },
@@ -888,6 +905,7 @@ function registerFinancialTrackingRoutes(
           type: category.type,
           name: category.name.toString(),
           icon: category.icon?.toString() ?? null,
+          color: category.color?.toString() ?? null,
           status: category.status,
           tags: category.tags.map((tag) => ({
             id: tag.id.toString(),

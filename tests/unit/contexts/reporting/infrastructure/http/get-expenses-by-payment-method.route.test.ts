@@ -70,7 +70,10 @@ describe("GET /families/:familyId/reports/by-payment-method", () => {
     registerReportingRoutes(app, {
       authenticate: (async () => {}) as preHandlerHookHandler,
       requireFamilyMembership: () => (async () => {}) as preHandlerHookHandler,
-      getDashboardSummaryQuery: new GetDashboardSummaryQuery(aggregateRepository),
+      getDashboardSummaryQuery: new GetDashboardSummaryQuery(
+        aggregateRepository,
+        getCategoriesQuery,
+      ),
       getCategoryBreakdownQuery: new GetCategoryBreakdownQuery(
         aggregateRepository,
         getCategoriesQuery,

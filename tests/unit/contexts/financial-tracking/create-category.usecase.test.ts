@@ -12,6 +12,7 @@ import { Category } from "../../../../src/contexts/financial-tracking/domain/ent
 import { DuplicateCategoryNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
 import { CategoryCreated } from "../../../../src/contexts/financial-tracking/domain/events/category-created.event.js";
+import { CategoryColor } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -73,6 +74,33 @@ describe("CreateCategoryUseCase", () => {
     assert.ok(category.icon?.equals(icon));
     const persisted = await categoryRepository.findById(category.id);
     assert.ok(persisted?.icon?.equals(icon));
+  });
+
+  test("crea y persiste una categoría con el color recibido", async () => {
+    const color = CategoryColor.of("teal_500");
+
+    const category = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Expense,
+      name: CategoryName.of("Alimentación"),
+      color,
+    });
+
+    assert.ok(category.color?.equals(color));
+    const persisted = await categoryRepository.findById(category.id);
+    assert.ok(persisted?.color?.equals(color));
+  });
+
+  test("crea la categoría sin color cuando no se recibe uno", async () => {
+    const category = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Expense,
+      name: CategoryName.of("Alimentación"),
+    });
+
+    assert.equal(category.color, null);
   });
 
   test("asigna el type recibido a la categoría creada", async () => {

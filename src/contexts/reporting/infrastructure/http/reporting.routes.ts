@@ -108,6 +108,7 @@ function registerReportingRoutes(app: FastifyInstance, deps: ReportingRoutesDepe
       return breakdown.map((entry) => ({
         categoryId: entry.categoryId.toString(),
         categoryName: entry.categoryName.toString(),
+        color: entry.color?.toString() ?? null,
         amount: toMoneyDto(entry.amount),
       }));
     },
@@ -243,6 +244,7 @@ function serializeDashboardSummary(
     balance: serializeMoney(Money.of(summary.balance, summary.totalExpenses.currency)),
     categoryBreakdown: summary.categoryBreakdown.map((entry) => ({
       categoryId: entry.categoryId.toString(),
+      color: entry.color?.toString() ?? null,
       totalExpense: serializeMoney(entry.totalExpense),
       percentage: entry.percentage,
     })),
@@ -256,6 +258,7 @@ function serializeDrillDown(result: Awaited<ReturnType<GetDrillDownQuery["execut
       entries: result.entries.map((entry) => ({
         categoryId: entry.categoryId.toString(),
         categoryName: entry.categoryName.toString(),
+        color: entry.color?.toString() ?? null,
         amount: serializeMoney(entry.amount),
       })),
     };

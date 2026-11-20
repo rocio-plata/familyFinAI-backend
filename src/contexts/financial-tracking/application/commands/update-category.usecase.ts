@@ -7,6 +7,7 @@ import { CategoryNotFoundError } from "../../domain/errors/category-not-found.er
 import { DuplicateCategoryNameError } from "../../domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../domain/errors/insufficient-role.error.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
+import type { CategoryColor } from "../../domain/value-objects/category-color.js";
 import type { CategoryIcon } from "../../domain/value-objects/category-icon.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import type { CategoryName } from "../../domain/value-objects/category-name.js";
@@ -17,6 +18,7 @@ interface UpdateCategoryInput {
   categoryId: CategoryId;
   newName?: CategoryName;
   newIcon?: CategoryIcon | null;
+  newColor?: CategoryColor | null;
 }
 
 class UpdateCategoryUseCase {
@@ -57,6 +59,10 @@ class UpdateCategoryUseCase {
 
     if (input.newIcon !== undefined) {
       category.updateIcon(input.newIcon);
+    }
+
+    if (input.newColor !== undefined) {
+      category.updateColor(input.newColor);
     }
 
     // 4. Persistir

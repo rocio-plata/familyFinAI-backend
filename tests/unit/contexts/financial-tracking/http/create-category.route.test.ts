@@ -54,7 +54,44 @@ describe("POST /families/:familyId/categories", () => {
     assert.equal(body.type, "EXPENSE");
     assert.equal(body.name, "Alimentación");
     assert.equal(body.icon, null);
+    assert.equal(body.color, null);
     assert.equal(body.status, "ACTIVE");
+  });
+
+  test("crea una categoría con color", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/categories`,
+      headers: { authorization: ownerAuthorization },
+      payload: { type: "EXPENSE", name: "Alimentación", color: "teal_500" },
+    });
+
+    assert.equal(response.statusCode, 201);
+    assert.equal(JSON.parse(response.body).color, "teal_500");
+  });
+
+  test("rechaza un color vacío", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/categories`,
+      headers: { authorization: ownerAuthorization },
+      payload: { type: "EXPENSE", name: "Alimentación", color: "" },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
+  });
+
+  test("rechaza un color de más de 40 caracteres con error de dominio", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: `/families/${familyId}/categories`,
+      headers: { authorization: ownerAuthorization },
+      payload: { type: "EXPENSE", name: "Alimentación", color: "a".repeat(41) },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "FINANCIAL_TRACKING.INVALID_CATEGORY_COLOR");
   });
 
   test("crea una categoría con ícono", async () => {

@@ -4,6 +4,7 @@ import { after, describe, test } from "node:test";
 import { eq } from "drizzle-orm";
 import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryColor } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -33,6 +34,7 @@ describe("Persistencia Drizzle de categorías (integración)", () => {
       FinancialItemType.Expense,
       CategoryName.of("Alimentación integración"),
       CategoryIcon.of("shopping_cart"),
+      CategoryColor.of("teal_500"),
     );
     category.addTag(TagName.of("Supermercado"));
     createdCategoryIds.push(category.id.toString());
@@ -43,12 +45,32 @@ describe("Persistencia Drizzle de categorías (integración)", () => {
     assert.ok(found);
     assert.equal(found.name.toString(), "Alimentación integración");
     assert.equal(found.icon?.toString(), "shopping_cart");
+    assert.equal(found.color?.toString(), "teal_500");
     assert.equal(found.tags.length, 1);
     assert.equal(found.tags[0]?.name.toString(), "Supermercado");
 
     const byFamily = await categoryRepository.findByFamilyId(familyId);
     assert.equal(byFamily.length, 1);
     assert.equal(byFamily[0]?.icon?.toString(), "shopping_cart");
+  });
+
+  test("actualiza y quita el color de una categoría existente", { skip }, async () => {
+    const category = Category.create(
+      FamilyId.generate(),
+      FinancialItemType.Expense,
+      CategoryName.of("Color integración"),
+    );
+    createdCategoryIds.push(category.id.toString());
+    await categoryRepository.save(category);
+    assert.equal((await categoryRepository.findById(category.id))?.color, null);
+
+    category.updateColor(CategoryColor.of("coral_400"));
+    await categoryRepository.save(category);
+    assert.equal((await categoryRepository.findById(category.id))?.color?.toString(), "coral_400");
+
+    category.updateColor(null);
+    await categoryRepository.save(category);
+    assert.equal((await categoryRepository.findById(category.id))?.color, null);
   });
 
   test("actualiza el ícono de una categoría existente", { skip }, async () => {

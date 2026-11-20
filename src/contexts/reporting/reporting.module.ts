@@ -56,7 +56,10 @@ function buildReportingModule(
   );
   const getFinancialItemsQuery = deps.getFinancialItemsQuery;
   const queries = {
-    getDashboardSummary: new GetDashboardSummaryQuery(deps.aggregateRepository),
+    getDashboardSummary: new GetDashboardSummaryQuery(
+      deps.aggregateRepository,
+      deps.getCategoriesQuery,
+    ),
     getCategoryBreakdown: getCategoryBreakdownQuery,
     getPeriodComparison: new GetPeriodComparisonQuery(deps.aggregateRepository),
     getTrend: new GetTrendQuery(deps.aggregateRepository),
