@@ -99,11 +99,21 @@ describe("Flujo E2E: dashboard, tendencia y comparación de períodos", () => {
       assert.equal(dashboardResponse.statusCode, 200);
       const dashboard = dashboardResponse.json();
       assert.equal(dashboard.totalExpenses.amount, 25000);
-      const categoryEntry = dashboard.categoryBreakdown.find(
+      assert.equal(dashboard.period, "2026-02");
+      assert.equal(dashboard.currency, "CLP");
+      assert.equal(dashboard.categoryBreakdown, undefined);
+      const categoryEntry = dashboard.expenseByCategory.find(
         (entry: { categoryId: string }) => entry.categoryId === categoryId,
       );
-      assert.equal(categoryEntry?.totalExpense.amount, 25000);
+      assert.equal(categoryEntry?.name, "Comida Report");
+      assert.equal(categoryEntry?.status, "ACTIVE");
+      assert.equal(categoryEntry?.amount.amount, 25000);
       assert.equal(categoryEntry?.percentage, 100);
+      const emptyExpenseCategory = dashboard.expenseByCategory.find(
+        (entry: { name: string }) => entry.name === "Salud",
+      );
+      assert.equal(emptyExpenseCategory?.amount.amount, 0);
+      assert.deepEqual(dashboard.incomeByCategory, []);
     } finally {
       for (const familyId of createdFamilyIds) {
         await db.delete(financialItems).where(eq(financialItems.familyId, familyId));

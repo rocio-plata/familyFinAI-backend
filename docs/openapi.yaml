@@ -1431,21 +1431,30 @@ components:
         isOverspent: { type: boolean }
     Dashboard:
       type: object
-      required: [totalExpenses, totalIncome, balance, categoryBreakdown]
+      required: [period, currency, totalExpenses, totalIncome, balance, expenseByCategory, incomeByCategory]
       properties:
+        period: { $ref: '#/components/schemas/Period' }
+        currency: { type: string }
         totalExpenses: { $ref: '#/components/schemas/Money' }
         totalIncome: { $ref: '#/components/schemas/Money' }
         balance: { $ref: '#/components/schemas/Money' }
-        categoryBreakdown:
+        expenseByCategory:
           type: array
-          items:
-            type: object
-            required: [categoryId, totalExpense, percentage]
-            properties:
-              categoryId: { $ref: '#/components/schemas/Id' }
-              color: { type: [string, 'null'] }
-              totalExpense: { $ref: '#/components/schemas/Money' }
-              percentage: { type: number }
+          items: { $ref: '#/components/schemas/DashboardCategory' }
+        incomeByCategory:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardCategory' }
+    DashboardCategory:
+      type: object
+      required: [categoryId, name, icon, color, status, amount, percentage]
+      properties:
+        categoryId: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+        icon: { type: [string, 'null'] }
+        color: { type: [string, 'null'] }
+        status: { type: string, enum: [ACTIVE, DEPRECATED] }
+        amount: { $ref: '#/components/schemas/Money' }
+        percentage: { type: number }
     PeriodComparison:
       type: object
       required: [periodA, periodB, expenseVariation, incomeVariation]

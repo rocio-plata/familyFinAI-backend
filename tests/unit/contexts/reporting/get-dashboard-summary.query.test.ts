@@ -5,6 +5,7 @@ import { FamilyId } from "../../../../src/contexts/family-access/domain/value-ob
 import { GetCategoriesQuery } from "../../../../src/contexts/financial-tracking/application/queries/get-categories.query.js";
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { CategoryColor } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
+import { CategoryIcon } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -23,6 +24,35 @@ describe("GetDashboardSummaryQuery", () => {
   let familyId: FamilyId;
   let period: Period;
 
+  const clp = (amount: number) => Money.of(amount, Currency.default());
+
+  const addCategory = (
+    type: FinancialItemType,
+    name: string,
+    options: { icon?: string; color?: string } = {},
+  ): Category => {
+    const category = Category.create(
+      familyId,
+      type,
+      CategoryName.of(name),
+      options.icon ? CategoryIcon.of(options.icon) : undefined,
+      options.color ? CategoryColor.of(options.color) : undefined,
+    );
+    categoryRepository.add(category);
+    return category;
+  };
+
+  const register = async (categoryId: CategoryId, type: FinancialItemType, amount: number) => {
+    const aggregate = CategoryPeriodAggregate.create(
+      familyId,
+      categoryId,
+      period,
+      Currency.default(),
+    );
+    aggregate.registerItem(type, clp(amount));
+    await repository.save(aggregate);
+  };
+
   beforeEach(() => {
     repository = new InMemoryCategoryPeriodAggregateRepository();
     categoryRepository = new InMemoryCategoryRepository();
@@ -31,114 +61,189 @@ describe("GetDashboardSummaryQuery", () => {
     period = Period.of(2026, 8);
   });
 
-  test("devuelve un resumen en cero si la familia no tiene agregados en el período", async () => {
+  test("devuelve un resumen en cero, con el período y la moneda, si no hay movimientos", async () => {
     const summary = await query.execute({ familyId, period });
 
+    assert.equal(summary.period.toString(), "2026-08");
+    assert.equal(summary.currency.toString(), Currency.default().toString());
     assert.equal(summary.totalExpenses.amount, 0);
     assert.equal(summary.totalIncome.amount, 0);
-    assert.equal(summary.balance, 0);
-    assert.deepEqual(summary.categoryBreakdown, []);
+    assert.equal(summary.balance.amount, 0);
+    assert.deepEqual(summary.expenseByCategory, []);
+    assert.deepEqual(summary.incomeByCategory, []);
   });
 
-  test("acumula gastos, ingresos y saldo de todas las categorías del período", async () => {
-    const groceries = CategoryPeriodAggregate.create(
-      familyId,
-      CategoryId.generate(),
-      period,
-      Currency.default(),
-    );
-    groceries.registerItem(FinancialItemType.Expense, Money.of(20_000, Currency.default()));
-    groceries.registerItem(FinancialItemType.Expense, Money.of(10_000, Currency.default()));
-
-    const salary = CategoryPeriodAggregate.create(
-      familyId,
-      CategoryId.generate(),
-      period,
-      Currency.default(),
-    );
-    salary.registerItem(FinancialItemType.Income, Money.of(700_000, Currency.default()));
-
-    await repository.save(groceries);
-    await repository.save(salary);
+  test("acumula gastos, ingresos y saldo (como Money) de todas las categorías del período", async () => {
+    const groceries = addCategory(FinancialItemType.Expense, "Supermercado");
+    const salary = addCategory(FinancialItemType.Income, "Sueldo");
+    await register(groceries.id, FinancialItemType.Expense, 30_000);
+    await register(salary.id, FinancialItemType.Income, 700_000);
 
     const summary = await query.execute({ familyId, period });
 
     assert.equal(summary.totalExpenses.amount, 30_000);
     assert.equal(summary.totalIncome.amount, 700_000);
-    assert.equal(summary.balance, 670_000);
+    assert.equal(summary.balance.amount, 670_000);
+    assert.equal(summary.balance.currency.toString(), Currency.default().toString());
   });
 
-  test("incluye el color de cada categoría, o null si no tiene o ya no existe", async () => {
-    const colored = Category.create(
-      familyId,
-      FinancialItemType.Expense,
-      CategoryName.of("Supermercado"),
-      undefined,
-      CategoryColor.of("teal_500"),
-    );
-    const plain = Category.create(
-      familyId,
-      FinancialItemType.Expense,
-      CategoryName.of("Transporte"),
-    );
-    categoryRepository.add(colored);
-    categoryRepository.add(plain);
-    const orphanId = CategoryId.generate();
-    for (const [categoryId, amount] of [
-      [colored.id, 60_000],
-      [plain.id, 30_000],
-      [orphanId, 10_000],
-    ] as const) {
-      const aggregate = CategoryPeriodAggregate.create(
-        familyId,
-        categoryId,
-        period,
-        Currency.default(),
-      );
-      aggregate.registerItem(FinancialItemType.Expense, Money.of(amount, Currency.default()));
-      await repository.save(aggregate);
-    }
+  test("desglosa los gastos por categoría con nombre, ícono, color, estado y porcentaje", async () => {
+    const groceries = addCategory(FinancialItemType.Expense, "Supermercado", {
+      icon: "shopping_cart",
+      color: "teal_500",
+    });
+    const transport = addCategory(FinancialItemType.Expense, "Transporte");
+    await register(groceries.id, FinancialItemType.Expense, 75_000);
+    await register(transport.id, FinancialItemType.Expense, 25_000);
 
-    const summary = await query.execute({ familyId, period });
+    const { expenseByCategory } = await query.execute({ familyId, period });
 
     assert.deepEqual(
-      summary.categoryBreakdown.map((entry) => entry.color?.toString() ?? null),
-      ["teal_500", null, null],
-    );
-  });
-
-  test("incluye el gasto y su proporción por categoría", async () => {
-    const firstCategoryId = CategoryId.generate();
-    const secondCategoryId = CategoryId.generate();
-    const firstCategory = CategoryPeriodAggregate.create(
-      familyId,
-      firstCategoryId,
-      period,
-      Currency.default(),
-    );
-    const secondCategory = CategoryPeriodAggregate.create(
-      familyId,
-      secondCategoryId,
-      period,
-      Currency.default(),
-    );
-    firstCategory.registerItem(FinancialItemType.Expense, Money.of(75_000, Currency.default()));
-    secondCategory.registerItem(FinancialItemType.Expense, Money.of(25_000, Currency.default()));
-    await repository.save(firstCategory);
-    await repository.save(secondCategory);
-
-    const summary = await query.execute({ familyId, period });
-
-    assert.deepEqual(
-      summary.categoryBreakdown.map((category) => ({
-        categoryId: category.categoryId.toString(),
-        totalExpense: category.totalExpense.amount,
-        percentage: category.percentage,
+      expenseByCategory.map((entry) => ({
+        categoryId: entry.categoryId.toString(),
+        name: entry.name.toString(),
+        icon: entry.icon?.toString() ?? null,
+        color: entry.color?.toString() ?? null,
+        status: entry.status,
+        amount: entry.amount.amount,
+        percentage: entry.percentage,
       })),
       [
-        { categoryId: firstCategoryId.toString(), totalExpense: 75_000, percentage: 75 },
-        { categoryId: secondCategoryId.toString(), totalExpense: 25_000, percentage: 25 },
+        {
+          categoryId: groceries.id.toString(),
+          name: "Supermercado",
+          icon: "shopping_cart",
+          color: "teal_500",
+          status: "ACTIVE",
+          amount: 75_000,
+          percentage: 75,
+        },
+        {
+          categoryId: transport.id.toString(),
+          name: "Transporte",
+          icon: null,
+          color: null,
+          status: "ACTIVE",
+          amount: 25_000,
+          percentage: 25,
+        },
       ],
     );
+  });
+
+  test("desglosa los ingresos por categoría, separados de los gastos", async () => {
+    const groceries = addCategory(FinancialItemType.Expense, "Supermercado");
+    const salary = addCategory(FinancialItemType.Income, "Sueldo");
+    const bonus = addCategory(FinancialItemType.Income, "Bono");
+    await register(groceries.id, FinancialItemType.Expense, 50_000);
+    await register(salary.id, FinancialItemType.Income, 900_000);
+    await register(bonus.id, FinancialItemType.Income, 100_000);
+
+    const { expenseByCategory, incomeByCategory } = await query.execute({ familyId, period });
+
+    assert.deepEqual(
+      expenseByCategory.map((entry) => entry.name.toString()),
+      ["Supermercado"],
+    );
+    assert.deepEqual(
+      incomeByCategory.map((entry) => [
+        entry.name.toString(),
+        entry.amount.amount,
+        entry.percentage,
+      ]),
+      [
+        ["Sueldo", 900_000, 90],
+        ["Bono", 100_000, 10],
+      ],
+    );
+  });
+
+  test("incluye las categorías activas sin movimientos en $0 con 0%", async () => {
+    const groceries = addCategory(FinancialItemType.Expense, "Supermercado");
+    addCategory(FinancialItemType.Expense, "Salud");
+    addCategory(FinancialItemType.Income, "Sueldo");
+    await register(groceries.id, FinancialItemType.Expense, 40_000);
+
+    const { expenseByCategory, incomeByCategory } = await query.execute({ familyId, period });
+
+    assert.deepEqual(
+      expenseByCategory.map((entry) => [
+        entry.name.toString(),
+        entry.amount.amount,
+        entry.percentage,
+      ]),
+      [
+        ["Supermercado", 40_000, 100],
+        ["Salud", 0, 0],
+      ],
+    );
+    assert.deepEqual(
+      incomeByCategory.map((entry) => [
+        entry.name.toString(),
+        entry.amount.amount,
+        entry.percentage,
+      ]),
+      [["Sueldo", 0, 0]],
+    );
+  });
+
+  test("las categorías sin movimientos usan la moneda del resumen", async () => {
+    addCategory(FinancialItemType.Expense, "Salud");
+
+    const { expenseByCategory, currency } = await query.execute({ familyId, period });
+
+    assert.equal(expenseByCategory[0]?.amount.currency.toString(), currency.toString());
+  });
+
+  test("incluye una categoría deprecada solo si tiene movimientos en el período", async () => {
+    const withMovements = addCategory(FinancialItemType.Expense, "Antigua con gastos");
+    const withoutMovements = addCategory(FinancialItemType.Expense, "Antigua sin gastos");
+    withMovements.deprecate();
+    withoutMovements.deprecate();
+    await register(withMovements.id, FinancialItemType.Expense, 10_000);
+
+    const { expenseByCategory } = await query.execute({ familyId, period });
+
+    assert.deepEqual(
+      expenseByCategory.map((entry) => [entry.name.toString(), entry.status]),
+      [["Antigua con gastos", "DEPRECATED"]],
+    );
+  });
+
+  test("ordena por monto descendente y, a igualdad, por nombre", async () => {
+    const zeta = addCategory(FinancialItemType.Expense, "Zeta");
+    const alfa = addCategory(FinancialItemType.Expense, "Alfa");
+    const grande = addCategory(FinancialItemType.Expense, "Grande");
+    addCategory(FinancialItemType.Expense, "Beta");
+    await register(zeta.id, FinancialItemType.Expense, 5_000);
+    await register(alfa.id, FinancialItemType.Expense, 5_000);
+    await register(grande.id, FinancialItemType.Expense, 90_000);
+
+    const { expenseByCategory } = await query.execute({ familyId, period });
+
+    assert.deepEqual(
+      expenseByCategory.map((entry) => entry.name.toString()),
+      ["Grande", "Alfa", "Zeta", "Beta"],
+    );
+  });
+
+  test("los totales cuentan también movimientos de categorías ya eliminadas", async () => {
+    const groceries = addCategory(FinancialItemType.Expense, "Supermercado");
+    await register(groceries.id, FinancialItemType.Expense, 30_000);
+    await register(CategoryId.generate(), FinancialItemType.Expense, 10_000);
+
+    const summary = await query.execute({ familyId, period });
+
+    assert.equal(summary.totalExpenses.amount, 40_000);
+    assert.deepEqual(
+      summary.expenseByCategory.map((entry) => entry.name.toString()),
+      ["Supermercado"],
+    );
+  });
+
+  test("usa el mes en curso cuando no recibe período", async () => {
+    const summary = await query.execute({ familyId });
+
+    assert.equal(summary.period.toString(), Period.current().toString());
   });
 });

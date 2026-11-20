@@ -95,12 +95,37 @@ describe("Reporting HTTP routes", () => {
     assert.equal(JSON.parse(dashboard.body).totalExpenses.amount, 25_000);
   });
 
+  test("el dashboard expone la forma con desglose de gastos e ingresos", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: `/families/${familyId}/dashboard?period=2026-08`,
+    });
+
+    assert.equal(response.statusCode, 200);
+    const body = JSON.parse(response.body);
+    assert.equal(body.period, "2026-08");
+    assert.equal(body.currency, "CLP");
+    assert.deepEqual(body.totalExpenses, { amount: 25_000, currency: "CLP" });
+    assert.deepEqual(body.totalIncome, { amount: 0, currency: "CLP" });
+    assert.deepEqual(body.balance, { amount: -25_000, currency: "CLP" });
+    assert.equal(body.categoryBreakdown, undefined);
+    assert.deepEqual(body.incomeByCategory, []);
+    assert.equal(body.expenseByCategory.length, 1);
+    const [entry] = body.expenseByCategory;
+    assert.equal(entry.name, "Supermercado");
+    assert.equal(entry.icon, null);
+    assert.equal(entry.color, "teal_500");
+    assert.equal(entry.status, "ACTIVE");
+    assert.deepEqual(entry.amount, { amount: 25_000, currency: "CLP" });
+    assert.equal(entry.percentage, 100);
+  });
+
   test("incluye el color de la categoría en dashboard, breakdown y drilldown", async () => {
     const dashboard = await app.inject({
       method: "GET",
       url: `/families/${familyId}/dashboard?period=2026-08`,
     });
-    assert.equal(JSON.parse(dashboard.body).categoryBreakdown[0].color, "teal_500");
+    assert.equal(JSON.parse(dashboard.body).expenseByCategory[0].color, "teal_500");
 
     const breakdown = await app.inject({
       method: "GET",
