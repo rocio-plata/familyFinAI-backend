@@ -7,6 +7,7 @@ import { FamilyName } from "../../../../../src/contexts/family-access/domain/val
 import { Role } from "../../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { Category } from "../../../../../src/contexts/financial-tracking/domain/entities/category.js";
+import { CategoryColor } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
@@ -42,6 +43,7 @@ describe("GET /families/:familyId/categories", () => {
       FinancialItemType.Expense,
       CategoryName.of("Alimentación"),
       CategoryIcon.of("shopping_cart"),
+      CategoryColor.of("teal_500"),
     );
     activeCategory.addTag(TagName.of("Verdulería"));
     categoryRepository.add(activeCategory);
@@ -83,6 +85,7 @@ describe("GET /families/:familyId/categories", () => {
     assert.equal(alimentacion.type, "EXPENSE");
     assert.equal(alimentacion.status, "ACTIVE");
     assert.equal(alimentacion.icon, "shopping_cart");
+    assert.equal(alimentacion.color, "teal_500");
     assert.equal(alimentacion.tags[0].name, "Verdulería");
   });
 

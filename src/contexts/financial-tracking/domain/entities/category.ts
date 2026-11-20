@@ -9,6 +9,7 @@ import { CategoryDeprecated } from "../events/category-deprecated.event.js";
 import { CategoryReactivated } from "../events/category-reactivated.event.js";
 import { TagCreated } from "../events/tag-created.event.js";
 import { TagDeprecated } from "../events/tag-deprecated.event.js";
+import { CategoryColor } from "../value-objects/category-color.js";
 import { CategoryIcon } from "../value-objects/category-icon.js";
 import { CategoryId } from "../value-objects/category-id.js";
 import { CategoryName } from "../value-objects/category-name.js";
@@ -32,6 +33,7 @@ interface ReconstituteCategoryProps {
   type: FinancialItemType;
   name: string;
   icon?: string | null;
+  color?: string | null;
   status: CategoryStatus;
   tags: ReconstituteCategoryTagProps[];
 }
@@ -45,6 +47,7 @@ class Category {
     private readonly _type: FinancialItemType,
     private _name: CategoryName,
     private _icon: CategoryIcon | null,
+    private _color: CategoryColor | null,
     private _status: CategoryStatus,
     private _tags: Tag[],
   ) {}
@@ -64,6 +67,9 @@ class Category {
   get icon(): CategoryIcon | null {
     return this._icon;
   }
+  get color(): CategoryColor | null {
+    return this._color;
+  }
   get status(): CategoryStatus {
     return this._status;
   }
@@ -76,6 +82,7 @@ class Category {
     type: FinancialItemType,
     name: CategoryName,
     icon?: CategoryIcon,
+    color?: CategoryColor,
   ): Category {
     const category = new Category(
       CategoryId.generate(),
@@ -83,6 +90,7 @@ class Category {
       type,
       name,
       icon ?? null,
+      color ?? null,
       CategoryStatus.Active,
       [],
     );
@@ -99,6 +107,7 @@ class Category {
       props.type,
       CategoryName.of(props.name),
       props.icon ? CategoryIcon.of(props.icon) : null,
+      props.color ? CategoryColor.of(props.color) : null,
       props.status,
       props.tags.map((tag) => Tag.reconstitute(tag)),
     );
@@ -123,6 +132,10 @@ class Category {
 
   updateIcon(newIcon: CategoryIcon | null): void {
     this._icon = newIcon;
+  }
+
+  updateColor(newColor: CategoryColor | null): void {
+    this._color = newColor;
   }
 
   deprecate(): void {

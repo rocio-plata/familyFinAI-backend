@@ -1,6 +1,7 @@
 // /src/contexts/financial-tracking/application/queries/get-categories.query.ts
 import type { FamilyId } from "../../../family-access/domain/value-objects/family-id.js";
 import type { CategoryRepository } from "../../domain/repositories/category.repository.js";
+import type { CategoryColor } from "../../domain/value-objects/category-color.js";
 import type { CategoryIcon } from "../../domain/value-objects/category-icon.js";
 import type { CategoryId } from "../../domain/value-objects/category-id.js";
 import type { CategoryName } from "../../domain/value-objects/category-name.js";
@@ -28,6 +29,7 @@ interface CategoryDTO {
   type: FinancialItemType;
   name: CategoryName;
   icon: CategoryIcon | null;
+  color: CategoryColor | null;
   status: CategoryStatus;
   tags: TagDTO[];
 }
@@ -47,6 +49,7 @@ class GetCategoriesQuery {
         type: category.type,
         name: category.name,
         icon: category.icon,
+        color: category.color,
         status: category.status,
         tags: [...category.tags]
           .sort((a, b) => a.displayOrder - b.displayOrder)

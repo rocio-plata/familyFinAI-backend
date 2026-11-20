@@ -8,6 +8,7 @@ import { GetFinancialItemsQuery } from "../../../../src/contexts/financial-track
 import { Category } from "../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { FinancialItem } from "../../../../src/contexts/financial-tracking/domain/entities/financial-item.js";
 import { CategoryAssignment } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-assignment.js";
+import { CategoryColor } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../../src/contexts/financial-tracking/domain/value-objects/financial-item-type.js";
 import type { TagId } from "../../../../src/contexts/financial-tracking/domain/value-objects/tag-id.js";
@@ -60,6 +61,23 @@ describe("GetDrillDownQuery", () => {
     firstTagId = category.tags[0].id;
     secondTagId = category.tags[1].id;
     categoryRepository.add(category);
+  });
+
+  test("incluye el color de la categoría en el nivel category", async () => {
+    category.updateColor(CategoryColor.of("teal_500"));
+    const aggregate = CategoryPeriodAggregate.create(
+      familyId,
+      category.id,
+      period,
+      Currency.default(),
+    );
+    aggregate.registerItem(FinancialItemType.Expense, Money.of(75_000, Currency.default()));
+    await aggregateRepository.save(aggregate);
+
+    const result = await query.execute({ familyId, period });
+
+    assert.equal(result.level, "category");
+    assert.equal(result.entries[0].color?.toString(), "teal_500");
   });
 
   test("devuelve el desglose por categoría cuando no recibe categoría", async () => {

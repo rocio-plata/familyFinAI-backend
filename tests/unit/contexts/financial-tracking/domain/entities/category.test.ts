@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { InvalidTagOrderError } from "../../../../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
+import { CategoryColor } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
 import { CategoryStatus } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-status.js";
@@ -32,6 +33,16 @@ describe("Category", () => {
       const icon = CategoryIcon.of("shopping_cart");
 
       assert.ok(Category.create(familyId, type, catName, icon).icon?.equals(icon));
+    });
+
+    it("inicia sin color cuando no se recibe uno", () => {
+      assert.equal(Category.create(familyId, type, catName).color, null);
+    });
+
+    it("asigna el color recibido", () => {
+      const color = CategoryColor.of("teal_500");
+
+      assert.ok(Category.create(familyId, type, catName, undefined, color).color?.equals(color));
     });
 
     it("asigna el familyId", () => {
@@ -89,6 +100,29 @@ describe("Category", () => {
     });
   });
 
+  describe("reconstitute() con color", () => {
+    const base = {
+      id: "11111111-1111-4111-8111-111111111111",
+      familyId: "22222222-2222-4222-8222-222222222222",
+      type,
+      name: "Alimentación",
+      status: CategoryStatus.Active,
+      tags: [],
+    };
+
+    it("reconstituye una categoría con color", () => {
+      assert.equal(
+        Category.reconstitute({ ...base, color: "teal_500" }).color?.toString(),
+        "teal_500",
+      );
+    });
+
+    it("reconstituye una categoría sin color", () => {
+      assert.equal(Category.reconstitute({ ...base, color: null }).color, null);
+      assert.equal(Category.reconstitute(base).color, null);
+    });
+  });
+
   describe("addTag()", () => {
     it("agrega un tag a la categoría", () => {
       const cat = Category.create(familyId, type, catName);
@@ -139,6 +173,25 @@ describe("Category", () => {
       cat.updateIcon(null);
 
       assert.equal(cat.icon, null);
+    });
+  });
+
+  describe("updateColor()", () => {
+    it("asigna un color a la categoría", () => {
+      const cat = Category.create(familyId, type, catName);
+      const color = CategoryColor.of("teal_500");
+
+      cat.updateColor(color);
+
+      assert.ok(cat.color?.equals(color));
+    });
+
+    it("quita el color de la categoría al recibir null", () => {
+      const cat = Category.create(familyId, type, catName, undefined, CategoryColor.of("teal_500"));
+
+      cat.updateColor(null);
+
+      assert.equal(cat.color, null);
     });
   });
 

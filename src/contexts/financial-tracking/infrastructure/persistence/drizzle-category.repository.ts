@@ -22,6 +22,7 @@ class DrizzleCategoryRepository implements CategoryRepository {
           type: category.type,
           name: category.name.toString(),
           icon: category.icon?.toString() ?? null,
+          color: category.color?.toString() ?? null,
           status: category.status,
         })
         .onConflictDoUpdate({
@@ -29,6 +30,7 @@ class DrizzleCategoryRepository implements CategoryRepository {
           set: {
             name: category.name.toString(),
             icon: category.icon?.toString() ?? null,
+            color: category.color?.toString() ?? null,
             status: category.status,
           },
         });
@@ -87,6 +89,7 @@ class DrizzleCategoryRepository implements CategoryRepository {
       type: categoryRow.type === "EXPENSE" ? FinancialItemType.Expense : FinancialItemType.Income,
       name: categoryRow.name,
       icon: categoryRow.icon,
+      color: categoryRow.color,
       status: categoryRow.status === "ACTIVE" ? CategoryStatus.Active : CategoryStatus.Deprecated,
       tags: tagRows.map((tagRow) => ({
         id: tagRow.id,

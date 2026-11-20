@@ -105,6 +105,50 @@ describe("PATCH /families/:familyId/categories/:categoryId", () => {
     assert.equal(JSON.parse(response.body).icon, null);
   });
 
+  test("asigna un color a la categoría", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newColor: "teal_500" },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(JSON.parse(response.body).color, "teal_500");
+  });
+
+  test("quita el color enviando null", async () => {
+    const assignResponse = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newColor: "teal_500" },
+    });
+    assert.equal(assignResponse.statusCode, 200);
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newColor: null },
+    });
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(JSON.parse(response.body).color, null);
+  });
+
+  test("rechaza un color vacío", async () => {
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/families/${familyId}/categories/${categoryId}`,
+      headers: { authorization: ownerAuthorization },
+      payload: { newColor: "" },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "HTTP.INVALID_REQUEST_BODY");
+  });
+
   test("rechaza el renombrado solicitado por un Member", async () => {
     const response = await app.inject({
       method: "PATCH",

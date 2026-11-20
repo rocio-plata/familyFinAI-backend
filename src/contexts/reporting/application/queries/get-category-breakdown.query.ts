@@ -7,6 +7,7 @@ import type {
   CategoryDTO,
   GetCategoriesQuery,
 } from "../../../financial-tracking/application/queries/get-categories.query.js";
+import type { CategoryColor } from "../../../financial-tracking/domain/value-objects/category-color.js";
 import type { CategoryId } from "../../../financial-tracking/domain/value-objects/category-id.js";
 import type { CategoryName } from "../../../financial-tracking/domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../../financial-tracking/domain/value-objects/financial-item-type.js";
@@ -21,6 +22,7 @@ interface GetCategoryBreakdownInput {
 interface CategoryBreakdownDTO {
   categoryId: CategoryId;
   categoryName: CategoryName;
+  color: CategoryColor | null;
   amount: Money;
 }
 
@@ -52,6 +54,7 @@ class GetCategoryBreakdownQuery {
       .map(({ category, amount }) => ({
         categoryId: category.id,
         categoryName: category.name,
+        color: category.color,
         amount,
       }))
       .sort((first, second) => second.amount.amount - first.amount.amount);

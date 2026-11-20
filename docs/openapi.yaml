@@ -675,6 +675,7 @@ paths:
                 type: { $ref: '#/components/schemas/ItemType' }
                 name: { type: string, minLength: 1 }
                 icon: { type: string }
+                color: { type: string, minLength: 1, maxLength: 40 }
       responses:
         '201':
           description: Categoria creada
@@ -701,6 +702,7 @@ paths:
               properties:
                 newName: { type: string, minLength: 1 }
                 newIcon: { type: [string, 'null'] }
+                newColor: { type: [string, 'null'], minLength: 1, maxLength: 40 }
       responses:
         '200':
           description: Categoria actualizada
@@ -1012,6 +1014,7 @@ paths:
                   properties:
                     categoryId: { $ref: '#/components/schemas/Id' }
                     categoryName: { type: string }
+                    color: { type: [string, 'null'] }
                     amount: { $ref: '#/components/schemas/Money' }
 
   /families/{familyId}/reports/comparison:
@@ -1404,6 +1407,7 @@ components:
         type: { $ref: '#/components/schemas/ItemType' }
         name: { type: string }
         icon: { type: [string, 'null'] }
+        color: { type: [string, 'null'] }
         status: { type: string }
         tags: { type: array, items: { $ref: '#/components/schemas/Tag' } }
     BudgetConfiguration:
@@ -1439,6 +1443,7 @@ components:
             required: [categoryId, totalExpense, percentage]
             properties:
               categoryId: { $ref: '#/components/schemas/Id' }
+              color: { type: [string, 'null'] }
               totalExpense: { $ref: '#/components/schemas/Money' }
               percentage: { type: number }
     PeriodComparison:

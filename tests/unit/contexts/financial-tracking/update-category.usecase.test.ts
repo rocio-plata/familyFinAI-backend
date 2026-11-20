@@ -12,6 +12,7 @@ import { Category } from "../../../../src/contexts/financial-tracking/domain/ent
 import { CategoryNotFoundError } from "../../../../src/contexts/financial-tracking/domain/errors/category-not-found.error.js";
 import { DuplicateCategoryNameError } from "../../../../src/contexts/financial-tracking/domain/errors/duplicate-category-name.error.js";
 import { InsufficientRoleError } from "../../../../src/contexts/financial-tracking/domain/errors/insufficient-role.error.js";
+import { CategoryColor } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryId } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-id.js";
 import { CategoryName } from "../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
@@ -116,6 +117,46 @@ describe("UpdateCategoryUseCase", () => {
 
     assert.equal(updated.name.toString(), "Supermercado");
     assert.ok(updated.icon?.equals(icon));
+  });
+
+  test("actualiza solo el color", async () => {
+    const color = CategoryColor.of("teal_500");
+
+    const updated = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newColor: color,
+    });
+
+    assert.ok(updated.color?.equals(color));
+    assert.equal(updated.name.toString(), "Alimentación");
+  });
+
+  test("quita el color cuando recibe null", async () => {
+    category.updateColor(CategoryColor.of("teal_500"));
+
+    const updated = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newColor: null,
+    });
+
+    assert.equal(updated.color, null);
+  });
+
+  test("conserva el color cuando no se envía newColor", async () => {
+    category.updateColor(CategoryColor.of("teal_500"));
+
+    const updated = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newName: CategoryName.of("Supermercado"),
+    });
+
+    assert.equal(updated.color?.toString(), "teal_500");
   });
 
   test("rechaza si la categoría no existe", async () => {

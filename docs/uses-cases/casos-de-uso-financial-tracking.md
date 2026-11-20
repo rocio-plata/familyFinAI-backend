@@ -8,7 +8,7 @@ convención usada en `casos-de-uso-family-access.md`: **actor**,
 **precondiciones**, **flujo principal**, **flujos alternativos/errores**, **eventos de dominio
 disparados**.
 
-Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `CategoryIcon`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
+Basado en las entidades y value objects ya definidos: `FinancialItem`, `Category`, `Tag`, `CategoryAssignment`, `Money`, `TransactionDate`, `Title`, `Note`, `CategoryIcon`, `CategoryColor`, `FinancialItemType`, `CategoryStatus`/`TagStatus`, y los Domain Services `CategoryDeletionService`/`TagDeletionService`.
 
 > **Estado de implementación**: los casos de uso documentados tienen implementación y tests. La
 > numeración incluye handlers de eventos (18–20), variantes de casos ya listados (27–28) y la
@@ -101,14 +101,14 @@ Crea una categoría nueva para la familia.
 
 - **Actor**: únicamente el `Owner` de la familia. Decisión tomada para mantener la taxonomía de categorías bajo control administrativo — evita que cualquier miembro modifique una estructura compartida por toda la familia.
 - **Precondiciones**: la familia existe; quien solicita es `Owner` de esa familia; no existe ya una categoría con el mismo nombre en la familia, sin importar su estado (`Active` o `Deprecated` — comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
-- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `type` (`Expense` | `Income`, obligatorio), `name`, `icon` (opcional). En HTTP, `icon` es una clave string opaca; si se omite, la categoría nace con `icon = null`.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `type` (`Expense` | `Income`, obligatorio), `name`, `icon` (opcional), `color` (opcional). En HTTP, `icon` y `color` son claves string opacas (el color es una clave de la paleta de la app, que el backend solo guarda); si se omiten, la categoría nace con `icon = null` y `color = null`.
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` en la familia (`GetFamilyMembershipQuery`, de `Family & Access`) y se valida que su rol sea `Owner`.
-  2. Se valida `name` como `CategoryName` y, si viene, `icon` como `CategoryIcon` (se recorta, no puede quedar vacío y tiene un máximo de 40 caracteres).
+  2. Se valida `name` como `CategoryName` y, si vienen, `icon` como `CategoryIcon` y `color` como `CategoryColor` (se recortan, no pueden quedar vacíos y tienen un máximo de 40 caracteres).
   3. Se verifica que no exista otra categoría con el mismo nombre en la familia, sea `Active` o `Deprecated`.
-  4. Se invoca `Category.create(familyId, type, name, icon)`; sin ícono, la entidad conserva `null`.
+  4. Se invoca `Category.create(familyId, type, name, icon, color)`; sin ícono o color, la entidad conserva `null`.
   5. Se persiste.
-- **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `DuplicateCategoryNameError`.
+- **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `InvalidCategoryColorError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: `CategoryCreated`.
 - **Nota de diseño**: una categoría `Deprecated` con el mismo nombre **bloquea** la creación de una nueva — si se deprecó fue porque no se necesitaba, así que no tiene sentido crear un duplicado. Para volver a usarla, el flujo correcto es `ReactivateCategory` (caso de uso 6), no crear una categoría nueva con el mismo nombre.
 - **Nota de diseño (reajuste tipo-categoría)**: `type` es obligatorio y sin valor por defecto — se fuerza al usuario a elegir explícitamente `Expense` o `Income` al crear la categoría. Una vez creada, `Category.type` es **inmutable**: no existe `changeType()` en la entidad, ya que cambiarlo dejaría inconsistentes los items históricos ya clasificados bajo esa categoría.
@@ -138,16 +138,17 @@ Actualiza el nombre y/o el ícono de una categoría existente.
 
 - **Actor**: mismo criterio que `CreateCategory` — únicamente el `Owner`.
 - **Precondiciones**: la `Category` existe y pertenece a la familia; quien solicita es `Owner`; si se recibe `newName`, no colisiona con otra categoría de la familia (comparación case-insensitive, sin importar su estado `Active` o `Deprecated` — mismo criterio que `CreateCategory`).
-- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `newName` (opcional) y `newIcon` (opcional). `newIcon` puede ser una clave válida para asignar/cambiarlo o `null` explícito para quitarlo. Al menos uno de ambos campos debe estar presente en HTTP.
+- **Entrada**: `familyId`, `requestedBy` (UserId, del token), `categoryId`, `newName` (opcional) y `newIcon` (opcional) y `newColor` (opcional). `newIcon` y `newColor` pueden ser una clave válida para asignar/cambiarlos o `null` explícito para quitarlos. Al menos uno de los tres campos debe estar presente en HTTP.
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
   2. Se busca la `Category`, validando que pertenezca a la familia.
   3. Si llega `newName`, se valida como `CategoryName` y se comprueba que no colisione con otra categoría de la familia (excluyendo a la propia).
   4. Si llega `newIcon`, se valida como `CategoryIcon` cuando es string; `null` quita el ícono.
-  5. Se invoca `category.rename(newName)` y/o `category.updateIcon(newIcon)` solo para los campos presentes.
-  6. Se persiste.
-- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `DuplicateCategoryNameError`.
-- **Eventos disparados**: ninguno definido — a evaluar si `Reporting`/`AI Assistance` necesitan reaccionar a cambios de nombre o ícono.
+  5. Si llega `newColor`, se valida como `CategoryColor` cuando es string; `null` quita el color.
+  6. Se invoca `category.rename(newName)`, `category.updateIcon(newIcon)` y/o `category.updateColor(newColor)` solo para los campos presentes.
+  7. Se persiste.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `InvalidCategoryColorError`, `DuplicateCategoryNameError`.
+- **Eventos disparados**: ninguno definido — a evaluar si `Reporting`/`AI Assistance` necesitan reaccionar a cambios de nombre, ícono o color.
 
 ---
 
@@ -278,7 +279,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
   1. Se consulta `CategoryRepository.findByFamilyId()`.
   2. Se filtran las deprecadas si `includeDeprecated` es `false`.
   3. Si se especifica `type`, se filtran solo las categorías de ese tipo — es el filtro que alimenta las pantallas de "categorías de gasto"/"categorías de ingreso".
-  4. Se devuelve la lista (cada categoría con `type`, `icon` — clave o `null` — y sus tags ya ordenados por `displayOrder`).
+  4. Se devuelve la lista (cada categoría con `type`, `icon` y `color` — clave o `null` — y sus tags ya ordenados por `displayOrder`).
 - **Errores posibles**: ninguno propio.
 
 ---
@@ -478,6 +479,7 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 | `TagDoesNotBelongToCategoryError` | CreateFinancialItem, ReclassifyFinancialItem | ✅ ya definido |
 | `DuplicateCategoryNameError` | CreateCategory, UpdateCategory | ✅ ya definido |
 | `InvalidCategoryIconError` | CreateCategory, UpdateCategory | ✅ ya definido |
+| `InvalidCategoryColorError` | CreateCategory, UpdateCategory | ✅ ya definido |
 | `DuplicateTagNameError` | AddTagToCategory, RenameTag | ✅ ya definido |
 | `InvalidTagOrderError` | ReorderCategoryTags | ✅ ya definido |
 | `CategoryHasAssociatedItemsError` | DeleteCategory | ✅ ya definido |
