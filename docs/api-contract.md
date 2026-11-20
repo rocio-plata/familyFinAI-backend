@@ -937,44 +937,70 @@ Desactiva la configuración del presupuesto sin borrar su historial.
 Todos los reportes ofrecen vistas consolidadas de lectura optimizadas para visualizaciones en dashboards y gráficos de la app móvil.
 
 #### `GET /families/:familyId/dashboard`
-Obtiene el resumen consolidado del mes (ingresos totales, gastos totales, saldo neto y desglose porcentual por categorías de gasto). Cada entrada de `categoryBreakdown` incluye el `color` de la categoría (clave de la paleta de la app, o `null` si no tiene).
+Obtiene el resumen consolidado del mes: ingresos totales, gastos totales, saldo neto y el desglose por categoría de gastos e ingresos.
 - **Autenticación**: Bearer Token + Miembro.
 - **Query Params**:
   - `period` (string `YYYY-MM`, opcional, default: mes en curso).
+- **Reglas del desglose**:
+  - `expenseByCategory` contiene las categorías de tipo `EXPENSE` e `incomeByCategory` las de tipo `INCOME`.
+  - Se incluyen **todas las categorías activas** del tipo, también las que no tienen movimientos en el período (`amount` en 0 y `percentage` en 0), más las categorías **deprecadas** que sí tengan movimientos en el período.
+  - `percentage` es la proporción de la categoría sobre el total de su tipo (`totalExpenses` o `totalIncome`), con un decimal; es 0 si el total es 0.
+  - Orden: monto descendente y, a igualdad, por nombre.
+  - `icon` y `color` son la clave guardada en la categoría, o `null` si no tiene.
+  - Los totales y el saldo cuentan todos los movimientos del período, incluso los de categorías que ya no existen; esas categorías no aparecen en el desglose.
+  - `categoryBreakdown` (forma anterior) **fue retirado**, sin compatibilidad.
 - **Respuesta `200 OK`**:
   ```json
   {
-    "totalExpenses": {
-      "amount": 450000,
-      "currency": "CLP"
-    },
-    "totalIncome": {
-      "amount": 1200000,
-      "currency": "CLP"
-    },
+    "period": "2026-08",
+    "currency": "CLP",
+    "totalExpenses": { "amount": 450000, "currency": "CLP" },
+    "totalIncome": { "amount": 1200000, "currency": "CLP" },
     "balance": { "amount": 750000, "currency": "CLP" },
-    "categoryBreakdown": [
+    "expenseByCategory": [
       {
         "categoryId": "c1c2c3c4-0000-4111-8222-abcdefabcdef",
+        "name": "Alimentación",
+        "icon": "shopping_cart",
         "color": "teal_500",
-        "totalExpense": {
-          "amount": 270000,
-          "currency": "CLP"
-        },
+        "status": "ACTIVE",
+        "amount": { "amount": 270000, "currency": "CLP" },
         "percentage": 60
       },
       {
         "categoryId": "c2c3c4c5-0000-4111-8222-abcdefabcdef",
+        "name": "Transporte",
+        "icon": null,
         "color": null,
-        "totalExpense": {
-          "amount": 180000,
-          "currency": "CLP"
-        },
+        "status": "ACTIVE",
+        "amount": { "amount": 180000, "currency": "CLP" },
         "percentage": 40
+      },
+      {
+        "categoryId": "c3c4c5c6-0000-4111-8222-abcdefabcdef",
+        "name": "Salud",
+        "icon": null,
+        "color": null,
+        "status": "ACTIVE",
+        "amount": { "amount": 0, "currency": "CLP" },
+        "percentage": 0
+      }
+    ],
+    "incomeByCategory": [
+      {
+        "categoryId": "c4c5c6c7-0000-4111-8222-abcdefabcdef",
+        "name": "Sueldo",
+        "icon": "payments",
+        "color": null,
+        "status": "ACTIVE",
+        "amount": { "amount": 1200000, "currency": "CLP" },
+        "percentage": 100
       }
     ]
   }
   ```
+- **Errores posibles**:
+  - `400`: `HTTP.INVALID_REQUEST_BODY` (período con formato inválido).
 
 ---
 
@@ -1326,6 +1352,8 @@ documentadas en la sección 3. La confirmación de sugerencias de IA reutiliza l
 | B1 | `dashboard.categoryBreakdown` trae solo `categoryId`, y solo gastos | `expenseByCategory[]` e `incomeByCategory[]` con `categoryId`, `name`, `icon`, `status`, `amount` (Money), `percentage`; `currency` a nivel superior |
 | B2 | No aparecen las categorías **sin movimientos**, pero el diseño muestra `$0` | Incluir todas las categorías activas, más las deprecadas que tengan movimientos en el período |
 | B3 | `dashboard.balance` es un número suelto | Devolverlo como `Money` (ver T2) |
+
+> **Estado**: B1, B2 y B3 están implementadas (dashboard con `expenseByCategory`/`incomeByCategory`, categorías sin movimientos en $0, `balance` como `Money`). B4–B8 siguen abiertas.
 | B4 | `breakdown` no trae `icon`, `status` ni `percentage` | Añadirlos; parámetro `includeEmpty`; `currency` y `total` a nivel superior |
 | B5 | `comparison`: no se documenta qué pasa cuando el período base es 0; los períodos se llaman `periodA`/`periodB` tanto en la consulta como en la respuesta | `expenseVariation` e `incomeVariation` pasan a `number \| null` (null si el base es 0); la respuesta usa `a` y `b` y un `currency` superior |
 | B6 | `trend`: no se documenta si los meses sin datos aparecen ni el rango máximo | Rellenar meses vacíos con 0; rango máximo 24 meses; `REPORTING.INVALID_PERIOD_RANGE`; respuesta `{ fromPeriod, toPeriod, currency, points[] }` |
@@ -1388,7 +1416,7 @@ se mantienen en la tabla de brechas de la sección 6 y en el plan de implementac
 | Login / registro | `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` | — |
 | Selector de familias | `GET /me/families`, `PUT /me/families/order`, `POST /families`, `GET /me/invitations`, `POST /invitations/:id/accept`, `POST /invitations/:id/decline` | — |
 | Gestión de familia | `GET /families/:id/members`, `GET/POST /families/:id/invitations`, `DELETE /invitations/:id`, `PATCH .../members/:id/role`, `DELETE .../members/:id`, `PATCH .../settings/currency` | — |
-| Dashboard | `GET /families/:id/dashboard`, `GET /families/:id/categories` | B1–B3 |
+| Dashboard | `GET /families/:id/dashboard`, `GET /families/:id/categories` | B1–B3 (implementadas) |
 | Categorías | `GET/POST/PATCH/DELETE /families/:id/categories...`, tags | — |
 | Registro manual | `POST /families/:id/items`, `GET .../categories`, `GET .../payment-methods` | — |
 | Registro con texto | `POST .../suggestions/text`, `POST .../suggestions/:id/confirm`, `DELETE .../suggestions/:id` | S3–S4 |

@@ -235,19 +235,31 @@ function serializeTotals(totals: { totalExpenses: Money; totalIncome: Money; bal
   };
 }
 
+function serializeDashboardCategory(
+  entry: Awaited<ReturnType<GetDashboardSummaryQuery["execute"]>>["expenseByCategory"][number],
+) {
+  return {
+    categoryId: entry.categoryId.toString(),
+    name: entry.name.toString(),
+    icon: entry.icon?.toString() ?? null,
+    color: entry.color?.toString() ?? null,
+    status: entry.status,
+    amount: serializeMoney(entry.amount),
+    percentage: entry.percentage,
+  };
+}
+
 function serializeDashboardSummary(
   summary: Awaited<ReturnType<GetDashboardSummaryQuery["execute"]>>,
 ) {
   return {
+    period: summary.period.toString(),
+    currency: summary.currency.toString(),
     totalExpenses: serializeMoney(summary.totalExpenses),
     totalIncome: serializeMoney(summary.totalIncome),
-    balance: serializeMoney(Money.of(summary.balance, summary.totalExpenses.currency)),
-    categoryBreakdown: summary.categoryBreakdown.map((entry) => ({
-      categoryId: entry.categoryId.toString(),
-      color: entry.color?.toString() ?? null,
-      totalExpense: serializeMoney(entry.totalExpense),
-      percentage: entry.percentage,
-    })),
+    balance: serializeMoney(summary.balance),
+    expenseByCategory: summary.expenseByCategory.map(serializeDashboardCategory),
+    incomeByCategory: summary.incomeByCategory.map(serializeDashboardCategory),
   };
 }
 

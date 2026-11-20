@@ -67,10 +67,10 @@ Vista rápida de la situación financiera del período actual — la pantalla pr
 - **Actor**: cualquier `Member` de la familia.
 - **Entrada**: `familyId`, `period` (opcional, default: `Period.current()`).
 - **Flujo principal**:
-  1. Se consultan todos los `CategoryPeriodAggregate` de la familia para ese período.
-  2. Se calcula el resumen: `totalExpenses` (suma de todos los `totalExpense`), `totalIncome` (suma de todos los `totalIncome`), `balance` (`totalIncome - totalExpenses`).
-  3. Se identifica la distribución por categoría (cada agregado con su proporción del gasto total, para el gráfico de torta/barras).
-  4. Se devuelve el DTO consolidado.
+  1. Se consultan todos los `CategoryPeriodAggregate` de la familia para ese período y todas las categorías de la familia (`GetCategoriesQuery`, incluidas las deprecadas).
+  2. Se calcula el resumen: `totalExpenses` (suma de todos los `totalExpense`), `totalIncome` (suma de todos los `totalIncome`), `balance` como `Money` (`totalIncome - totalExpenses`) y la `currency` del resumen. Los totales incluyen también los movimientos de categorías ya eliminadas.
+  3. Se construyen dos desgloses, `expenseByCategory` (categorías `Expense`) e `incomeByCategory` (categorías `Income`). Cada entrada lleva `categoryId`, `name`, `icon`, `color`, `status`, `amount` (`Money`) y `percentage` sobre el total de su tipo. Entran todas las categorías activas del tipo (con `amount` 0 si no tuvieron movimientos) y las deprecadas con movimientos en el período. Orden: monto descendente y luego nombre.
+  4. Se devuelve el DTO consolidado con el `period` resuelto. La forma anterior (`categoryBreakdown`) fue retirada sin compatibilidad.
 - **Errores posibles**: ninguno propio (familia sin movimientos en el período devuelve resumen en cero).
 
 ---
