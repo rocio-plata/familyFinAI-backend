@@ -2659,6 +2659,7 @@
                   "pm.environment.set('categoryId', body.id);",
                   "pm.test('type EXPENSE', () => pm.expect(body.type).to.equal('EXPENSE'));",
                   "pm.test('icon guardado', () => pm.expect(body.icon).to.equal('pets'));",
+                  "pm.test('color guardado', () => pm.expect(body.color).to.equal('coral_400'));",
                   "pm.test('status ACTIVE', () => pm.expect(body.status).to.equal('ACTIVE'));"
                 ]
               }
@@ -2689,7 +2690,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Mascotas\",\n  \"type\": \"EXPENSE\",\n  \"icon\": \"pets\"\n}"
+              "raw": "{\n  \"name\": \"Mascotas\",\n  \"type\": \"EXPENSE\",\n  \"icon\": \"pets\",\n  \"color\": \"coral_400\"\n}"
             }
           }
         },
@@ -2704,7 +2705,8 @@
                   "pm.test('status 201', () => pm.response.to.have.status(201));",
                   "const body = pm.response.json();",
                   "pm.environment.set('categoryId2', body.id);",
-                  "pm.test('sin ícono (null)', () => pm.expect(body.icon ?? null).to.equal(null));"
+                  "pm.test('sin ícono (null)', () => pm.expect(body.icon ?? null).to.equal(null));",
+                  "pm.test('sin color (null)', () => pm.expect(body.color ?? null).to.equal(null));"
                 ]
               }
             }
@@ -3138,6 +3140,185 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"newIcon\": \"pets\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove Category Color (newColor null)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('color null', () => pm.expect(body.color ?? null).to.equal(null));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/families/{{defaultFamilyIdA}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "families",
+                "{{defaultFamilyIdA}}",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newColor\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Set Category Color",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('color coral_400', () => pm.expect(body.color).to.equal('coral_400'));",
+                  "pm.test('el ícono no cambia', () => pm.expect(body.icon).to.equal('pets'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/families/{{defaultFamilyIdA}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "families",
+                "{{defaultFamilyIdA}}",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newColor\": \"coral_400\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Category con color vacío (debe fallar 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('HTTP.INVALID_REQUEST_BODY', () => pm.expect(pm.response.json().error).to.equal('HTTP.INVALID_REQUEST_BODY'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/families/{{defaultFamilyIdA}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "families",
+                "{{defaultFamilyIdA}}",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newColor\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Category con color de más de 40 caracteres (debe fallar 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('INVALID_CATEGORY_COLOR', () => pm.expect(pm.response.json().error).to.equal('FINANCIAL_TRACKING.INVALID_CATEGORY_COLOR'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/families/{{defaultFamilyIdA}}/categories/{{categoryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "families",
+                "{{defaultFamilyIdA}}",
+                "categories",
+                "{{categoryId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newColor\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n}"
             }
           }
         },
@@ -5902,6 +6083,7 @@
                   "  pm.expect(m.amount).to.eql({ amount: 42000, currency: 'CLP' });",
                   "  pm.expect(m.percentage).to.equal(100);",
                   "  pm.expect(m.icon).to.equal('pets');",
+                  "  pm.expect(m.color).to.equal('coral_400');",
                   "  pm.expect(m.status).to.equal('ACTIVE');",
                   "  const salud = body.expenseByCategory.find(c => c.categoryId === pm.environment.get('categoryIdSalud'));",
                   "  pm.expect(salud.amount.amount).to.equal(0);",
@@ -6121,7 +6303,7 @@
                   "  const e = body.entries[0];",
                   "  pm.expect(e.categoryId).to.equal(pm.environment.get('categoryId'));",
                   "  pm.expect(e.amount).to.eql({ amount: 42000, currency: 'CLP' });",
-                  "  pm.expect(e.percentage).to.equal(100); pm.expect(e.icon).to.equal('pets'); pm.expect(e.status).to.equal('ACTIVE');",
+                  "  pm.expect(e.percentage).to.equal(100); pm.expect(e.icon).to.equal('pets'); pm.expect(e.color).to.equal('coral_400'); pm.expect(e.status).to.equal('ACTIVE');",
                   "});"
                 ]
               }
@@ -6579,7 +6761,7 @@
                   "pm.test('status 200', () => pm.response.to.have.status(200));",
                   "const body = pm.response.json();",
                   "pm.test('level category', () => pm.expect(body.level).to.equal('category'));",
-                  "pm.test('entrada con ícono, porcentaje e itemCount (desde la Fase 3)', () => { if (P >= 3) { const e = body.entries.find(x => x.categoryId === pm.environment.get('categoryId')); pm.expect(e.amount).to.eql({ amount: 42000, currency: 'CLP' }); pm.expect(e.percentage).to.equal(100); pm.expect(e.itemCount).to.equal(2); pm.expect(e.icon).to.equal('pets'); } });"
+                  "pm.test('entrada con ícono, porcentaje e itemCount (desde la Fase 3)', () => { if (P >= 3) { const e = body.entries.find(x => x.categoryId === pm.environment.get('categoryId')); pm.expect(e.amount).to.eql({ amount: 42000, currency: 'CLP' }); pm.expect(e.percentage).to.equal(100); pm.expect(e.itemCount).to.equal(2); pm.expect(e.icon).to.equal('pets'); pm.expect(e.color).to.equal('coral_400'); } });"
                 ]
               }
             }
