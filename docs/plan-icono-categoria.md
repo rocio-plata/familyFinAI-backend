@@ -4,7 +4,7 @@
 
 Se agrega un campo `icon` a `Category`: una clave de texto (no una imagen ni un recurso de UI) tomada de un catálogo de íconos acordado entre backend y frontend. Se guarda en el backend para que todos los miembros de una familia vean el mismo ícono para la misma categoría, sin importar el dispositivo.
 
-**Aclaración de alcance**: `Category` sí tiene categorías predefinidas — ya implementaste `CreateDefaultCategoriesOnFamilyCreatedEventHandler`, que reacciona a `FamilyCreated` y crea 9 categorías de tipo `Expense` (Comestibles, Salud, Restaurantes, Servicios, Compras, Regalos, Familia, Tiempo Libre, Transporte) si todavía no existen. Este plan agrega el campo `icon` a `Category` en general — las categorías predefinidas nacen igual que cualquier otra, con `icon = null` (ver decisión 2), coherente con que el catálogo de íconos todavía no está definido.
+**Aclaración de alcance**: `Category` sí tiene categorías predefinidas — ya implementaste `CreateDefaultCategoriesOnFamilyCreatedEventHandler`, que reacciona a `FamilyCreated` y crea 9 categorías de tipo `Expense` (Comestibles, Salud, Restaurantes, Servicios, Compras, Regalos, Familia, Tiempo Libre, Transporte) y 3 de tipo `Income` (Salario, Ventas, Otros) si todavía no existen. Este plan agrega el campo `icon` a `Category` en general — las categorías predefinidas nacen igual que cualquier otra, con `icon = null` (ver decisión 2), coherente con que el catálogo de íconos todavía no está definido.
 
 **Estado de implementación (2026-09-20)**: los puntos 1–8 y 10 están implementados, cubiertos por pruebas unitarias, de integración y E2E, y expuestos por HTTP. El punto 9 (colección de Postman) sigue pendiente.
 

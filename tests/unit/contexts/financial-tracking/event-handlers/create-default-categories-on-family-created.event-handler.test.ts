@@ -19,14 +19,14 @@ describe("CreateDefaultCategoriesOnFamilyCreatedEventHandler", () => {
     handler = new CreateDefaultCategoriesOnFamilyCreatedEventHandler(categoryRepository);
   });
 
-  test("crea las 9 categorías por defecto al recibir el evento FamilyCreated", async () => {
+  test("crea las 12 categorías por defecto (9 de gasto y 3 de ingreso) al recibir el evento FamilyCreated", async () => {
     const familyId = FamilyId.generate();
     const event = new FamilyCreated(familyId, UserId.generate());
 
     await handler.handle(event);
 
     const categories = await categoryRepository.findByFamilyId(familyId);
-    assert.equal(categories.length, 9);
+    assert.equal(categories.length, 12);
 
     const names = categories.map((c) => c.name.toString());
     const expectedNames = [
@@ -39,11 +39,28 @@ describe("CreateDefaultCategoriesOnFamilyCreatedEventHandler", () => {
       "Familia",
       "Tiempo Libre",
       "Transporte",
+      "Salario",
+      "Ventas",
+      "Otros",
     ];
 
     for (const expected of expectedNames) {
       assert.ok(names.includes(expected), `Falta la categoría por defecto: ${expected}`);
     }
+  });
+
+  test("crea Salario, Ventas y Otros como categorías de ingreso y el resto como gasto", async () => {
+    const familyId = FamilyId.generate();
+
+    await handler.handle(new FamilyCreated(familyId, UserId.generate()));
+
+    const categories = await categoryRepository.findByFamilyId(familyId);
+    const incomeNames = categories
+      .filter((c) => c.type === FinancialItemType.Income)
+      .map((c) => c.name.toString())
+      .sort();
+    assert.deepEqual(incomeNames, ["Otros", "Salario", "Ventas"]);
+    assert.equal(categories.filter((c) => c.type === FinancialItemType.Expense).length, 9);
   });
 
   test("no duplica categorías si alguna ya existe para la familia", async () => {
@@ -59,6 +76,6 @@ describe("CreateDefaultCategoriesOnFamilyCreatedEventHandler", () => {
     await handler.handle(event);
 
     const categories = await categoryRepository.findByFamilyId(familyId);
-    assert.equal(categories.length, 9);
+    assert.equal(categories.length, 12);
   });
 });

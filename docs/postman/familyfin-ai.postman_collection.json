@@ -2601,7 +2601,7 @@
               ]
             }
           },
-          "description": "Las categorías por defecto se crean al crear la familia (evento FamilyCreated)."
+          "description": "Las categorías por defecto (9 EXPENSE y 3 INCOME: Salario, Ventas, Otros) se crean al crear la familia (evento FamilyCreated)."
         },
         {
           "name": "Create Category con nombre de una por defecto (debe fallar 409)",

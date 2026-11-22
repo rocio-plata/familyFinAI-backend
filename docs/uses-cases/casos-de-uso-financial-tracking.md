@@ -39,6 +39,7 @@ Registra un nuevo gasto o ingreso.
 - **Errores posibles**: `InvalidMoneyError`, `InvalidTitleError`, `InvalidNoteError`, `FutureTransactionDateError`, `CategoryNotFoundError`, `CategoryNotActiveError`, `TagNotFoundError`, `TagNotActiveError`, `TagDoesNotBelongToCategoryError`.
 - **Eventos disparados**: `ItemRecorded`.
 - **Nota de diseño (reajuste tipo-categoría)**: el tipo (`Expense`/`Income`) pasó a ser una propiedad inmutable de `Category`, no un dato que el usuario elija al registrar un movimiento — evita inconsistencias como un item `Income` con categoría `"Supermercado"`. Ver `plan-ajuste-tipo-categoria.md` para el detalle completo del rediseño.
+- **Categorías por defecto**: al crearse una familia, `CreateDefaultCategoriesOnFamilyCreatedEventHandler` (consume `FamilyCreated`) crea 9 categorías `Expense` (Comestibles, Salud, Restaurantes, Servicios, Compras, Regalos, Familia, Tiempo Libre, Transporte) y 3 `Income` (Salario, Ventas, Otros). Es idempotente: no duplica una categoría si ya existe con el mismo tipo y nombre.
 
 ---
 
