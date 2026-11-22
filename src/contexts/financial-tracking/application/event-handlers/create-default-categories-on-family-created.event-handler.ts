@@ -8,7 +8,7 @@ import { CategoryName } from "../../domain/value-objects/category-name.js";
 import { FinancialItemType } from "../../domain/value-objects/financial-item-type.js";
 
 class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
-  private static readonly DEFAULT_CATEGORY_NAMES = [
+  private static readonly DEFAULT_EXPENSE_CATEGORY_NAMES = [
     "Comestibles",
     "Salud",
     "Restaurantes",
@@ -20,6 +20,8 @@ class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
     "Transporte",
   ];
 
+  private static readonly DEFAULT_INCOME_CATEGORY_NAMES = ["Salario", "Ventas", "Otros"];
+
   constructor(
     private readonly categoryRepository: CategoryRepository,
     private readonly eventBus?: EventBus,
@@ -28,12 +30,23 @@ class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
   async handle(event: FamilyCreated): Promise<void> {
     const familyCategories = await this.categoryRepository.findByFamilyId(event.familyId);
 
-    for (const nameStr of CreateDefaultCategoriesOnFamilyCreatedEventHandler.DEFAULT_CATEGORY_NAMES) {
+    const defaults = [
+      ...CreateDefaultCategoriesOnFamilyCreatedEventHandler.DEFAULT_EXPENSE_CATEGORY_NAMES.map(
+        (name) => ({ name, type: FinancialItemType.Expense }),
+      ),
+      ...CreateDefaultCategoriesOnFamilyCreatedEventHandler.DEFAULT_INCOME_CATEGORY_NAMES.map(
+        (name) => ({ name, type: FinancialItemType.Income }),
+      ),
+    ];
+
+    for (const { name: nameStr, type } of defaults) {
       const categoryName = CategoryName.of(nameStr);
-      const exists = familyCategories.some((cat) => cat.name.equals(categoryName));
+      const exists = familyCategories.some(
+        (cat) => cat.type === type && cat.name.equals(categoryName),
+      );
 
       if (!exists) {
-        const category = Category.create(event.familyId, FinancialItemType.Expense, categoryName);
+        const category = Category.create(event.familyId, type, categoryName);
         await this.categoryRepository.save(category);
 
         if (this.eventBus) {

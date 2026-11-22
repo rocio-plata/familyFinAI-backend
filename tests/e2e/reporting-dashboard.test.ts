@@ -113,7 +113,19 @@ describe("Flujo E2E: dashboard, tendencia y comparación de períodos", () => {
         (entry: { name: string }) => entry.name === "Salud",
       );
       assert.equal(emptyExpenseCategory?.amount.amount, 0);
-      assert.deepEqual(dashboard.incomeByCategory, []);
+      const incomeEntries = dashboard.incomeByCategory as {
+        name: string;
+        amount: { amount: number };
+        percentage: number;
+      }[];
+      assert.deepEqual(incomeEntries.map((entry) => entry.name).sort(), [
+        "Otros",
+        "Salario",
+        "Ventas",
+      ]);
+      assert.ok(
+        incomeEntries.every((entry) => entry.amount.amount === 0 && entry.percentage === 0),
+      );
     } finally {
       for (const familyId of createdFamilyIds) {
         await db.delete(financialItems).where(eq(financialItems.familyId, familyId));

@@ -47,7 +47,7 @@ describe("POST /families", () => {
     assert.ok(body.id);
   });
 
-  test("crea automáticamente las 9 categorías por defecto al crear una familia", async () => {
+  test("crea automáticamente las 12 categorías por defecto (9 de gasto y 3 de ingreso) al crear una familia", async () => {
     const createResponse = await app.inject({
       method: "POST",
       url: "/families",
@@ -66,7 +66,7 @@ describe("POST /families", () => {
 
     assert.equal(categoriesResponse.statusCode, 200);
     const categories = JSON.parse(categoriesResponse.body);
-    assert.equal(categories.length, 9);
+    assert.equal(categories.length, 12);
 
     const names = categories.map((c: { name: string }) => c.name);
     const expected = [
@@ -79,6 +79,9 @@ describe("POST /families", () => {
       "Familia",
       "Tiempo Libre",
       "Transporte",
+      "Salario",
+      "Ventas",
+      "Otros",
     ];
     for (const exp of expected) {
       assert.ok(names.includes(exp), `Categoría por defecto ausente: ${exp}`);
