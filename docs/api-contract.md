@@ -387,6 +387,8 @@ Crea una invitación para que otro usuario se sume a la familia.
 - **Errores posibles**:
   - `403`: `FAMILY.INSUFFICIENT_ROLE` (si quien invita no es OWNER).
   - `409`: `FAMILY_ACCESS.ALREADY_MEMBER` (el usuario invitado ya es miembro de la familia).
+  - `409`: `FAMILY_ACCESS.INVITATION_ALREADY_PENDING` (ya existe una invitación `PENDING` y no vencida para ese correo en la familia; las revocadas, rechazadas o vencidas no bloquean).
+  - `400`: `SHARED.INVALID_EMAIL` (formato inválido o más de 255 caracteres).
 
 ---
 
@@ -412,11 +414,15 @@ Revoca una invitación pendiente.
 ---
 
 #### `DELETE /families/:familyId/members/:memberId`
-Remueve a un miembro de la familia.
-- **Autenticación**: Bearer Token + Rol `OWNER`.
+Remueve a un miembro de la familia, o permite que un miembro **salga** de ella.
+- **Autenticación**: Bearer Token + ser miembro de la familia.
+  - Quitar a **otra** persona: solo `OWNER`.
+  - **Salir de la familia**: cualquier miembro (`OWNER` o `MEMBER`) puede quitarse a sí mismo usando su propio `userId` como `:memberId`.
+- **Efectos** (igual en ambos casos): el usuario pierde el acceso a la familia, se borra su medio de pago predeterminado en ella y se conservan los movimientos que registró (`recordedBy`).
 - **Respuesta `204 No Content`**
 - **Errores posibles**:
-  - `400`: `FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER` (no se puede expulsar o remover al único OWNER existente).
+  - `400`: `FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER` (no se puede quitar, ni dejar que salga, el único OWNER existente).
+  - `403`: `FAMILY.NOT_A_MEMBER` (quien ejecuta no pertenece a la familia) o `FAMILY.INSUFFICIENT_ROLE` (un `MEMBER` intenta quitar a otra persona).
   - `404`: `FAMILY_ACCESS.MEMBER_NOT_FOUND`.
 
 ---
@@ -1332,7 +1338,8 @@ Descarta una sugerencia sin persistirla en el registro financiero.
 | `FAMILY_ACCESS.INVITATION_NOT_FOUND` | 404 | La invitación no existe. | Informar que la invitación no fue encontrada. |
 | `FAMILY_ACCESS.INVITATION_EXPIRED` | 400 | La invitación superó su tiempo de vigencia. | Solicitar al administrador un nuevo reenvío. |
 | `FAMILY_ACCESS.INVITATION_NOT_PENDING` | 400 | La invitación ya fue aceptada o revocada. | Mostrar estado actualizado. |
-| `FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER` | 400 | Se intentó degradar o remover al único OWNER. | Notificar que se debe promover a otro miembro antes. |
+| `FAMILY_ACCESS.INVITATION_ALREADY_PENDING` | 409 | Ya hay una invitación pendiente y vigente para ese correo en la familia. | Informar y no reenviar. |
+| `FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER` | 400 | Se intentó degradar, remover o dejar salir al único OWNER. | Notificar que se debe promover a otro miembro antes. |
 | `FAMILY.INSUFFICIENT_ROLE` | 403 | El usuario no cuenta con rol OWNER para esta acción. | Ocultar botones de administración a usuarios MEMBER. |
 | `FINANCIAL_TRACKING.DUPLICATE_PAYMENT_METHOD_NAME` | 409 | Ya existe un medio de pago con ese nombre. | Solicitar un nombre diferenciado. |
 | `FINANCIAL_TRACKING.PAYMENT_METHOD_HAS_ASSOCIATED_ITEMS` | 409 | No se puede eliminar porque tiene transacciones vinculadas. | Ofrecer la opción de "Deprecar / Desactivar". |

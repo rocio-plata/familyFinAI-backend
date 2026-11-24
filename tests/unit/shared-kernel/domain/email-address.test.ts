@@ -19,4 +19,12 @@ describe("EmailAddress", () => {
   test("compara direcciones normalizadas", () => {
     assert.ok(EmailAddress.of("rocio@test.com").equals(EmailAddress.of("ROCIO@test.com")));
   });
+
+  test("rechaza direcciones de más de 255 caracteres", () => {
+    const tooLong = `${"a".repeat(250)}@b.com`;
+    assert.throws(() => EmailAddress.of(tooLong), InvalidEmailError);
+    const maxLength = `${"a".repeat(245)}@b.com`;
+    assert.equal(EmailAddress.of(maxLength).toString().length, 251);
+    assert.equal(EmailAddress.of(`${"a".repeat(249)}@b.com`).toString().length, 255);
+  });
 });

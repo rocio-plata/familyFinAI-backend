@@ -2,6 +2,7 @@
 import { Currency } from "../../../../shared-kernel/domain/currency.js";
 import type { DomainEvent } from "../../../../shared-kernel/domain/domain-event.js";
 import type { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
+import { AlreadyMemberError } from "../errors/already-member.error.js";
 import { CannotRemoveLastOwnerError } from "../errors/cannot-remove-last-owner.error.js";
 import { InsufficientRoleError } from "../errors/insufficient-role.error.js";
 import { MemberNotFoundError } from "../errors/member-not-found.error.js";
@@ -93,7 +94,10 @@ class Family {
 
   removeMember(memberId: UserId, removedBy: UserId): void {
     const remover = this.findMembership(removedBy);
-    if (!remover?.role.canRemoveMembers()) throw new InsufficientRoleError();
+    if (!remover) throw new InsufficientRoleError();
+    // cualquier miembro puede salir por sí mismo; quitar a otro es exclusivo de quien tiene permiso
+    const isLeaving = memberId.equals(removedBy);
+    if (!isLeaving && !remover.role.canRemoveMembers()) throw new InsufficientRoleError();
 
     const target = this.findMembership(memberId);
     if (!target) throw new MemberNotFoundError(memberId);
@@ -135,6 +139,7 @@ class Family {
   }
 
   addMemberFromInvitationData(userId: UserId, role: Role): void {
+    if (this.findMembership(userId)) throw new AlreadyMemberError(userId);
     this._members.push(Member.create(userId, role));
   }
 

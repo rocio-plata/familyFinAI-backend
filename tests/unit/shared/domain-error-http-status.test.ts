@@ -41,4 +41,8 @@ describe("resolveHttpStatus", () => {
     assert.equal(resolveHttpStatus({ code: "SHARED.INVALID_AMOUNT" }), 400);
     assert.equal(resolveHttpStatus({ code: "FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER" }), 400);
   });
+
+  test("invitación pendiente duplicada devuelve 409", () => {
+    assert.equal(resolveHttpStatus({ code: "FAMILY_ACCESS.INVITATION_ALREADY_PENDING" }), 409);
+  });
 });

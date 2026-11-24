@@ -368,14 +368,21 @@ paths:
   /families/{familyId}/members/{memberId}:
     delete:
       tags: [Families]
-      summary: Elimina un miembro
+      summary: Elimina un miembro o permite salir de la familia
+      description: >
+        Quitar a otra persona es exclusivo de `OWNER`. Cualquier miembro (`OWNER` o `MEMBER`)
+        puede quitarse a si mismo (`memberId` = su propio userId) para salir de la familia.
+        Se pierde el acceso, se borra su medio de pago predeterminado y se conservan sus movimientos.
       operationId: removeMember
       security: [{ bearerAuth: [] }]
       parameters:
         - { $ref: '#/components/parameters/FamilyId' }
         - { $ref: '#/components/parameters/MemberId' }
       responses:
-        '204': { description: Miembro eliminado }
+        '204': { description: Miembro eliminado o salida de la familia }
+        '400': { description: "FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER (es el unico OWNER)" }
+        '403': { description: "FAMILY.NOT_A_MEMBER, o FAMILY.INSUFFICIENT_ROLE si un MEMBER intenta quitar a otro" }
+        '404': { description: FAMILY_ACCESS.MEMBER_NOT_FOUND }
 
   /families/{familyId}/members/{memberId}/role:
     patch:
@@ -1395,7 +1402,13 @@ components:
         expiresAt: { $ref: '#/components/schemas/DateValue' }
     FamilySettings:
       type: object
-      additionalProperties: true
+      required: [defaultCurrency, currencyLocked, currencyLockReasons]
+      properties:
+        defaultCurrency: { $ref: '#/components/schemas/Currency' }
+        currencyLocked: { type: boolean }
+        currencyLockReasons:
+          type: array
+          items: { type: string, enum: [ITEMS_EXIST, ACTIVE_BUDGETS_EXIST] }
     PaymentMethod:
       type: object
       properties:
