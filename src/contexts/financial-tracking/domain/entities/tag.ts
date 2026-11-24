@@ -51,6 +51,10 @@ class Tag {
   deprecate(): void {
     this._status = TagStatus.Deprecated;
   }
+
+  reactivate(): void {
+    this._status = TagStatus.Active;
+  }
 }
 
 export type { ReconstituteTagProps };

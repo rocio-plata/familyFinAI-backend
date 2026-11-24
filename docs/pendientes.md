@@ -48,7 +48,7 @@ Este documento reúne la situación real del repositorio y clasifica cada punto 
   `classificationOrigin`: hoy `serializeSuggestion` no los devuelve ni `ConfirmSuggestion` los envía a `CreateFinancialItemUseCase`.
 - [ ] Exponer `POST /auth/refresh` y `POST /auth/logout` (documentados, sin ruta HTTP; `TokenService.refresh` ya existe).
 - [ ] Test dedicado de rechazo por moneda distinta a la familiar al confirmar una sugerencia (`C1-IA`; la validación ocurre en `CreateFinancialItemUseCase`).
-- [ ] Exponer `ReactivateCategory` por HTTP (el caso de uso existe sin ruta).
+- [x] Exponer `ReactivateCategory` por HTTP (`POST /families/:familyId/categories/:categoryId/reactivate`) y `ReactivateTag`. Además: `deprecatedAt` y `displayOrder` en categorías, `PUT /families/:familyId/categories/order` y duplicado de nombre por tipo (brechas BG-01, 03, 04 y 07 de la spec 005-categories del frontend).
 - [ ] Automatizar en CI la ejecución de `npm run test:integration` / `npm run test:e2e` y la verificación reproducible de `db:reset`/`db:migrate` (ver detalle en sección `Persistencia y plataforma`).
 - [x] Tests HTTP dedicados para las rutas de medios de pago (ver detalle en sección `Financial Tracking` → `Medios de pago`).
 - [x] Tests HTTP/e2e dedicados para el reporte por medio de pago (ver detalle en sección `Reporting`).

@@ -109,6 +109,29 @@ describe("Persistencia Drizzle de categorías (integración)", () => {
     assert.equal(updated?.status, "DEPRECATED");
   });
 
+  test("persiste la fecha de archivado y el orden de una categoría", { skip }, async () => {
+    const category = Category.create(
+      FamilyId.generate(),
+      FinancialItemType.Income,
+      CategoryName.of("Orden integración"),
+      undefined,
+      undefined,
+      3,
+    );
+    createdCategoryIds.push(category.id.toString());
+    category.deprecate();
+    await categoryRepository.save(category);
+
+    const archived = await categoryRepository.findById(category.id);
+    assert.equal(archived?.displayOrder, 3);
+    assert.ok(archived?.deprecatedAt instanceof Date);
+
+    archived?.reactivate();
+    if (archived) await categoryRepository.save(archived);
+    const reactivated = await categoryRepository.findById(category.id);
+    assert.equal(reactivated?.deprecatedAt, null);
+  });
+
   test("elimina una categoría", { skip }, async () => {
     const familyId = FamilyId.generate();
     const category = Category.create(

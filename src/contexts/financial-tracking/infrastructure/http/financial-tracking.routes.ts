@@ -17,9 +17,12 @@ import type { DeleteTagUseCase } from "../../application/commands/delete-tag.use
 import type { DeprecateCategoryUseCase } from "../../application/commands/deprecate-category.usecase.js";
 import type { DeprecatePaymentMethodUseCase } from "../../application/commands/deprecate-payment-method.usecase.js";
 import type { DeprecateTagUseCase } from "../../application/commands/deprecate-tag.usecase.js";
+import type { ReactivateCategoryUseCase } from "../../application/commands/reactivate-category.usecase.js";
+import type { ReactivateTagUseCase } from "../../application/commands/reactivate-tag.usecase.js";
 import type { ReclassifyFinancialItemUseCase } from "../../application/commands/reclassify-financial-item.usecase.js";
 import type { RenamePaymentMethodUseCase } from "../../application/commands/rename-payment-method.usecase.js";
 import type { RenameTagUseCase } from "../../application/commands/rename-tag.usecase.js";
+import type { ReorderCategoriesUseCase } from "../../application/commands/reorder-categories.usecase.js";
 import type { ReorderCategoryTagsUseCase } from "../../application/commands/reorder-category-tags.usecase.js";
 import type { SetDefaultPaymentMethodUseCase } from "../../application/commands/set-default-payment-method.usecase.js";
 import type { UpdateCategoryUseCase } from "../../application/commands/update-category.usecase.js";
@@ -62,6 +65,9 @@ interface FinancialTrackingRoutesDependencies {
   updateCategoryUseCase: UpdateCategoryUseCase;
   renameTagUseCase: RenameTagUseCase;
   reclassifyFinancialItemUseCase: ReclassifyFinancialItemUseCase;
+  reactivateCategoryUseCase: ReactivateCategoryUseCase;
+  reactivateTagUseCase: ReactivateTagUseCase;
+  reorderCategoriesUseCase: ReorderCategoriesUseCase;
   reorderCategoryTagsUseCase: ReorderCategoryTagsUseCase;
   renamePaymentMethodUseCase: RenamePaymentMethodUseCase;
   setDefaultPaymentMethodUseCase: SetDefaultPaymentMethodUseCase;
@@ -298,6 +304,8 @@ function registerFinancialTrackingRoutes(
         icon: category.icon?.toString() ?? null,
         color: category.color?.toString() ?? null,
         status: CategoryStatus.Active,
+        deprecatedAt: null,
+        displayOrder: category.displayOrder,
       });
     },
   );
@@ -684,6 +692,104 @@ function registerFinancialTrackingRoutes(
     },
   );
 
+  app.post(
+    "/families/:familyId/categories/:categoryId/reactivate",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "categoryId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            categoryId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, categoryId } = request.params as { familyId: string; categoryId: string };
+
+      await deps.reactivateCategoryUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        categoryId: CategoryId.of(categoryId),
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.post(
+    "/families/:familyId/categories/:categoryId/tags/:tagId/reactivate",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId", "categoryId", "tagId"],
+          properties: {
+            familyId: { type: "string", minLength: 1 },
+            categoryId: { type: "string", minLength: 1 },
+            tagId: { type: "string", minLength: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId, categoryId, tagId } = request.params as {
+        familyId: string;
+        categoryId: string;
+        tagId: string;
+      };
+
+      await deps.reactivateTagUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        categoryId: CategoryId.of(categoryId),
+        tagId: TagId.of(tagId),
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
+  app.put(
+    "/families/:familyId/categories/order",
+    {
+      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      schema: {
+        params: {
+          type: "object",
+          required: ["familyId"],
+          properties: { familyId: { type: "string", minLength: 1 } },
+        },
+        body: {
+          type: "object",
+          required: ["orderedCategoryIds"],
+          properties: {
+            orderedCategoryIds: {
+              type: "array",
+              items: { type: "string", minLength: 1 },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { familyId } = request.params as { familyId: string };
+      const { orderedCategoryIds } = request.body as { orderedCategoryIds: string[] };
+
+      await deps.reorderCategoriesUseCase.execute({
+        familyId: FamilyId.of(familyId),
+        requestedBy: request.userId,
+        orderedCategoryIds: orderedCategoryIds.map((id) => CategoryId.of(id)),
+      });
+
+      return reply.code(204).send();
+    },
+  );
+
   app.delete(
     "/families/:familyId/categories/:categoryId",
     {
@@ -907,6 +1013,8 @@ function registerFinancialTrackingRoutes(
           icon: category.icon?.toString() ?? null,
           color: category.color?.toString() ?? null,
           status: category.status,
+          deprecatedAt: category.deprecatedAt?.toISOString() ?? null,
+          displayOrder: category.displayOrder,
           tags: category.tags.map((tag) => ({
             id: tag.id.toString(),
             name: tag.name.toString(),

@@ -31,6 +31,8 @@ interface CategoryDTO {
   icon: CategoryIcon | null;
   color: CategoryColor | null;
   status: CategoryStatus;
+  deprecatedAt: Date | null;
+  displayOrder: number;
   tags: TagDTO[];
 }
 
@@ -41,7 +43,8 @@ class GetCategoriesQuery {
     const categories = await this.categoryRepository.findByFamilyId(input.familyId);
     const includeDeprecated = input.includeDeprecated ?? false;
 
-    return categories
+    return [...categories]
+      .sort((a, b) => a.displayOrder - b.displayOrder)
       .filter((category) => includeDeprecated || category.status === CategoryStatus.Active)
       .filter((category) => !input.type || category.type === input.type)
       .map((category) => ({
@@ -51,6 +54,8 @@ class GetCategoriesQuery {
         icon: category.icon,
         color: category.color,
         status: category.status,
+        deprecatedAt: category.deprecatedAt,
+        displayOrder: category.displayOrder,
         tags: [...category.tags]
           .sort((a, b) => a.displayOrder - b.displayOrder)
           .map((tag) => ({

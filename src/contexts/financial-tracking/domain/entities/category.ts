@@ -9,6 +9,7 @@ import { CategoryDeprecated } from "../events/category-deprecated.event.js";
 import { CategoryReactivated } from "../events/category-reactivated.event.js";
 import { TagCreated } from "../events/tag-created.event.js";
 import { TagDeprecated } from "../events/tag-deprecated.event.js";
+import { TagReactivated } from "../events/tag-reactivated.event.js";
 import { CategoryColor } from "../value-objects/category-color.js";
 import { CategoryIcon } from "../value-objects/category-icon.js";
 import { CategoryId } from "../value-objects/category-id.js";
@@ -35,6 +36,8 @@ interface ReconstituteCategoryProps {
   icon?: string | null;
   color?: string | null;
   status: CategoryStatus;
+  deprecatedAt?: Date | null;
+  displayOrder?: number;
   tags: ReconstituteCategoryTagProps[];
 }
 
@@ -49,6 +52,8 @@ class Category {
     private _icon: CategoryIcon | null,
     private _color: CategoryColor | null,
     private _status: CategoryStatus,
+    private _deprecatedAt: Date | null,
+    private _displayOrder: number,
     private _tags: Tag[],
   ) {}
 
@@ -73,6 +78,12 @@ class Category {
   get status(): CategoryStatus {
     return this._status;
   }
+  get deprecatedAt(): Date | null {
+    return this._deprecatedAt;
+  }
+  get displayOrder(): number {
+    return this._displayOrder;
+  }
   get tags(): readonly Tag[] {
     return this._tags;
   } // readonly array — evita que muten la lista desde fuera
@@ -83,6 +94,7 @@ class Category {
     name: CategoryName,
     icon?: CategoryIcon,
     color?: CategoryColor,
+    displayOrder = 0,
   ): Category {
     const category = new Category(
       CategoryId.generate(),
@@ -92,6 +104,8 @@ class Category {
       icon ?? null,
       color ?? null,
       CategoryStatus.Active,
+      null,
+      displayOrder,
       [],
     );
     category.domainEvents.push(
@@ -109,6 +123,8 @@ class Category {
       props.icon ? CategoryIcon.of(props.icon) : null,
       props.color ? CategoryColor.of(props.color) : null,
       props.status,
+      props.deprecatedAt ?? null,
+      props.displayOrder ?? 0,
       props.tags.map((tag) => Tag.reconstitute(tag)),
     );
   }
@@ -140,12 +156,18 @@ class Category {
 
   deprecate(): void {
     this._status = CategoryStatus.Deprecated;
+    this._deprecatedAt = new Date();
     this.domainEvents.push(new CategoryDeprecated(this.id, this.familyId.toString()));
   }
 
   reactivate(): void {
     this._status = CategoryStatus.Active;
+    this._deprecatedAt = null;
     this.domainEvents.push(new CategoryReactivated(this.id, this.familyId.toString()));
+  }
+
+  changeDisplayOrder(newOrder: number): void {
+    this._displayOrder = newOrder;
   }
 
   reorderTags(orderedTagIds: TagId[]): void {
@@ -175,6 +197,15 @@ class Category {
     }
     tag.deprecate();
     this.domainEvents.push(new TagDeprecated(tag.id, this.id, this.familyId.toString()));
+  }
+
+  reactivateTag(tagId: TagId): void {
+    const tag = this._tags.find((t) => t.id.equals(tagId));
+    if (!tag) {
+      throw new TagNotFoundError(tagId.toString());
+    }
+    tag.reactivate();
+    this.domainEvents.push(new TagReactivated(tag.id, this.id, this.familyId.toString()));
   }
 
   removeTag(tagId: TagId): void {

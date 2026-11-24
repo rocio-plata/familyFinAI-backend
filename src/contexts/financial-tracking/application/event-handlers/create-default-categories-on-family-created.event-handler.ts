@@ -39,6 +39,13 @@ class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
       ),
     ];
 
+    const nextOrder = new Map<FinancialItemType, number>(
+      [FinancialItemType.Expense, FinancialItemType.Income].map((type) => [
+        type,
+        familyCategories.filter((cat) => cat.type === type).length,
+      ]),
+    );
+
     for (const { name: nameStr, type } of defaults) {
       const categoryName = CategoryName.of(nameStr);
       const exists = familyCategories.some(
@@ -46,7 +53,16 @@ class CreateDefaultCategoriesOnFamilyCreatedEventHandler {
       );
 
       if (!exists) {
-        const category = Category.create(event.familyId, type, categoryName);
+        const displayOrder = nextOrder.get(type) ?? 0;
+        nextOrder.set(type, displayOrder + 1);
+        const category = Category.create(
+          event.familyId,
+          type,
+          categoryName,
+          undefined,
+          undefined,
+          displayOrder,
+        );
         await this.categoryRepository.save(category);
 
         if (this.eventBus) {

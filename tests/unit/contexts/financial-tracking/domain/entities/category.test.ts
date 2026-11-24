@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { FamilyId } from "../../../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { Category } from "../../../../../../src/contexts/financial-tracking/domain/entities/category.js";
 import { InvalidTagOrderError } from "../../../../../../src/contexts/financial-tracking/domain/errors/invalid-tag-order.error.js";
+import { TagNotFoundError } from "../../../../../../src/contexts/financial-tracking/domain/errors/tag-not-found.error.js";
 import { CategoryColor } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-color.js";
 import { CategoryIcon } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-icon.js";
 import { CategoryName } from "../../../../../../src/contexts/financial-tracking/domain/value-objects/category-name.js";
@@ -218,6 +219,77 @@ describe("Category", () => {
       cat.deprecate();
       cat.reactivate();
       assert.equal(cat.status, CategoryStatus.Active);
+    });
+
+    it("limpia la fecha de archivado", () => {
+      const cat = Category.create(familyId, type, catName);
+      cat.deprecate();
+      cat.reactivate();
+      assert.equal(cat.deprecatedAt, null);
+    });
+  });
+
+  describe("deprecatedAt", () => {
+    it("es null en una categoría nueva", () => {
+      assert.equal(Category.create(familyId, type, catName).deprecatedAt, null);
+    });
+
+    it("registra la fecha al deprecar", () => {
+      const cat = Category.create(familyId, type, catName);
+      cat.deprecate();
+      assert.ok(cat.deprecatedAt instanceof Date);
+    });
+
+    it("se conserva al reconstituir", () => {
+      const at = new Date("2026-11-01T10:00:00.000Z");
+      const cat = Category.reconstitute({
+        id: crypto.randomUUID(),
+        familyId: familyId.toString(),
+        type,
+        name: "Alimentación",
+        status: CategoryStatus.Deprecated,
+        deprecatedAt: at,
+        displayOrder: 3,
+        tags: [],
+      });
+      assert.equal(cat.deprecatedAt?.toISOString(), at.toISOString());
+      assert.equal(cat.displayOrder, 3);
+    });
+  });
+
+  describe("displayOrder", () => {
+    it("es 0 por defecto", () => {
+      assert.equal(Category.create(familyId, type, catName).displayOrder, 0);
+    });
+
+    it("usa el orden recibido al crear", () => {
+      const cat = Category.create(familyId, type, catName, undefined, undefined, 4);
+      assert.equal(cat.displayOrder, 4);
+    });
+
+    it("changeDisplayOrder actualiza el orden", () => {
+      const cat = Category.create(familyId, type, catName);
+      cat.changeDisplayOrder(2);
+      assert.equal(cat.displayOrder, 2);
+    });
+  });
+
+  describe("reactivateTag()", () => {
+    it("vuelve a Active un tag deprecado y dispara TagReactivated", () => {
+      const cat = Category.create(familyId, type, catName);
+      cat.addTag(TagName.of("Supermercado"));
+      const tagId = cat.tags[0].id;
+      cat.deprecateTag(tagId);
+      cat.pullDomainEvents();
+      cat.reactivateTag(tagId);
+      assert.equal(cat.tags[0].status, "ACTIVE");
+      const events = cat.pullDomainEvents();
+      assert.equal(events[0]?.eventName, "financial-tracking.tag-reactivated");
+    });
+
+    it("lanza TagNotFoundError si el tag no existe", () => {
+      const cat = Category.create(familyId, type, catName);
+      assert.throws(() => cat.reactivateTag(TagId.generate()), TagNotFoundError);
     });
   });
 

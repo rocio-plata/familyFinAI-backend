@@ -38,10 +38,11 @@ class CreateCategoryUseCase {
       throw new InsufficientRoleError();
     }
 
-    // 2. Verificar que no exista otra categoría con el mismo nombre en la familia,
+    // 2. Verificar que no exista otra categoría del mismo tipo con el mismo nombre,
     // sin importar su estado — reactivar una deprecada usa ReactivateCategory
     const familyCategories = await this.categoryRepository.findByFamilyId(input.familyId);
-    const duplicate = familyCategories.some((category) => category.name.equals(input.name));
+    const sameType = familyCategories.filter((category) => category.type === input.type);
+    const duplicate = sameType.some((category) => category.name.equals(input.name));
     if (duplicate) {
       throw new DuplicateCategoryNameError(input.name.toString());
     }
@@ -53,6 +54,7 @@ class CreateCategoryUseCase {
       input.name,
       input.icon,
       input.color,
+      sameType.length,
     );
 
     // 4. Persistir

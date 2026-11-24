@@ -209,6 +209,21 @@ describe("UpdateCategoryUseCase", () => {
     );
   });
 
+  test("permite renombrar a un nombre usado por una categoría de otro tipo", async () => {
+    categoryRepository.add(
+      Category.create(familyId, FinancialItemType.Income, CategoryName.of("Extras")),
+    );
+
+    const renamed = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      categoryId: category.id,
+      newName: CategoryName.of("extras"),
+    });
+
+    assert.equal(renamed.name.toString(), "extras");
+  });
+
   test("permite renombrar a un nombre que ya coincide con el propio (case-insensitive)", async () => {
     const renamed = await useCase.execute({
       familyId,
