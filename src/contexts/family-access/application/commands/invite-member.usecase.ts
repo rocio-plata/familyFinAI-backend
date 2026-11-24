@@ -6,10 +6,12 @@ import type { Invitation } from "../../domain/entities/invitation.js";
 import { AlreadyMemberError } from "../../domain/errors/already-member.error.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
 import { InsufficientRoleError } from "../../domain/errors/insufficient-role.error.js";
+import { InvitationAlreadyPendingError } from "../../domain/errors/invitation-already-pending.error.js";
 import type { UserDirectoryPort } from "../../domain/ports/user-directory.port.js";
 import type { FamilyRepository } from "../../domain/repositories/family.repository.js";
 import type { InvitationRepository } from "../../domain/repositories/invitation.repository.js";
 import type { FamilyId } from "../../domain/value-objects/family-id.js";
+import { InvitationStatus } from "../../domain/value-objects/invitation-status.js";
 import type { Role } from "../../domain/value-objects/role.js";
 import type { UserId } from "../../domain/value-objects/user-id.js";
 
@@ -41,6 +43,16 @@ class InviteMemberUseCase {
     if (existingUserId && family.findMembership(existingUserId) != null) {
       throw new AlreadyMemberError(command.email.toString());
     }
+
+    const existing = await this.invitationRepository.findByFamilyId(command.familyId);
+    const now = new Date();
+    const hasLivePendingInvitation = existing.some(
+      (inv) =>
+        inv.status === InvitationStatus.Pending &&
+        inv.expiresAt >= now &&
+        inv.invitedEmail.equals(command.email),
+    );
+    if (hasLivePendingInvitation) throw new InvitationAlreadyPendingError(command.email.toString());
 
     const invitation = family.inviteMember(command.email, command.role, command.invitedBy);
     await this.invitationRepository.save(invitation);

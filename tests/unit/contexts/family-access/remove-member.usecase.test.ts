@@ -95,4 +95,50 @@ describe("RemoveMemberUseCase", () => {
     assert.equal(eventBus.publishedEvents.length, 1);
     assert.ok(eventBus.publishedEvents[0] instanceof MemberRemoved);
   });
+
+  test("permite que un Member salga de la familia por sí mismo", async () => {
+    const memberId = UserId.generate();
+    family.addMemberFromInvitationData(memberId, Role.member());
+    await familyRepository.save(family);
+
+    await useCase.execute({ familyId: family.id, memberId, removedBy: memberId });
+
+    const updatedFamily = await familyRepository.findById(family.id);
+    assert.equal(updatedFamily?.findMembership(memberId), null);
+    assert.ok(updatedFamily?.findMembership(ownerId));
+    assert.ok(eventBus.publishedEvents[0] instanceof MemberRemoved);
+  });
+
+  test("permite que un Owner salga si queda otro Owner", async () => {
+    const otherOwnerId = UserId.generate();
+    family.addMemberFromInvitationData(otherOwnerId, Role.owner());
+    await familyRepository.save(family);
+
+    await useCase.execute({ familyId: family.id, memberId: ownerId, removedBy: ownerId });
+
+    const updatedFamily = await familyRepository.findById(family.id);
+    assert.equal(updatedFamily?.findMembership(ownerId), null);
+  });
+
+  test("rechaza que un Member que sale de la familia quite a otro miembro", async () => {
+    const memberId = UserId.generate();
+    const otherId = UserId.generate();
+    family.addMemberFromInvitationData(memberId, Role.member());
+    family.addMemberFromInvitationData(otherId, Role.member());
+    await familyRepository.save(family);
+
+    await assert.rejects(
+      () => useCase.execute({ familyId: family.id, memberId: otherId, removedBy: memberId }),
+      InsufficientRoleError,
+    );
+  });
+
+  test("rechaza que alguien ajeno a la familia se quite a sí mismo", async () => {
+    const outsiderId = UserId.generate();
+
+    await assert.rejects(
+      () => useCase.execute({ familyId: family.id, memberId: outsiderId, removedBy: outsiderId }),
+      InsufficientRoleError,
+    );
+  });
 });

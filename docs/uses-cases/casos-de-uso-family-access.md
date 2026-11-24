@@ -51,9 +51,10 @@ Invita a una persona (por email) a unirse a la familia con un rol determinado.
   1. Se busca la `Family` por `familyId`.
   2. Se consulta `UserDirectoryPort.findUserIdByEmail(email)` para saber si el email ya tiene cuenta.
   3. Si existe `UserId` y ya es miembro de la familia (`family.findMembership()`), se rechaza.
+  3b. Si ya existe una invitación `Pending` y no vencida para el mismo correo en la familia, se rechaza con `InvitationAlreadyPendingError` (409).
   4. Se llama `family.inviteMember(email, role)`, que crea una `Invitation` en estado `Pending` (expira en 7 días).
   5. Se persiste la `Invitation` vía `InvitationRepository.save()`.
-- **Errores posibles**: `FamilyNotFoundError`, `AlreadyMemberError`, `InsufficientRoleError` (si quien invita no tiene permisos).
+- **Errores posibles**: `FamilyNotFoundError`, `AlreadyMemberError`, `InvitationAlreadyPendingError`, `InsufficientRoleError` (si quien invita no tiene permisos), `InvalidEmailError` (formato o más de 255 caracteres).
 - **Eventos disparados**: `MemberInvited`.
 - **Pendiente de definir**: envío real de la invitación (email/notificación) — fuera de alcance del dominio, correspondería a un contexto de notificaciones futuro que escuche `MemberInvited`.
 
@@ -72,7 +73,7 @@ El usuario invitado acepta la invitación y se convierte en miembro de la famili
   3. Se dispara `InvitationAccepted` desde la propia `Invitation`.
   4. Un event handler (`OnInvitationAcceptedHandler`, dentro del mismo contexto) escucha el evento y llama a `family.addMemberFromInvitation(invitation)` **en una transacción separada** (no se modifican dos agregados en la misma operación).
   5. Se persisten ambos agregados (`Invitation` actualizada, `Family` con el nuevo `Member`).
-- **Errores posibles**: `InvitationNotPendingError`, `InvitationExpiredError`.
+- **Errores posibles**: `InvitationNotPendingError`, `InvitationExpiredError`, `AlreadyMemberError` (el usuario ya es miembro: se rechaza antes de modificar la invitación).
 - **Eventos disparados**: `InvitationAccepted`.
 
 ---
@@ -97,13 +98,13 @@ Cancela una invitación pendiente antes de que sea aceptada.
 
 Remueve a un miembro de la familia.
 
-- **Actor**: un `Member` con rol `Owner`.
-- **Precondiciones**: quien remueve es `Owner`; el miembro a remover existe en la familia.
+- **Actor**: un `Owner` (para quitar a otra persona) o cualquier `Member` de la familia que quiera **salir** (se quita a sí mismo; `memberId == removedBy`). **Implementado**.
+- **Precondiciones**: quien ejecuta es miembro de la familia; para quitar a otra persona debe ser `Owner`; el miembro a remover existe en la familia.
 - **Entrada**: `familyId`, `memberId` (UserId a remover), `removedBy` (UserId de quien ejecuta la acción).
 - **Flujo principal**:
   1. Se busca la `Family`.
   2. Se invoca `family.removeMember(memberId, removedBy)`.
-  3. La entidad valida que quien remueve tenga permisos (`InsufficientRoleError` si no).
+  3. La entidad valida que quien ejecuta sea miembro y, si quita a otra persona, que tenga permisos (`InsufficientRoleError` si no). Salir por sí mismo no exige rol `Owner`.
   4. La entidad valida que quede al menos un `Owner` tras la remoción (`CannotRemoveLastOwnerError` si no).
   5. Se persiste la familia actualizada.
 - **Errores posibles**: `InsufficientRoleError`, `CannotRemoveLastOwnerError`, `MemberNotFoundError`.
@@ -207,7 +208,8 @@ Lista todos los miembros de una familia, para pantallas de administración dentr
 |---|---|
 | `InvalidFamilyNameError` | CreateFamily |
 | `InvalidEmailError` | InviteMember |
-| `AlreadyMemberError` | InviteMember |
+| `AlreadyMemberError` | InviteMember, AcceptInvitation |
+| `InvitationAlreadyPendingError` | InviteMember |
 | `InsufficientRoleError` | InviteMember, RemoveMember, ChangeDefaultCurrency |
 | `CannotRemoveLastOwnerError` | RemoveMember, ChangeMemberRole |
 | `MemberNotFoundError` | RemoveMember, ChangeMemberRole |

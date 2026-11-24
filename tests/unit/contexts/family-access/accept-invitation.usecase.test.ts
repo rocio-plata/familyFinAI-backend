@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { AcceptInvitationUseCase } from "../../../../src/contexts/family-access/application/commands/accept-invitation.usecase.js";
 import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { AlreadyMemberError } from "../../../../src/contexts/family-access/domain/errors/already-member.error.js";
 import { InvitationNotFoundError } from "../../../../src/contexts/family-access/domain/errors/invitation-not-found.error.js";
 import { InvitationNotPendingError } from "../../../../src/contexts/family-access/domain/errors/invitation-not-pending.error.js";
 import { InvitationAccepted } from "../../../../src/contexts/family-access/domain/events/invitation-accepted.event.js";
@@ -133,6 +134,27 @@ describe("AcceptInvitationUseCase", () => {
 
     assert.equal(unitOfWork.runCalls, 1);
     assert.equal(unitOfWork.completed, true);
+  });
+
+  test("rechaza aceptar si el usuario ya es miembro de la familia y no cambia la invitación", async () => {
+    const acceptingUserId = UserId.generate();
+    family.addMemberFromInvitationData(acceptingUserId, Role.member());
+    await familyRepository.save(family);
+    const invitation = createPendingInvitation(
+      family,
+      EmailAddress.of("nuevo@ejemplo.com"),
+      Role.member(),
+    );
+    await invitationRepository.save(invitation);
+
+    await assert.rejects(
+      () => useCase.execute({ invitationId: invitation.id, acceptingUserId }),
+      AlreadyMemberError,
+    );
+
+    const stored = await invitationRepository.findById(invitation.id);
+    assert.equal(stored?.status, "PENDING");
+    assert.equal(family.members.filter((m) => m.userId.equals(acceptingUserId)).length, 1);
   });
 });
 

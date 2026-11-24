@@ -291,7 +291,9 @@ function registerFamilyRoutes(app: FastifyInstance, deps: FamilyRoutesDependenci
   app.delete(
     "/families/:familyId/members/:memberId",
     {
-      preHandler: [deps.authenticate, deps.requireFamilyMembership(Role.owner())],
+      // cualquier miembro puede salir (memberId = su propio id); quitar a otro lo exige
+      // `Family.removeMember` a nivel de dominio (solo OWNER)
+      preHandler: [deps.authenticate, deps.requireFamilyMembership()],
       schema: {
         params: {
           type: "object",

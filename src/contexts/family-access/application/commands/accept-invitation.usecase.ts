@@ -4,6 +4,7 @@ import type { UnitOfWork } from "../../../../platform/db/unit-of-work.js";
 import { DirectUnitOfWork } from "../../../../platform/db/unit-of-work.js";
 import type { EventBus } from "../../../../platform/events/event-bus.js";
 import { EmailAddress } from "../../../../shared-kernel/domain/email-address.js";
+import { AlreadyMemberError } from "../../domain/errors/already-member.error.js";
 import { FamilyNotFoundError } from "../../domain/errors/family-not-found.error.js";
 import { InvitationNotForUserError } from "../../domain/errors/invitation-not-for-user.error.js";
 import { InvitationNotFoundError } from "../../domain/errors/invitation-not-found.error.js";
@@ -39,10 +40,14 @@ class AcceptInvitationUseCase {
         }
       }
 
-      invitation.accept(command.acceptingUserId);
-
       const family = await this.familyRepository.findById(invitation.familyId, tx);
       if (!family) throw new FamilyNotFoundError(invitation.familyId);
+
+      if (family.findMembership(command.acceptingUserId)) {
+        throw new AlreadyMemberError(command.acceptingUserId);
+      }
+
+      invitation.accept(command.acceptingUserId);
 
       family.addMemberFromInvitationData(command.acceptingUserId, invitation.role);
       await this.invitationRepository.save(invitation, tx);

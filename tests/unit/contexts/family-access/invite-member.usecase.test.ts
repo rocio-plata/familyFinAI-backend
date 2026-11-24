@@ -4,12 +4,16 @@ import assert from "node:assert/strict";
 import { beforeEach, describe, test } from "node:test";
 import { InviteMemberUseCase } from "../../../../src/contexts/family-access/application/commands/invite-member.usecase.js";
 import { Family } from "../../../../src/contexts/family-access/domain/entities/family.js";
+import { Invitation } from "../../../../src/contexts/family-access/domain/entities/invitation.js";
 import { AlreadyMemberError } from "../../../../src/contexts/family-access/domain/errors/already-member.error.js";
 import { FamilyNotFoundError } from "../../../../src/contexts/family-access/domain/errors/family-not-found.error.js";
 import { InsufficientRoleError } from "../../../../src/contexts/family-access/domain/errors/insufficient-role.error.js";
+import { InvitationAlreadyPendingError } from "../../../../src/contexts/family-access/domain/errors/invitation-already-pending.error.js";
 import { MemberInvited } from "../../../../src/contexts/family-access/domain/events/member-invited.event.js";
 import { FamilyId } from "../../../../src/contexts/family-access/domain/value-objects/family-id.js";
 import { FamilyName } from "../../../../src/contexts/family-access/domain/value-objects/family-name.js";
+import { InvitationId } from "../../../../src/contexts/family-access/domain/value-objects/invitation-id.js";
+import { InvitationStatus } from "../../../../src/contexts/family-access/domain/value-objects/invitation-status.js";
 import { Role } from "../../../../src/contexts/family-access/domain/value-objects/role.js";
 import { UserId } from "../../../../src/contexts/family-access/domain/value-objects/user-id.js";
 import { EmailAddress } from "../../../../src/shared-kernel/domain/email-address.js";
@@ -127,5 +131,72 @@ describe("InviteMemberUseCase", () => {
 
     assert.equal(eventBus.publishedEvents.length, 1);
     assert.ok(eventBus.publishedEvents[0] instanceof MemberInvited);
+  });
+
+  test("rechaza invitar a un email con una invitación pendiente vigente en la familia", async () => {
+    const email = EmailAddress.of("nuevo@ejemplo.com");
+    await useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId });
+
+    await assert.rejects(
+      () =>
+        useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId }),
+      InvitationAlreadyPendingError,
+    );
+    const invitations = await invitationRepository.findByFamilyId(family.id);
+    assert.equal(invitations.length, 1);
+  });
+
+  test("permite invitar de nuevo si la invitación anterior fue revocada", async () => {
+    const email = EmailAddress.of("nuevo@ejemplo.com");
+    const first = await useCase.execute({
+      familyId: family.id,
+      email,
+      role: Role.member(),
+      invitedBy: ownerId,
+    });
+    first.revoke();
+    await invitationRepository.save(first);
+
+    await useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId });
+
+    const pending = (await invitationRepository.findByFamilyId(family.id)).filter(
+      (i) => i.status === InvitationStatus.Pending,
+    );
+    assert.equal(pending.length, 1);
+  });
+
+  test("permite invitar de nuevo si la invitación pendiente ya venció", async () => {
+    const email = EmailAddress.of("nuevo@ejemplo.com");
+    const expired = Invitation.reconstitute({
+      id: InvitationId.generate().toString(),
+      familyId: family.id.toString(),
+      invitedEmail: email.toString(),
+      role: "MEMBER",
+      status: InvitationStatus.Pending,
+      expiresAt: new Date(Date.now() - 1000),
+      invitedUserId: null,
+      invitedBy: ownerId.toString(),
+    });
+    await invitationRepository.save(expired);
+
+    await useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId });
+
+    assert.equal((await invitationRepository.findByFamilyId(family.id)).length, 2);
+  });
+
+  test("permite invitar el mismo email a otra familia", async () => {
+    const otherFamily = Family.create(FamilyName.of("Otra"), ownerId);
+    await familyRepository.save(otherFamily);
+    const email = EmailAddress.of("nuevo@ejemplo.com");
+    await useCase.execute({ familyId: family.id, email, role: Role.member(), invitedBy: ownerId });
+
+    await useCase.execute({
+      familyId: otherFamily.id,
+      email,
+      role: Role.member(),
+      invitedBy: ownerId,
+    });
+
+    assert.equal((await invitationRepository.findByFamilyId(otherFamily.id)).length, 1);
   });
 });

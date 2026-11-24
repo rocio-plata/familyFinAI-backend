@@ -158,4 +158,39 @@ describe("DELETE /families/:familyId/members/:memberId", () => {
 
     assert.equal(response.statusCode, 403);
   });
+
+  test("permite que un Member se quite a sí mismo (salir de la familia)", async () => {
+    const ownerId = UserId.generate();
+    const memberId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    family.addMemberFromInvitationData(memberId, Role.member());
+    await familyRepository.save(family);
+    const token = await jwtService.sign(memberId);
+
+    const response = await app.inject({
+      method: "DELETE",
+      url: `/families/${family.id.toString()}/members/${memberId.toString()}`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 204);
+    const updatedFamily = await familyRepository.findById(family.id);
+    assert.equal(updatedFamily?.findMembership(memberId), null);
+  });
+
+  test("devuelve CANNOT_REMOVE_LAST_OWNER si el único Owner sale de la familia", async () => {
+    const ownerId = UserId.generate();
+    const family = Family.create(FamilyName.of("Familia Pérez"), ownerId);
+    await familyRepository.save(family);
+    const token = await jwtService.sign(ownerId);
+
+    const response = await app.inject({
+      method: "DELETE",
+      url: `/families/${family.id.toString()}/members/${ownerId.toString()}`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.equal(JSON.parse(response.body).error, "FAMILY_ACCESS.CANNOT_REMOVE_LAST_OWNER");
+  });
 });
