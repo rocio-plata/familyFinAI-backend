@@ -27,6 +27,8 @@ export const categories = pgTable(
     icon: varchar("icon", { length: 40 }),
     color: varchar("color", { length: 40 }),
     status: categoryStatusEnum("status").notNull().default("ACTIVE"),
+    deprecatedAt: timestamp("deprecated_at"),
+    displayOrder: integer("display_order").notNull().default(0),
   },
   (table) => ({
     familyIdIndex: index("categories_family_id_idx").on(table.familyId),

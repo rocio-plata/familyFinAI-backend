@@ -556,17 +556,20 @@ Crea una nueva categoría de gastos o ingresos.
     "name": "Alimentación",
     "icon": "shopping_cart",
     "color": "teal_500",
-    "status": "ACTIVE"
+    "status": "ACTIVE",
+    "deprecatedAt": null,
+    "displayOrder": 9
   }
   ```
+  La categoría nueva queda al final de su tipo (`displayOrder` = cantidad de categorías existentes del mismo tipo).
 - **Errores posibles**:
   - `403`: `FAMILY.INSUFFICIENT_ROLE` (si no es OWNER).
-  - `409`: `FINANCIAL_TRACKING.DUPLICATE_CATEGORY_NAME` (no pueden existir dos categorías activas o deprecadas del mismo tipo con el mismo nombre).
+  - `409`: `FINANCIAL_TRACKING.DUPLICATE_CATEGORY_NAME` (no pueden existir dos categorías activas o deprecadas **del mismo tipo** con el mismo nombre; una categoría de ingreso puede llamarse igual que una de gasto).
 
 ---
 
 #### `GET /families/:familyId/categories`
-Obtiene las categorías de la familia junto con sus tags anidados.
+Obtiene las categorías de la familia junto con sus tags anidados, ordenadas por `displayOrder` ascendente.
 - **Autenticación**: Bearer Token + Miembro.
 - **Query Params**:
   - `type` (opcional): `"EXPENSE"` \| `"INCOME"`
@@ -581,6 +584,8 @@ Obtiene las categorías de la familia junto con sus tags anidados.
       "icon": "shopping_cart",
       "color": "teal_500",
       "status": "ACTIVE",
+      "deprecatedAt": null,
+      "displayOrder": 0,
       "tags": [
         {
           "id": "t1t2t3t4-0000-4111-8222-123456789abc",
@@ -598,6 +603,27 @@ Obtiene las categorías de la familia junto con sus tags anidados.
     }
   ]
   ```
+  `deprecatedAt` es la fecha ISO-8601 en que se archivó la categoría (`null` si está activa; se limpia al reactivarla). `displayOrder` es la posición dentro de su tipo (`EXPENSE` / `INCOME`).
+
+---
+
+#### `PUT /families/:familyId/categories/order`
+Reordena las categorías de un tipo. Las categorías recibidas quedan en las primeras posiciones, en el orden enviado; las demás del mismo tipo conservan su orden relativo a continuación.
+- **Autenticación**: Bearer Token + Rol `OWNER`.
+- **Request Body**:
+  ```json
+  {
+    "orderedCategoryIds": [
+      "c2c3c4c5-0000-4111-8222-abcdefabcdef",
+      "c1c2c3c4-0000-4111-8222-abcdefabcdef"
+    ]
+  }
+  ```
+- **Respuesta `204 No Content`**
+- **Errores posibles**:
+  - `400`: `FINANCIAL_TRACKING.INVALID_CATEGORY_ORDER` (lista vacía, ids repetidos o categorías de distinto tipo).
+  - `403`: `FAMILY.INSUFFICIENT_ROLE`.
+  - `404`: `FINANCIAL_TRACKING.CATEGORY_NOT_FOUND` (alguna categoría no existe en la familia).
 
 ---
 
@@ -632,6 +658,16 @@ Actualiza el nombre, ícono y/o color de una categoría.
 Marca una categoría como deprecada. Deja de aparecer en nuevas opciones de registro.
 - **Autenticación**: Bearer Token + Rol `OWNER`.
 - **Respuesta `204 No Content`**
+
+---
+
+#### `POST /families/:familyId/categories/:categoryId/reactivate`
+Reactiva una categoría archivada (inversa de `deprecate`). Limpia `deprecatedAt`.
+- **Autenticación**: Bearer Token + Rol `OWNER`.
+- **Respuesta `204 No Content`**
+- **Errores posibles**:
+  - `403`: `FAMILY.INSUFFICIENT_ROLE`.
+  - `404`: `FINANCIAL_TRACKING.CATEGORY_NOT_FOUND`.
 
 ---
 
@@ -694,6 +730,16 @@ Reordena los tags de una categoría según la preferencia visual deseada.
 Depreca un tag de la categoría.
 - **Autenticación**: Bearer Token + Rol `OWNER`.
 - **Respuesta `204 No Content`**
+
+---
+
+#### `POST /families/:familyId/categories/:categoryId/tags/:tagId/reactivate`
+Reactiva un tag archivado (inversa de `deprecate`).
+- **Autenticación**: Bearer Token + Rol `OWNER`.
+- **Respuesta `204 No Content`**
+- **Errores posibles**:
+  - `403`: `FAMILY.INSUFFICIENT_ROLE`.
+  - `404`: `FINANCIAL_TRACKING.CATEGORY_NOT_FOUND` / `FINANCIAL_TRACKING.TAG_NOT_FOUND`.
 
 ---
 
@@ -1466,7 +1512,7 @@ Los siguientes aparecen en las descripciones de endpoints y deben permanecer sin
 | `FINANCIAL_TRACKING.TAG_NOT_FOUND` | 404 | Tag inexistente | "El tag ya no existe." |
 | `FINANCIAL_TRACKING.TAG_NOT_ACTIVE` | 400 | Tag deprecado usado en un registro nuevo | "Este tag está archivado." |
 | `FINANCIAL_TRACKING.UNSUPPORTED_CURRENCY` | 400 | Moneda no soportada en Financial Tracking | "Moneda no disponible." |
-| `FINANCIAL_TRACKING.INVALID_TITLE` / `INVALID_NOTE` / `INVALID_CATEGORY_NAME` / `INVALID_CATEGORY_ICON` / `INVALID_CATEGORY_COLOR` / `INVALID_TAG_NAME` / `INVALID_TAG_ORDER` / `INVALID_PAYMENT_METHOD_NAME` | 400 | Valor de entrada inválido según reglas de dominio | Mostrar el mensaje devuelto en `message` |
+| `FINANCIAL_TRACKING.INVALID_TITLE` / `INVALID_NOTE` / `INVALID_CATEGORY_NAME` / `INVALID_CATEGORY_ICON` / `INVALID_CATEGORY_COLOR` / `INVALID_TAG_NAME` / `INVALID_TAG_ORDER` / `INVALID_CATEGORY_ORDER` / `INVALID_PAYMENT_METHOD_NAME` | 400 | Valor de entrada inválido según reglas de dominio | Mostrar el mensaje devuelto en `message` |
 | `BUDGETING.BUDGET_CONFIGURATION_NOT_FOUND` | 404 | La configuración de presupuesto no existe | "Ese presupuesto ya no existe." |
 | `BUDGETING.INVALID_BUDGET_BALANCE` | 400 | Saldo de presupuesto inválido | Mostrar el mensaje devuelto en `message` |
 | `REPORTING.INVALID_ITEM_COUNT` | 400 | Conteo de movimientos inválido en el read model | Reintentar; reportar si persiste |

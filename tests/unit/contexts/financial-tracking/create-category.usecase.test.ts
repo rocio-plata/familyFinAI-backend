@@ -158,6 +158,49 @@ describe("CreateCategoryUseCase", () => {
     );
   });
 
+  test("permite el mismo nombre en categorías de distinto tipo", async () => {
+    categoryRepository.add(
+      Category.create(familyId, FinancialItemType.Expense, CategoryName.of("Otros")),
+    );
+
+    const income = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Income,
+      name: CategoryName.of("otros"),
+    });
+
+    assert.equal(income.type, FinancialItemType.Income);
+  });
+
+  test("asigna como displayOrder la siguiente posición dentro del mismo tipo", async () => {
+    categoryRepository.add(
+      Category.create(familyId, FinancialItemType.Expense, CategoryName.of("A")),
+    );
+    categoryRepository.add(
+      Category.create(familyId, FinancialItemType.Expense, CategoryName.of("B")),
+    );
+    categoryRepository.add(
+      Category.create(familyId, FinancialItemType.Income, CategoryName.of("C")),
+    );
+
+    const expense = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Expense,
+      name: CategoryName.of("D"),
+    });
+    const income = await useCase.execute({
+      familyId,
+      requestedBy: ownerId,
+      type: FinancialItemType.Income,
+      name: CategoryName.of("E"),
+    });
+
+    assert.equal(expense.displayOrder, 2);
+    assert.equal(income.displayOrder, 1);
+  });
+
   test("permite el mismo nombre en familias distintas", async () => {
     const otherOwnerId = UserId.generate();
     const otherFamily = Family.create(FamilyName.of("Familia González"), otherOwnerId);

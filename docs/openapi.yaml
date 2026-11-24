@@ -683,6 +683,27 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Category' }
 
+  /families/{familyId}/categories/order:
+    put:
+      tags: [Financial Tracking]
+      summary: Reordena las categorias de un tipo
+      operationId: reorderCategories
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderedCategoryIds]
+              properties:
+                orderedCategoryIds:
+                  type: array
+                  items: { $ref: '#/components/schemas/Id' }
+      responses:
+        '204': { description: Categorias reordenadas }
+
   /families/{familyId}/categories/{categoryId}:
     patch:
       tags: [Financial Tracking]
@@ -731,6 +752,18 @@ paths:
         - { $ref: '#/components/parameters/CategoryIdPath' }
       responses:
         '204': { description: Categoria obsoleta }
+
+  /families/{familyId}/categories/{categoryId}/reactivate:
+    post:
+      tags: [Financial Tracking]
+      summary: Reactiva una categoria archivada
+      operationId: reactivateCategory
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+      responses:
+        '204': { description: Categoria reactivada }
 
   /families/{familyId}/categories/{categoryId}/tags:
     post:
@@ -806,6 +839,19 @@ paths:
         - { $ref: '#/components/parameters/TagIdPath' }
       responses:
         '204': { description: Tag obsoleto }
+
+  /families/{familyId}/categories/{categoryId}/tags/{tagId}/reactivate:
+    post:
+      tags: [Financial Tracking]
+      summary: Reactiva un tag archivado
+      operationId: reactivateTag
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/FamilyId' }
+        - { $ref: '#/components/parameters/CategoryIdPath' }
+        - { $ref: '#/components/parameters/TagIdPath' }
+      responses:
+        '204': { description: Tag reactivado }
 
   /families/{familyId}/categories/{categoryId}/tags/order:
     put:
@@ -1409,6 +1455,8 @@ components:
         icon: { type: [string, 'null'] }
         color: { type: [string, 'null'] }
         status: { type: string }
+        deprecatedAt: { type: [string, 'null'], format: date-time }
+        displayOrder: { type: integer }
         tags: { type: array, items: { $ref: '#/components/schemas/Tag' } }
     BudgetConfiguration:
       type: object

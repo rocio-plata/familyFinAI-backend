@@ -101,13 +101,13 @@ Elimina un movimiento.
 Crea una categoría nueva para la familia.
 
 - **Actor**: únicamente el `Owner` de la familia. Decisión tomada para mantener la taxonomía de categorías bajo control administrativo — evita que cualquier miembro modifique una estructura compartida por toda la familia.
-- **Precondiciones**: la familia existe; quien solicita es `Owner` de esa familia; no existe ya una categoría con el mismo nombre en la familia, sin importar su estado (`Active` o `Deprecated` — comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
+- **Precondiciones**: la familia existe; quien solicita es `Owner` de esa familia; no existe ya una categoría **del mismo tipo** con el mismo nombre en la familia, sin importar su estado (`Active` o `Deprecated` — comparación case-insensitive, según la regla que definimos en `CategoryName.equals()`).
 - **Entrada**: `familyId`, `requestedBy` (UserId, del token), `type` (`Expense` | `Income`, obligatorio), `name`, `icon` (opcional), `color` (opcional). En HTTP, `icon` y `color` son claves string opacas (el color es una clave de la paleta de la app, que el backend solo guarda); si se omiten, la categoría nace con `icon = null` y `color = null`.
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` en la familia (`GetFamilyMembershipQuery`, de `Family & Access`) y se valida que su rol sea `Owner`.
   2. Se valida `name` como `CategoryName` y, si vienen, `icon` como `CategoryIcon` y `color` como `CategoryColor` (se recortan, no pueden quedar vacíos y tienen un máximo de 40 caracteres).
-  3. Se verifica que no exista otra categoría con el mismo nombre en la familia, sea `Active` o `Deprecated`.
-  4. Se invoca `Category.create(familyId, type, name, icon, color)`; sin ícono o color, la entidad conserva `null`.
+  3. Se verifica que no exista otra categoría del mismo tipo con el mismo nombre, sea `Active` o `Deprecated` (una categoría de ingreso puede llamarse igual que una de gasto).
+  4. Se invoca `Category.create(familyId, type, name, icon, color, displayOrder)` con `displayOrder` = cantidad de categorías existentes del mismo tipo (queda al final); sin ícono o color, la entidad conserva `null`.
   5. Se persiste.
 - **Errores posibles**: `InsufficientRoleError`, `InvalidCategoryNameError`, `InvalidCategoryIconError`, `InvalidCategoryColorError`, `DuplicateCategoryNameError`.
 - **Eventos disparados**: `CategoryCreated`.
@@ -126,7 +126,7 @@ Reactiva una categoría previamente deprecada, permitiendo volver a usarla en nu
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
   2. Se busca la `Category`, validando que pertenezca a la familia.
-  3. Se invoca `category.reactivate()` (idempotente — si ya estaba `Active`, no falla).
+  3. Se invoca `category.reactivate()` (idempotente — si ya estaba `Active`, no falla); limpia `deprecatedAt`.
   4. Se persiste.
 - **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`.
 - **Eventos disparados**: `CategoryReactivated` (consumido por `AI Assistance`, simétrico a `CategoryDeprecated`, para volver a sugerir la categoría).
@@ -181,7 +181,7 @@ Marca una categoría como no disponible para nuevos registros, preservando el hi
 - **Flujo principal**:
   1. Se consulta la membresía de `requestedBy` y se valida que su rol sea `Owner`.
   2. Se busca la `Category`, validando que pertenezca a la familia.
-  3. Se invoca `category.deprecate()` (siempre permitido, sin chequeo de items).
+  3. Se invoca `category.deprecate()` (siempre permitido, sin chequeo de items); registra `deprecatedAt`.
   4. Se persiste.
 - **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`.
 - **Eventos disparados**: `CategoryDeprecated` (consumido por `AI Assistance`, para no sugerir categorías deprecadas).
@@ -280,7 +280,7 @@ Lista las categorías (con sus tags) de la familia — para poblar selectores en
   1. Se consulta `CategoryRepository.findByFamilyId()`.
   2. Se filtran las deprecadas si `includeDeprecated` es `false`.
   3. Si se especifica `type`, se filtran solo las categorías de ese tipo — es el filtro que alimenta las pantallas de "categorías de gasto"/"categorías de ingreso".
-  4. Se devuelve la lista (cada categoría con `type`, `icon` y `color` — clave o `null` — y sus tags ya ordenados por `displayOrder`).
+  4. Se ordena por `displayOrder` y se devuelve la lista (cada categoría con `type`, `icon` y `color` — clave o `null` —, `deprecatedAt` — fecha de archivado o `null` —, `displayOrder` y sus tags ya ordenados por `displayOrder`).
 - **Errores posibles**: ninguno propio.
 
 ---
@@ -467,6 +467,32 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 - **Errores posibles**: ninguno propio; una familia sin gastos devuelve una lista vacía.
 - **Integración HTTP**: query construida en `reporting.module.ts` y ruta implementada en `/families/:familyId/reports/by-payment-method`.
 
+### 30. ReactivateTag
+
+Reactiva un tag previamente deprecado (inversa de `DeprecateTag`).
+
+- **Actor**: únicamente el `Owner`.
+- **Entrada**: `familyId`, `requestedBy`, `categoryId`, `tagId`.
+- **Flujo principal**: valida rol `Owner`, busca la categoría de la familia, invoca `category.reactivateTag(tagId)` (lanza `TagNotFoundError` si no existe), persiste y publica `TagReactivated`.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `TagNotFoundError`.
+- **Integración HTTP**: `POST /families/:familyId/categories/:categoryId/tags/:tagId/reactivate` (204).
+
+---
+
+### 31. ReorderCategories
+
+Reordena las categorías de un tipo para la pantalla de administración.
+
+- **Actor**: únicamente el `Owner`.
+- **Entrada**: `familyId`, `requestedBy`, `orderedCategoryIds`.
+- **Flujo principal**:
+  1. Valida rol `Owner`.
+  2. Rechaza listas vacías o con ids repetidos (`InvalidCategoryOrderError`).
+  3. Verifica que cada categoría exista en la familia (`CategoryNotFoundError`) y que todas sean del mismo tipo (`InvalidCategoryOrderError`).
+  4. Asigna `displayOrder` 0..n-1 a las recibidas; las demás del mismo tipo quedan después, conservando su orden relativo. Las de otro tipo no cambian.
+- **Errores posibles**: `InsufficientRoleError`, `CategoryNotFoundError`, `InvalidCategoryOrderError`.
+- **Integración HTTP**: `PUT /families/:familyId/categories/order` (204).
+
 ## Resumen de errores nuevos a definir
 
 | Error | Casos de uso donde aparece | ¿Ya existe? |
@@ -483,6 +509,7 @@ Lista los gastos agrupados por medio de pago para una familia y período.
 | `InvalidCategoryColorError` | CreateCategory, UpdateCategory | ✅ ya definido |
 | `DuplicateTagNameError` | AddTagToCategory, RenameTag | ✅ ya definido |
 | `InvalidTagOrderError` | ReorderCategoryTags | ✅ ya definido |
+| `InvalidCategoryOrderError` | ReorderCategories | ✅ ya definido |
 | `CategoryHasAssociatedItemsError` | DeleteCategory | ✅ ya definido |
 | `TagHasAssociatedItemsError` | DeleteTag | ✅ ya definido |
 | `CannotReclassifyAcrossTypesError` | ReclassifyFinancialItem | ✅ ya definido (reajuste tipo-categoría) |

@@ -19,9 +19,12 @@ import { DeleteTagUseCase } from "./application/commands/delete-tag.usecase.js";
 import { DeprecateCategoryUseCase } from "./application/commands/deprecate-category.usecase.js";
 import { DeprecatePaymentMethodUseCase } from "./application/commands/deprecate-payment-method.usecase.js";
 import { DeprecateTagUseCase } from "./application/commands/deprecate-tag.usecase.js";
+import { ReactivateCategoryUseCase } from "./application/commands/reactivate-category.usecase.js";
+import { ReactivateTagUseCase } from "./application/commands/reactivate-tag.usecase.js";
 import { ReclassifyFinancialItemUseCase } from "./application/commands/reclassify-financial-item.usecase.js";
 import { RenamePaymentMethodUseCase } from "./application/commands/rename-payment-method.usecase.js";
 import { RenameTagUseCase } from "./application/commands/rename-tag.usecase.js";
+import { ReorderCategoriesUseCase } from "./application/commands/reorder-categories.usecase.js";
 import { ReorderCategoryTagsUseCase } from "./application/commands/reorder-category-tags.usecase.js";
 import { SetDefaultPaymentMethodUseCase } from "./application/commands/set-default-payment-method.usecase.js";
 import { SetInitialPaymentMethodPreferenceUseCase } from "./application/commands/set-initial-payment-method-preference.usecase.js";
@@ -70,6 +73,9 @@ interface FinancialTrackingModule {
     updateCategory: UpdateCategoryUseCase;
     renameTag: RenameTagUseCase;
     reclassifyFinancialItem: ReclassifyFinancialItemUseCase;
+    reactivateCategory: ReactivateCategoryUseCase;
+    reactivateTag: ReactivateTagUseCase;
+    reorderCategories: ReorderCategoriesUseCase;
     reorderCategoryTags: ReorderCategoryTagsUseCase;
     updateFinancialItem: UpdateFinancialItemUseCase;
     renamePaymentMethod: RenamePaymentMethodUseCase;
@@ -147,6 +153,20 @@ function buildFinancialTrackingModule(
       deps.categoryRepository,
       deps.eventBus,
     ),
+    reactivateCategory: new ReactivateCategoryUseCase(
+      deps.categoryRepository,
+      getFamilyMembershipQuery,
+      deps.eventBus,
+    ),
+    reactivateTag: new ReactivateTagUseCase(
+      deps.categoryRepository,
+      getFamilyMembershipQuery,
+      deps.eventBus,
+    ),
+    reorderCategories: new ReorderCategoriesUseCase(
+      deps.categoryRepository,
+      getFamilyMembershipQuery,
+    ),
     reorderCategoryTags: new ReorderCategoryTagsUseCase(deps.categoryRepository),
     updateFinancialItem: new UpdateFinancialItemUseCase(
       deps.financialItemRepository,
@@ -217,6 +237,9 @@ function buildFinancialTrackingModule(
         updateCategoryUseCase: useCases.updateCategory,
         renameTagUseCase: useCases.renameTag,
         reclassifyFinancialItemUseCase: useCases.reclassifyFinancialItem,
+        reactivateCategoryUseCase: useCases.reactivateCategory,
+        reactivateTagUseCase: useCases.reactivateTag,
+        reorderCategoriesUseCase: useCases.reorderCategories,
         reorderCategoryTagsUseCase: useCases.reorderCategoryTags,
         renamePaymentMethodUseCase: useCases.renamePaymentMethod,
         setDefaultPaymentMethodUseCase: useCases.setDefaultPaymentMethod,

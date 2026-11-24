@@ -24,6 +24,8 @@ class DrizzleCategoryRepository implements CategoryRepository {
           icon: category.icon?.toString() ?? null,
           color: category.color?.toString() ?? null,
           status: category.status,
+          deprecatedAt: category.deprecatedAt,
+          displayOrder: category.displayOrder,
         })
         .onConflictDoUpdate({
           target: categories.id,
@@ -32,6 +34,8 @@ class DrizzleCategoryRepository implements CategoryRepository {
             icon: category.icon?.toString() ?? null,
             color: category.color?.toString() ?? null,
             status: category.status,
+            deprecatedAt: category.deprecatedAt,
+            displayOrder: category.displayOrder,
           },
         });
 
@@ -91,6 +95,8 @@ class DrizzleCategoryRepository implements CategoryRepository {
       icon: categoryRow.icon,
       color: categoryRow.color,
       status: categoryRow.status === "ACTIVE" ? CategoryStatus.Active : CategoryStatus.Deprecated,
+      deprecatedAt: categoryRow.deprecatedAt,
+      displayOrder: categoryRow.displayOrder,
       tags: tagRows.map((tagRow) => ({
         id: tagRow.id,
         name: tagRow.name,

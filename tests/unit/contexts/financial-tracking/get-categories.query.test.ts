@@ -125,4 +125,41 @@ describe("GetCategoriesQuery", () => {
 
     assert.equal(categories.length, 2);
   });
+
+  test("ordena las categorías por displayOrder", async () => {
+    const second = Category.create(
+      familyId,
+      FinancialItemType.Income,
+      CategoryName.of("Segunda"),
+      undefined,
+      undefined,
+      1,
+    );
+    const first = Category.create(
+      familyId,
+      FinancialItemType.Income,
+      CategoryName.of("Primera"),
+      undefined,
+      undefined,
+      0,
+    );
+    categoryRepository.add(second);
+    categoryRepository.add(first);
+
+    const categories = await query.execute({ familyId, type: FinancialItemType.Income });
+
+    assert.deepEqual(
+      categories.map((c) => c.name.toString()),
+      ["Primera", "Segunda"],
+    );
+  });
+
+  test("informa deprecatedAt en las categorías archivadas y null en las activas", async () => {
+    const categories = await query.execute({ familyId, includeDeprecated: true });
+    const active = categories.find((c) => c.id.toString() === activeCategory.id.toString());
+    const deprecated = categories.find((c) => c.id.toString() === deprecatedCategory.id.toString());
+
+    assert.equal(active?.deprecatedAt, null);
+    assert.ok(deprecated?.deprecatedAt instanceof Date);
+  });
 });

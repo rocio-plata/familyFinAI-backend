@@ -48,7 +48,10 @@ class UpdateCategoryUseCase {
       const newName = input.newName;
       const familyCategories = await this.categoryRepository.findByFamilyId(input.familyId);
       const duplicate = familyCategories.some(
-        (other) => !other.id.equals(category.id) && other.name.equals(newName),
+        (other) =>
+          !other.id.equals(category.id) &&
+          other.type === category.type &&
+          other.name.equals(newName),
       );
       if (duplicate) {
         throw new DuplicateCategoryNameError(newName.toString());
